@@ -56,7 +56,7 @@ const features = [
   }
 ];
 
-const colorClasses = {
+const colorClasses: Record<string, string> = {
   blue: 'text-blue-600 bg-blue-100 group-hover:bg-blue-200',
   teal: 'text-teal-600 bg-teal-100 group-hover:bg-teal-200',
   purple: 'text-purple-600 bg-purple-100 group-hover:bg-purple-200',
@@ -65,7 +65,7 @@ const colorClasses = {
   red: 'text-red-600 bg-red-100 group-hover:bg-red-200'
 };
 
-const gradientClasses = {
+const gradientClasses: Record<string, string> = {
   blue: 'from-blue-500 to-blue-600',
   teal: 'from-teal-500 to-teal-600',
   purple: 'from-purple-500 to-purple-600',
@@ -76,7 +76,7 @@ const gradientClasses = {
 
 export default function FeaturesEnhanced() {
   const [isVisible, setIsVisible] = useState(false);
-  const [hoveredCard, setHoveredCard] = useState<number | null>(null);
+  
 
   // Intersection Observer for animations
   useEffect(() => {
@@ -121,15 +121,15 @@ export default function FeaturesEnhanced() {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {features.map((feature, index) => {
             const Icon = feature.icon;
-            const isHovered = hoveredCard === index;
+            
 
             return (
               <div
                 key={index}
                 className={`group transition-all duration-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
                 style={{ transitionDelay: `${index * 100}ms` }}
-                onMouseEnter={() => setHoveredCard(index)}
-                onMouseLeave={() => setHoveredCard(null)}
+                
+                
               >
                 <Card className="relative overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-3 cursor-pointer bg-card/80 backdrop-blur-sm h-full">
                   {/* Gradient border */}

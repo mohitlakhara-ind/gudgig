@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Mail, CheckCircle, ArrowRight, Bell, Users, Shield } from 'lucide-react';
+import { Mail, CheckCircle, ArrowRight, Bell } from 'lucide-react';
 
 export default function ProfessionalNewsletterSection() {
   const [email, setEmail] = useState('');
@@ -100,10 +100,10 @@ export default function ProfessionalNewsletterSection() {
                         className="px-8 py-4 rounded-xl font-semibold transition-all duration-300 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[160px] text-white"
                         style={{ 
                           backgroundColor: '#1FA9FF',
-                          ':hover': { backgroundColor: '#037171' }
+                          
                         }}
-                        onMouseEnter={(e) => e.target.style.backgroundColor = '#037171'}
-                        onMouseLeave={(e) => e.target.style.backgroundColor = '#1FA9FF'}
+                        onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = '#037171'}
+                        onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = '#1FA9FF'}
                       >
                         {isLoading ? (
                           <div 

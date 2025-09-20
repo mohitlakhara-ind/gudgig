@@ -10,7 +10,16 @@ import {
   Shield
 } from 'lucide-react';
 
-const features = [
+type ColorType = 'blue' | 'teal' | 'purple' | 'orange' | 'green' | 'red';
+
+type FeatureType = {
+  icon: typeof User;
+  title: string;
+  description: string;
+  color: ColorType;
+};
+
+const features: FeatureType[] = [
   {
     icon: User,
     title: 'Candidate Dashboard',
@@ -49,7 +58,7 @@ const features = [
   }
 ];
 
-const colorClasses = {
+const colorClasses: Record<string, string> = {
   blue: 'text-[#1FA9FF] bg-[#1FA9FF]/10 group-hover:bg-[#1FA9FF]/20',
   teal: 'text-[#037171] bg-[#037171]/10 group-hover:bg-[#037171]/20',
   purple: 'text-[#0A0908] bg-[#0A0908]/10 group-hover:bg-[#0A0908]/20',

@@ -3,7 +3,16 @@
 import { useEffect, useState } from 'react';
 import { Users, Briefcase, TrendingUp, Star, Award, Globe } from 'lucide-react';
 
-const stats = [
+type StatColor = 'blue' | 'teal' | 'purple' | 'orange' | 'green' | 'red';
+
+const stats: Array<{
+  icon: React.ComponentType<{ className?: string }>;
+  value: number;
+  suffix: string;
+  label: string;
+  color: StatColor;
+  description: string;
+}> = [
   {
     icon: Users,
     value: 10000,

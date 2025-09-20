@@ -84,13 +84,14 @@ function SkeletonAvatar({ size = "default", className, ...props }: SkeletonProps
     default: "h-10 w-10",
     lg: "h-12 w-12",
     xl: "h-16 w-16",
+    full: "h-full w-full",
   }
 
   return (
     <Skeleton
       variant="avatar"
       size="full"
-      className={cn(sizeClasses[size], className)}
+      className={cn(sizeClasses[size || "default"], className)}
       {...props}
     />
   )

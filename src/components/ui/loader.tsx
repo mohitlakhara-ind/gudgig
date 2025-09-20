@@ -41,13 +41,6 @@ export interface LoaderProps
 }
 
 function Loader({ className, variant, size, color, ...props }: LoaderProps) {
-  const colorClasses = {
-    primary: "text-primary",
-    secondary: "text-secondary",
-    muted: "text-muted-foreground",
-    accent: "text-accent",
-  }
-
   return (
     <div
       className={cn(loaderVariants({ variant, size, className }))}

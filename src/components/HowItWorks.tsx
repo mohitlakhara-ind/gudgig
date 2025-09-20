@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Upload, Search, CheckCircle, Users, Briefcase, ArrowRight, ChevronRight } from 'lucide-react';
+import { Upload, Search, CheckCircle, Users, Briefcase, ArrowRight,  } from 'lucide-react';
 
 const employerSteps = [
   {
