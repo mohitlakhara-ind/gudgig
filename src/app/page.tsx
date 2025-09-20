@@ -3,7 +3,6 @@ import Hero from '@/components/Hero';
 import StatsSection from '@/components/StatsSection';
 import HowItWorks from '@/components/HowItWorksMinimal';
 import Features from '@/components/Features';
-import FeaturesEnhanced from '@/components/FeaturesEnhanced';
 import ShowcaseSection from '@/components/ShowcaseSection';
 import Pricing from '@/components/Pricing';
 import Testimonials from '@/components/Testimonials';
@@ -70,7 +69,6 @@ export default function Home() {
           <StatsSection />
           <HowItWorks />
           <Features />
-          <FeaturesEnhanced />
           <ShowcaseSection />
           <Pricing />
           <Testimonials />
