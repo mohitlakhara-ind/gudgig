@@ -173,7 +173,7 @@ export default function HowItWorksImproved() {
               return (
                 <button
                   key={filter.key}
-                  onClick={() => setActiveFilter(filter.key as any)}
+                  onClick={() => setActiveFilter(filter.key as 'all' | 'employer' | 'candidate')}
                   className={cn(
                     "px-6 py-3 rounded-xl font-medium transition-all duration-300 flex items-center gap-2",
                     activeFilter === filter.key

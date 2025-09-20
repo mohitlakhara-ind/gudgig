@@ -59,7 +59,7 @@ export default function Pricing() {
             Choose Your Plan
           </h2>
           <p className="text-xl text-[#0A0908]/70 max-w-2xl mx-auto">
-            Start free and upgrade when you're ready. Cancel anytime.
+            Start free and upgrade when you&apos;re ready. Cancel anytime.
           </p>
         </div>
 

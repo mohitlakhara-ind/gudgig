@@ -129,7 +129,7 @@ export default function ProfessionalTestimonials() {
                     className="absolute -top-2 -left-2 text-6xl font-serif opacity-20"
                     style={{ color: '#C9F6FF' }}
                   >
-                    "
+                    &ldquo;
                   </div>
                   <p 
                     className="text-base leading-relaxed relative z-10"
@@ -158,7 +158,7 @@ export default function ProfessionalTestimonials() {
                 className="text-3xl font-bold mb-1"
                 style={{ color: '#1FA9FF' }}
               >
-                1,000+
+                1,000&#43;
               </div>
               <div 
                 className="text-sm font-medium"
