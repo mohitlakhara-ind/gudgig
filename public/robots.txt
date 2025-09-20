@@ -1,0 +1,25 @@
+User-agent: *
+Allow: /
+
+# Block access to admin areas
+Disallow: /admin/
+Disallow: /api/
+Disallow: /_next/
+Disallow: /build/
+
+# Allow access to CSS, JS, and image files
+Allow: /public/
+Allow: *.css
+Allow: *.js
+Allow: *.png
+Allow: *.jpg
+Allow: *.jpeg
+Allow: *.gif
+Allow: *.svg
+Allow: *.ico
+
+# Crawl-delay (optional, in seconds)
+Crawl-delay: 1
+
+# Sitemap location
+Sitemap: https://jobportal.com/sitemap.xml

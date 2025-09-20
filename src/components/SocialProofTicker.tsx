@@ -54,7 +54,7 @@ export default function SocialProofTicker() {
                     </div>
                   </div>
                   <Quote className="h-6 w-6 text-blue-400 mb-2" />
-                  <p className="text-gray-700 text-sm mb-3 italic">"{testimonial.text}"</p>
+                  <p className="text-gray-700 text-sm mb-3 italic">&ldquo;{testimonial.text}&rdquo;</p>
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="font-semibold text-gray-900 text-sm">{testimonial.name}</p>
@@ -81,7 +81,7 @@ export default function SocialProofTicker() {
                     </div>
                   </div>
                   <Quote className="h-6 w-6 text-blue-400 mb-2" />
-                  <p className="text-gray-700 text-sm mb-3 italic">"{testimonial.text}"</p>
+                  <p className="text-gray-700 text-sm mb-3 italic">&ldquo;{testimonial.text}&rdquo;</p>
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="font-semibold text-gray-900 text-sm">{testimonial.name}</p>

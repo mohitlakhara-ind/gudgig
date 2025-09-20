@@ -21,7 +21,7 @@ export default function ProfessionalNewsletterSection() {
 
   return (
     <section 
-      className="py-20 md:py-28 relative"
+      className="py-10 md:py-28 relative"
       style={{ backgroundColor: '#F9FAFB' }}
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">

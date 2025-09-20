@@ -82,7 +82,7 @@ const categories = [
   }
 ];
 
-const colorClasses = {
+const colorClasses: Record<string, string> = {
   blue: 'hover:border-blue-200 hover:shadow-blue-100',
   purple: 'hover:border-purple-200 hover:shadow-purple-100',
   green: 'hover:border-green-200 hover:shadow-green-100',
@@ -167,7 +167,7 @@ export default function ShowcaseSection() {
         <div className="text-center mt-16">
           <div className="inline-flex flex-col sm:flex-row gap-4 items-center bg-gradient-to-r from-blue-50 to-teal-50 p-6 rounded-2xl border border-blue-100">
             <div className="text-center sm:text-left">
-              <h3 className="heading-3 text-primary mb-2">Can't find your category?</h3>
+              <h3 className="heading-3 text-primary mb-2">Can&apos;t find your category?</h3>
               <p className="body-small text-secondary">Post a custom job and let freelancers come to you</p>
             </div>
             <button className="bg-gradient-to-r from-blue-600 to-teal-600 text-white px-6 py-3 rounded-full font-medium hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5 glow-effect">
