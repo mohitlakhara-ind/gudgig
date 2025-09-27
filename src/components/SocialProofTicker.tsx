@@ -21,7 +21,7 @@ const stats = [
 
 export default function SocialProofTicker() {
   return (
-    <section className="py-12 bg-gradient-to-r from-blue-50 via-white to-teal-50 border-y border-blue-100">
+    <section className="py-12 bg-muted border-y border-border">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Stats Row */}
         <div className="grid grid-cols-3 gap-8 mb-12">
@@ -30,10 +30,10 @@ export default function SocialProofTicker() {
             return (
               <div key={index} className="text-center">
                 <div className="flex items-center justify-center mb-2">
-                  <Icon className="h-5 w-5 text-blue-600 mr-2" />
-                  <span className="text-2xl font-bold text-gray-900">{stat.value}</span>
+                  <Icon className="h-5 w-5 text-primary mr-2" />
+                  <span className="text-2xl font-bold text-foreground">{stat.value}</span>
                 </div>
-                <p className="text-sm text-gray-600">{stat.label}</p>
+                <p className="text-sm text-muted-foreground">{stat.label}</p>
               </div>
             );
           })}
@@ -41,28 +41,28 @@ export default function SocialProofTicker() {
 
         {/* Testimonials Ticker */}
         <div className="relative overflow-hidden">
-          <div className="flex animate-marquee-horizontal">
+          <div className="flex">
             {/* First set of testimonials */}
             {testimonials.map((testimonial, index) => (
               <div key={`first-${index}`} className="flex-shrink-0 w-80 mx-4">
-                <div className="bg-white rounded-xl p-4 shadow-lg border border-blue-50 hover:shadow-xl transition-all duration-300">
+                <div className="bg-card rounded-xl p-4 shadow-lg border border-border hover:shadow-xl transition-all duration-300">
                   <div className="flex items-center mb-3">
-                    <div className="flex text-yellow-400">
+                    <div className="flex text-warning">
                       {[...Array(testimonial.rating)].map((_, i) => (
                         <Star key={i} className="h-4 w-4 fill-current" />
                       ))}
                     </div>
                   </div>
-                  <Quote className="h-6 w-6 text-blue-400 mb-2" />
-                  <p className="text-gray-700 text-sm mb-3 italic">&ldquo;{testimonial.text}&rdquo;</p>
+                  <Quote className="h-6 w-6 text-primary mb-2" />
+                  <p className="text-muted-foreground text-sm mb-3 italic">&ldquo;{testimonial.text}&rdquo;</p>
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-semibold text-gray-900 text-sm">{testimonial.name}</p>
-                      <p className="text-xs text-gray-600">{testimonial.role}</p>
+                      <p className="font-semibold text-foreground text-sm">{testimonial.name}</p>
+                      <p className="text-xs text-muted-foreground">{testimonial.role}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-bold text-green-600">{testimonial.earnings}</p>
-                      <p className="text-xs text-gray-500">earned</p>
+                      <p className="text-sm font-bold text-success">{testimonial.earnings}</p>
+                      <p className="text-xs text-muted-foreground">earned</p>
                     </div>
                   </div>
                 </div>
@@ -72,24 +72,24 @@ export default function SocialProofTicker() {
             {/* Duplicate set for seamless loop */}
             {testimonials.map((testimonial, index) => (
               <div key={`second-${index}`} className="flex-shrink-0 w-80 mx-4">
-                <div className="bg-white rounded-xl p-4 shadow-lg border border-blue-50 hover:shadow-xl transition-all duration-300">
+                <div className="bg-card rounded-xl p-4 shadow-lg border border-border hover:shadow-xl transition-all duration-300">
                   <div className="flex items-center mb-3">
-                    <div className="flex text-yellow-400">
+                    <div className="flex text-warning">
                       {[...Array(testimonial.rating)].map((_, i) => (
                         <Star key={i} className="h-4 w-4 fill-current" />
                       ))}
                     </div>
                   </div>
-                  <Quote className="h-6 w-6 text-blue-400 mb-2" />
-                  <p className="text-gray-700 text-sm mb-3 italic">&ldquo;{testimonial.text}&rdquo;</p>
+                  <Quote className="h-6 w-6 text-primary mb-2" />
+                  <p className="text-muted-foreground text-sm mb-3 italic">&ldquo;{testimonial.text}&rdquo;</p>
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-semibold text-gray-900 text-sm">{testimonial.name}</p>
-                      <p className="text-xs text-gray-600">{testimonial.role}</p>
+                      <p className="font-semibold text-foreground text-sm">{testimonial.name}</p>
+                      <p className="text-xs text-muted-foreground">{testimonial.role}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-bold text-green-600">{testimonial.earnings}</p>
-                      <p className="text-xs text-gray-500">earned</p>
+                      <p className="text-sm font-bold text-success">{testimonial.earnings}</p>
+                      <p className="text-xs text-muted-foreground">earned</p>
                     </div>
                   </div>
                 </div>
@@ -100,16 +100,16 @@ export default function SocialProofTicker() {
 
         {/* Bottom CTA */}
         <div className="text-center mt-8">
-          <p className="text-sm text-gray-600 mb-4">Join thousands of successful freelancers</p>
+          <p className="text-sm text-muted-foreground mb-4">Join thousands of successful freelancers</p>
           <div className="flex items-center justify-center space-x-2">
             <div className="flex -space-x-2">
               {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-400 to-teal-400 border-2 border-white flex items-center justify-center text-white text-xs font-bold">
+                <div key={i} className="w-8 h-8 rounded-full bg-gradient-to-r from-primary to-secondary border-2 border-background flex items-center justify-center text-primary-foreground text-xs font-bold">
                   {i}
                 </div>
               ))}
             </div>
-            <span className="text-sm text-gray-600 ml-4">+10,000 more success stories</span>
+            <span className="text-sm text-muted-foreground ml-4">+10,000 more success stories</span>
           </div>
         </div>
       </div>

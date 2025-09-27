@@ -1,0 +1,32 @@
+make it Fiverr/Upwork-style with requirements :Job Description – Custom Micro Jobs Website with Subscription
+
+Project Overview:
+I want to build a micro-jobs marketplace website (similar to Fiverr / TaskRabbit style) where employers can post jobs and candidates can view/apply. The key feature is that candidates must subscribe (paid membership) to see full job details.
+
+Core Requirements:
+1. User Roles & Access
+• Employers: Can register, post jobs, and manage listings.
+• Candidates: Can register, browse jobs, but need subscription to view full details & apply.
+• Admin: Approve jobs, manage users, manage subscriptions.
+2. Candidate Dashboard
+• Profile management (basic info, photo, contact).
+• Subscription status (active/expired).
+• Job applications history.
+3. Employer Dashboard
+• Post and manage jobs.
+• Track candidate applications.
+• Option to feature or highlight jobs (extra monetisation).
+4. Subscription System
+• Multiple plans (monthly, quarterly, yearly).
+• Auto-renewal & expiry handling.
+• Payment integration: Stripe, Razorpay, PayPal.
+5. Job Listings
+• Job categories, filters, search.
+• Non-subscribers: can see only job title + basic info.
+• Subscribers: full job description + apply option.
+6. Other Features
+• Mobile-responsive, clean UI.
+• Secure login/registration with email or mobile OTP.
+• Notifications (email + optional WhatsApp).
+• Scalable for future features (wallet, chat, reviews, etc.).
+

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Check } from 'lucide-react';
+import { useCheckout } from '@/hooks/useCheckout';
 
 const plans = [
   {
@@ -51,14 +52,17 @@ const plans = [
 ];
 
 export default function Pricing() {
+  const { checkout, loading, error } = useCheckout();
+  const planIdMap = { Monthly: 'monthly', Quarterly: 'quarterly', Yearly: 'yearly' } as const;
+
   return (
-    <section id="pricing" className="py-16 md:py-24 bg-[#F6F7F8]">
+    <section id="pricing" className="py-16 md:py-24 bg-background">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-[#0A0908] mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
             Choose Your Plan
           </h2>
-          <p className="text-xl text-[#0A0908]/70 max-w-2xl mx-auto">
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Start free and upgrade when you&apos;re ready. Cancel anytime.
           </p>
         </div>
@@ -67,45 +71,47 @@ export default function Pricing() {
           {plans.map((plan, index) => (
             <Card
               key={index}
-              className={`relative ${plan.popular ? 'ring-2 ring-[#1FA9FF] shadow-xl' : 'shadow-lg'} hover:shadow-xl transition-all duration-300`}
+              className={`relative ${plan.popular ? 'ring-2 ring-accent shadow-xl' : 'shadow-lg'} hover:shadow-xl transition-all duration-300`}
             >
               {plan.popular && (
-                <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-[#1FA9FF]">
+                <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-accent">
                   Most Popular
                 </Badge>
               )}
 
               <CardHeader className="text-center pb-8">
-                <h3 className="text-2xl font-bold text-[#0A0908] mb-2">
+                <h3 className="text-2xl font-bold text-card-foreground mb-2">
                   {plan.name}
                 </h3>
                 <div className="mb-4">
-                  <span className="text-4xl font-bold text-[#0A0908]">
+                  <span className="text-4xl font-bold text-card-foreground">
                     {plan.price}
                   </span>
-                  <span className="text-[#0A0908]/70">{plan.period}</span>
+                  <span className="text-muted-foreground">{plan.period}</span>
                 </div>
-                <p className="text-[#0A0908]/70">{plan.description}</p>
+                <p className="text-muted-foreground">{plan.description}</p>
               </CardHeader>
 
               <CardContent className="pt-0">
                 <ul className="space-y-4 mb-8">
                   {plan.features.map((feature, featureIndex) => (
                     <li key={featureIndex} className="flex items-center">
-                      <Check className="h-5 w-5 text-[#037171] mr-3 flex-shrink-0" />
-                      <span className="text-[#0A0908]/80">{feature}</span>
+                      <Check className="h-5 w-5 text-success mr-3 flex-shrink-0" />
+                      <span className="text-card-foreground">{feature}</span>
                     </li>
                   ))}
                 </ul>
 
                 <Button
-                  className={`w-full ${plan.popular ? 'bg-[#0A0908] hover:bg-[#0A0908]/90' : ''}`}
+                  onClick={() => checkout(planIdMap[plan.name as keyof typeof planIdMap])}
+                  disabled={loading}
+                  className={`w-full ${plan.popular ? 'bg-secondary hover:bg-secondary/90' : ''}`}
                   variant={plan.popular ? 'default' : 'outline'}
                 >
-                  Subscribe Now
+                  {loading ? 'Processing…' : 'Subscribe Now'}
                 </Button>
 
-                <p className="text-xs text-[#0A0908]/50 text-center mt-4">
+                <p className="text-xs text-muted-foreground text-center mt-4">
                   Cancel anytime • Secure payments
                 </p>
               </CardContent>
@@ -113,12 +119,18 @@ export default function Pricing() {
           ))}
         </div>
 
+        {error && (
+          <div className="text-center mt-8 p-4 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive max-w-md mx-auto">
+            {error}
+          </div>
+        )}
+
         <div className="text-center mt-12">
-          <p className="text-[#0A0908]/70">
+          <p className="text-muted-foreground">
             Secure payments via{' '}
-            <span className="font-semibold text-[#1FA9FF]">Stripe</span>,{' '}
-            <span className="font-semibold text-[#037171]">Razorpay</span>,{' '}
-            <span className="font-semibold text-[#0A0908]">PayPal</span>
+            <span className="font-semibold text-primary">Stripe</span>,{' '}
+            <span className="font-semibold text-success">Razorpay</span>,{' '}
+            <span className="font-semibold text-secondary">PayPal</span>
           </p>
         </div>
       </div>

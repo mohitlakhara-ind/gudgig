@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Users, Briefcase, TrendingUp, Star, Award, Globe } from 'lucide-react';
 
-type StatColor = 'blue' | 'teal' | 'purple' | 'orange' | 'green' | 'red';
+type StatColor = 'primary' | 'secondary' | 'accent' | 'warning' | 'success' | 'error';
 
 const stats: Array<{
   icon: React.ComponentType<{ className?: string }>;
@@ -18,7 +18,7 @@ const stats: Array<{
     value: 10000,
     suffix: '+',
     label: 'Active Users',
-    color: 'blue',
+    color: 'primary',
     description: 'Growing community'
   },
   {
@@ -26,7 +26,7 @@ const stats: Array<{
     value: 5000,
     suffix: '+',
     label: 'Jobs Posted',
-    color: 'teal',
+    color: 'secondary',
     description: 'Quality opportunities'
   },
   {
@@ -34,7 +34,7 @@ const stats: Array<{
     value: 95,
     suffix: '%',
     label: 'Success Rate',
-    color: 'purple',
+    color: 'accent',
     description: 'High completion rate'
   },
   {
@@ -42,7 +42,7 @@ const stats: Array<{
     value: 4.9,
     suffix: '/5',
     label: 'User Rating',
-    color: 'orange',
+    color: 'warning',
     description: 'Excellent reviews'
   },
   {
@@ -50,7 +50,7 @@ const stats: Array<{
     value: 50,
     suffix: '+',
     label: 'Categories',
-    color: 'green',
+    color: 'success',
     description: 'Diverse skills'
   },
   {
@@ -58,18 +58,18 @@ const stats: Array<{
     value: 120,
     suffix: '+',
     label: 'Countries',
-    color: 'red',
+    color: 'error',
     description: 'Global reach'
   }
 ];
 
 const colorClasses = {
-  blue: 'text-blue-600 bg-blue-100',
-  teal: 'text-teal-600 bg-teal-100',
-  purple: 'text-purple-600 bg-purple-100',
-  orange: 'text-orange-600 bg-orange-100',
-  green: 'text-green-600 bg-green-100',
-  red: 'text-red-600 bg-red-100'
+  primary: 'text-primary bg-secondary/10',
+  secondary: 'text-secondary bg-primary/10',
+  accent: 'text-accent bg-warning/10',
+  warning: 'text-warning bg-destructive/10',
+  success: 'text-success bg-warning/10',
+  error: 'text-destructive bg-accent-foreground/10'
 };
 
 export default function StatsSection() {
@@ -99,20 +99,20 @@ export default function StatsSection() {
   }, []);
 
   return (
-    <section className="py-16 md:py-24 bg-gradient-to-br from-blue-50 via-white to-teal-50 relative overflow-hidden">
+    <section className="py-16 md:py-24 bg-gradient-to-br from-background via-muted to-background relative overflow-hidden">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-5">
-        <div className="absolute top-10 left-10 w-20 h-20 bg-blue-500 rounded-full animate-float-gentle"></div>
-        <div className="absolute top-32 right-20 w-16 h-16 bg-teal-500 rounded-full animate-float-gentle" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute bottom-20 left-1/4 w-12 h-12 bg-purple-500 rounded-full animate-float-gentle" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute top-10 left-10 w-20 h-20 bg-primary rounded-full"></div>
+        <div className="absolute top-32 right-20 w-16 h-16 bg-accent rounded-full"></div>
+        <div className="absolute bottom-20 left-1/4 w-12 h-12 bg-secondary rounded-full"></div>
       </div>
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="text-center mb-16">
-          <h2 className="heading-1 text-primary mb-4">
+          <h2 className="heading-1 text-foreground mb-4">
             Trusted by <span className="text-gradient-primary">Thousands</span>
           </h2>
-          <p className="body-large text-secondary max-w-2xl mx-auto">
+          <p className="body-large text-muted-foreground max-w-2xl mx-auto">
             Join our growing community of freelancers and employers making success happen
           </p>
         </div>
@@ -126,20 +126,20 @@ export default function StatsSection() {
 
             return (
               <div key={index} className="text-center group">
-                <div className={`w-16 h-16 ${colorClasses[stat.color]} rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-110 animate-counter-up`}>
+                <div className={`w-16 h-16 ${colorClasses[stat.color]} rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-110`}>
                   <Icon className="h-8 w-8" />
                 </div>
 
                 <div className="space-y-2">
-                  <div className="text-2xl md:text-3xl font-bold text-primary">
+                  <div className="text-2xl md:text-3xl font-bold text-foreground">
                     {typeof displayValue === 'number' && displayValue >= 1000
                       ? `${(displayValue / 1000).toFixed(1)}K`
                       : displayValue
                     }
-                    <span className="text-brand">{stat.suffix}</span>
+                    <span className="text-primary">{stat.suffix}</span>
                   </div>
-                  <div className="heading-3 text-primary">{stat.label}</div>
-                  <div className="body-small text-muted">{stat.description}</div>
+                  <div className="heading-3 text-foreground">{stat.label}</div>
+                  <div className="body-small text-muted-foreground">{stat.description}</div>
                 </div>
               </div>
             );
@@ -148,9 +148,9 @@ export default function StatsSection() {
 
         {/* Bottom CTA */}
         <div className="text-center mt-16">
-          <div className="inline-flex items-center space-x-2 bg-white/80 backdrop-blur-sm px-6 py-3 rounded-full shadow-lg border border-white/20">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            <span className="body-small text-secondary font-medium">Join 10,000+ successful freelancers</span>
+          <div className="inline-flex items-center space-x-2 bg-card/80 backdrop-blur-sm px-6 py-3 rounded-full shadow-lg border border-border">
+            <div className="w-2 h-2 bg-success rounded-full animate-pulse"></div>
+            <span className="body-small text-muted-foreground font-medium">Join 10,000+ successful freelancers</span>
           </div>
         </div>
       </div>

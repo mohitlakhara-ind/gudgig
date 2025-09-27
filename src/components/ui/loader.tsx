@@ -1,253 +1,74 @@
-import * as React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
-import { cn } from "@/lib/utils"
 
-const loaderVariants = cva(
-  "relative inline-flex items-center justify-center",
-  {
-    variants: {
-      variant: {
-        spinner: "",
-        dots: "",
-        pulse: "",
-        ring: "",
-        bars: "",
-      },
-      size: {
-        sm: "w-4 h-4",
-        default: "w-6 h-6",
-        lg: "w-8 h-8",
-        xl: "w-12 h-12",
-      },
-      color: {
-        primary: "",
-        secondary: "",
-        muted: "",
-        accent: "",
-      },
-    },
-    defaultVariants: {
-      variant: "spinner",
-      size: "default",
-      color: "primary",
-    },
-  }
-)
+import React from 'react';
 
-export interface LoaderProps
-  extends Omit<React.HTMLAttributes<HTMLDivElement>, 'color'>,
-    VariantProps<typeof loaderVariants> {
-  className?: string
-}
+const Loader = ({ size = 65, color = '#ffffff', className = '' }) => {
+  const loaderStyles = {
+    '--loader-size': `${size}px`,
+    '--loader-color': color,
+  };
 
-function Loader({ className, variant, size, color, ...props }: LoaderProps) {
   return (
-    <div
-      className={cn(loaderVariants({ variant, size, className }))}
-      {...props}
+    <div 
+      className={`relative ${className}`}
+      style={{
+        width: `${size}px`,
+        aspectRatio: '1',
+        ...loaderStyles
+      }}
     >
-      {variant === "spinner" && (
-        <SpinnerLoader size={size} color={color} />
-      )}
-      {variant === "dots" && (
-        <DotsLoader size={size} color={color} />
-      )}
-      {variant === "pulse" && (
-        <PulseLoader size={size} color={color} />
-      )}
-      {variant === "ring" && (
-        <RingLoader size={size} color={color} />
-      )}
-      {variant === "bars" && (
-        <BarsLoader size={size} color={color} />
-      )}
+      <style jsx>{`
+        @keyframes loaderAnimation {
+          0% {
+            inset: 0 ${size * 0.538}px ${size * 0.538}px 0;
+          }
+          12.5% {
+            inset: 0 ${size * 0.538}px 0 0;
+          }
+          25% {
+            inset: ${size * 0.538}px ${size * 0.538}px 0 0;
+          }
+          37.5% {
+            inset: ${size * 0.538}px 0 0 0;
+          }
+          50% {
+            inset: ${size * 0.538}px 0 0 ${size * 0.538}px;
+          }
+          62.5% {
+            inset: 0 0 0 ${size * 0.538}px;
+          }
+          75% {
+            inset: 0 0 ${size * 0.538}px ${size * 0.538}px;
+          }
+          87.5% {
+            inset: 0 0 ${size * 0.538}px 0;
+          }
+          100% {
+            inset: 0 ${size * 0.538}px ${size * 0.538}px 0;
+          }
+        }
+      `}</style>
+      
+      {/* First circle */}
+      <div 
+        className="absolute rounded-full"
+        style={{
+          boxShadow: `0 0 0 3px inset ${color}`,
+          animation: 'loaderAnimation 2.5s infinite',
+          inset: `0 ${size * 0.538}px ${size * 0.538}px 0`,
+        }}
+      />
+      
+      {/* Second circle with delay */}
+      <div 
+        className="absolute rounded-full"
+        style={{
+          boxShadow: `0 0 0 3px inset ${color}`,
+          animation: 'loaderAnimation 2.5s infinite',
+          animationDelay: '-1.25s',
+          inset: `0 ${size * 0.538}px ${size * 0.538}px 0`,
+        }}
+      />
     </div>
-  )
-}
-
-// Individual loader components
-function SpinnerLoader({
-  size,
-  color
-}: {
-  size?: VariantProps<typeof loaderVariants>["size"]
-  color?: VariantProps<typeof loaderVariants>["color"]
-}) {
-  const sizeClasses = {
-    sm: "w-4 h-4",
-    default: "w-6 h-6",
-    lg: "w-8 h-8",
-    xl: "w-12 h-12",
-  }
-
-  const colorClasses = {
-    primary: "text-primary",
-    secondary: "text-secondary",
-    muted: "text-muted-foreground",
-    accent: "text-accent",
-  }
-
-  return (
-    <div className={cn("relative", sizeClasses[size || "default"])}>
-      <div className={cn(
-        "absolute inset-0 rounded-full border-2 border-current opacity-25",
-        colorClasses[color || "primary"]
-      )}></div>
-      <div className={cn(
-        "absolute inset-0 rounded-full border-2 border-current border-t-transparent animate-spin",
-        colorClasses[color || "primary"]
-      )}></div>
-    </div>
-  )
-}
-
-function DotsLoader({
-  size,
-  color
-}: {
-  size?: VariantProps<typeof loaderVariants>["size"]
-  color?: VariantProps<typeof loaderVariants>["color"]
-}) {
-  const sizeClasses = {
-    sm: "w-1 h-1",
-    default: "w-1.5 h-1.5",
-    lg: "w-2 h-2",
-    xl: "w-3 h-3",
-  }
-
-  const colorClasses = {
-    primary: "bg-primary",
-    secondary: "bg-secondary",
-    muted: "bg-muted-foreground",
-    accent: "bg-accent",
-  }
-
-  return (
-    <div className="flex space-x-1">
-      {[0, 1, 2].map((i) => (
-        <div
-          key={i}
-          className={cn(
-            "rounded-full animate-bounce",
-            sizeClasses[size || "default"],
-            colorClasses[color || "primary"]
-          )}
-          style={{ animationDelay: `${i * 0.1}s` }}
-        />
-      ))}
-    </div>
-  )
-}
-
-function PulseLoader({
-  size,
-  color
-}: {
-  size?: VariantProps<typeof loaderVariants>["size"]
-  color?: VariantProps<typeof loaderVariants>["color"]
-}) {
-  const sizeClasses = {
-    sm: "w-4 h-4",
-    default: "w-6 h-6",
-    lg: "w-8 h-8",
-    xl: "w-12 h-12",
-  }
-
-  const colorClasses = {
-    primary: "bg-primary",
-    secondary: "bg-secondary",
-    muted: "bg-muted-foreground",
-    accent: "bg-accent",
-  }
-
-  return (
-    <div className={cn(
-      "rounded-full animate-pulse",
-      sizeClasses[size || "default"],
-      colorClasses[color || "primary"]
-    )} />
-  )
-}
-
-function RingLoader({
-  size,
-  color
-}: {
-  size?: VariantProps<typeof loaderVariants>["size"]
-  color?: VariantProps<typeof loaderVariants>["color"]
-}) {
-  const sizeClasses = {
-    sm: "w-4 h-4",
-    default: "w-6 h-6",
-    lg: "w-8 h-8",
-    xl: "w-12 h-12",
-  }
-
-  const colorClasses = {
-    primary: "border-primary",
-    secondary: "border-secondary",
-    muted: "border-muted-foreground",
-    accent: "border-accent",
-  }
-
-  return (
-    <div className={cn("relative", sizeClasses[size || "default"])}>
-      <div className={cn(
-        "absolute inset-0 rounded-full border-2 border-current opacity-25",
-        colorClasses[color || "primary"]
-      )}></div>
-      <div className={cn(
-        "absolute inset-0 rounded-full border-2 border-current border-t-transparent animate-spin",
-        colorClasses[color || "primary"]
-      )}></div>
-    </div>
-  )
-}
-
-function BarsLoader({
-  size,
-  color
-}: {
-  size?: VariantProps<typeof loaderVariants>["size"]
-  color?: VariantProps<typeof loaderVariants>["color"]
-}) {
-  const sizeClasses = {
-    sm: "w-1 h-4",
-    default: "w-1 h-6",
-    lg: "w-1.5 h-8",
-    xl: "w-2 h-12",
-  }
-
-  const colorClasses = {
-    primary: "bg-primary",
-    secondary: "bg-secondary",
-    muted: "bg-muted-foreground",
-    accent: "bg-accent",
-  }
-
-  return (
-    <div className="flex space-x-1">
-      {[0, 1, 2, 3, 4].map((i) => (
-        <div
-          key={i}
-          className={cn(
-            "rounded-full animate-pulse",
-            sizeClasses[size || "default"],
-            colorClasses[color || "primary"]
-          )}
-          style={{
-            animationDelay: `${i * 0.1}s`,
-            animationDuration: "0.8s"
-          }}
-        />
-      ))}
-    </div>
-  )
-}
-
-// Legacy component for backward compatibility
-export default function LegacyLoader() {
-  return <Loader variant="spinner" size="default" color="primary" />
-}
-
-export { Loader, loaderVariants }
+  );
+};
+export { Loader };

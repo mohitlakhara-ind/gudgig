@@ -1,3 +1,60 @@
+# Job Portal
+
+## Setup
+
+1. Copy `.env.example` to `.env` in backend (and root if applicable) and fill values.
+2. Install dependencies: `pnpm install` or `npm install`.
+3. Run backend: `cd backend && npm run dev`.
+4. Run frontend: `npm run dev`.
+
+## Environment Variables
+
+See `.env.example` (root) or `backend/.env.example` for variables including Stripe price IDs per billing cycle, JWT secrets, Twilio (SMS/WhatsApp), SMTP, VAPID, and API URL.
+
+Required keys (non-exhaustive):
+- Stripe: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `CLIENT_URL`, price IDs per plan/cycle:
+  - `STRIPE_PRICE_PRO_MONTHLY`, `STRIPE_PRICE_PRO_QUARTERLY`, `STRIPE_PRICE_PRO_YEARLY`
+  - `STRIPE_PRICE_ENTERPRISE_MONTHLY`, `STRIPE_PRICE_ENTERPRISE_QUARTERLY`, `STRIPE_PRICE_ENTERPRISE_YEARLY`
+- Twilio: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_PHONE_NUMBER`, optional `TWILIO_WHATSAPP_NUMBER` (format `whatsapp:+E164`)
+- Web Push (VAPID): `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` (e.g., `mailto:admin@example.com`)
+- SMTP: `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`, `FROM_EMAIL`
+- Auth: `JWT_SECRET`, `REFRESH_TOKEN_SECRET`
+
+## Payments (Stripe, Razorpay, PayPal)
+
+- Feature flags: `ENABLE_RAZORPAY=true`, `ENABLE_PAYPAL=true`.
+- Stripe env: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, plan price IDs per billing cycle.
+- Razorpay env: `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET`.
+- PayPal env: `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_ENV=sandbox|live`.
+- Webhook endpoints:
+  - Stripe: `POST /api/subscriptions/webhooks/stripe`
+  - Razorpay: `POST /api/subscriptions/webhooks/razorpay`
+  - PayPal: `POST /api/subscriptions/webhooks/paypal`
+- Customer portal: `POST /api/subscriptions/portal`
+- Success URL: `${CLIENT_URL}/checkout/success`
+
+## Subscriptions
+
+- Daily cron handles trial expiry, grace periods, cancellations, renewal reminders, promotion expiries.
+- Usage limits enforced for job views and applications via middleware (`checkJobViewAccess`, `checkApplicationAccess`).
+
+## OTP Login
+
+- OTP via email or SMS supported. Routes: `/api/auth/send-otp`, `/api/auth/verify-otp`, `/api/auth/resend-otp`.
+ - After verification, client persists `{ token, refreshToken, user }` to the auth context.
+
+## Admin
+
+- Admin moderation workflow is available in the admin UI. Use the Admin dashboard to moderate jobs; audit logging endpoints expose moderation history.
+
+## Webhooks
+
+- Stripe: configure webhook to `POST /api/billing/stripe/webhook`. The invoice handler expands PaymentIntent to extract card last4 via `payment_method`.
+
+## Testing
+
+- Integration tests for subscription flow live under `backend/src/tests/integration`.
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started

@@ -1,0 +1,116 @@
+import { useState, useEffect, useCallback } from 'react';
+import { apiClient, ApiClientError } from '@/lib/api';
+import { Job, JobsResponse, SearchJobsRequest } from '@/types/api';
+
+interface UseGigsOptions {
+  initialParams?: SearchJobsRequest;
+  autoFetch?: boolean;
+}
+
+export function useGigs(options: UseGigsOptions = {}) {
+  const { initialParams, autoFetch = true } = options;
+
+  const [gigs, setGigs] = useState<Job[]>([]);
+  const [loading, setLoading] = useState(autoFetch);
+  const [error, setError] = useState<string | null>(null);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0
+  });
+
+  const fetchGigs = useCallback(async (params?: SearchJobsRequest) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const searchParams = { ...initialParams, ...params };
+      const response: JobsResponse = await apiClient.getGigs(searchParams);
+
+      setGigs(response.data);
+      setPagination({
+        page: response.pagination.page,
+        limit: response.pagination.limit,
+        total: response.total,
+        totalPages: response.pagination.totalPages
+      });
+    } catch (err) {
+      setError(err instanceof ApiClientError ? err.message : 'Failed to fetch gigs');
+    } finally {
+      setLoading(false);
+    }
+  }, [initialParams]);
+
+  const loadMoreGigs = useCallback(async () => {
+    if (pagination.page >= pagination.totalPages) return;
+
+    try {
+      setLoading(true);
+      const nextPage = pagination.page + 1;
+      const response: JobsResponse = await apiClient.getGigs({
+        ...initialParams,
+        page: nextPage
+      });
+
+      setGigs(prev => [...prev, ...response.data]);
+      setPagination(prev => ({ ...prev, page: nextPage }));
+    } catch (err) {
+      setError(err instanceof ApiClientError ? err.message : 'Failed to load more gigs');
+    } finally {
+      setLoading(false);
+    }
+  }, [initialParams, pagination.page, pagination.totalPages]);
+
+  const refresh = useCallback(() => {
+    fetchGigs();
+  }, [fetchGigs]);
+
+  useEffect(() => {
+    if (autoFetch) {
+      fetchGigs();
+    }
+  }, [fetchGigs, autoFetch]);
+
+  return {
+    gigs,
+    loading,
+    error,
+    pagination,
+    fetchGigs,
+    loadMoreGigs,
+    refresh,
+    hasMore: pagination.page < pagination.totalPages
+  };
+}
+
+export const getGigTypeColor = (type: string) => {
+  switch (type) {
+    case 'micro-task': return 'bg-secondary/10 text-secondary border-secondary/20';
+    case 'short-project': return 'bg-primary/10 text-primary border-primary/20';
+    case 'hourly': return 'bg-accent/10 text-accent border-accent/20';
+    case 'fixed-price': return 'bg-success/10 text-success border-success/20';
+    case 'freelance': return 'bg-accent/10 text-accent border-accent/20';
+    default: return 'bg-muted text-muted-foreground border-border';
+  }
+};
+
+export const formatGigBudget = (job: Job) => {
+  const budget = job.salaryDisclosure?.min || job.salary?.min;
+  const budgetMax = job.salaryDisclosure?.max || job.salary?.max;
+  const currency = job.salaryDisclosure?.currency || job.salary?.currency || 'USD';
+  const period = job.salaryDisclosure?.period || job.salary?.period || 'project';
+
+  const prefix = period === 'hourly' ? '/hr' : '';
+
+  if (budget && budgetMax) {
+    return `${currency}${budget.toLocaleString()} - ${currency}${budgetMax.toLocaleString()}${prefix}`;
+  } else if (budget) {
+    return `From ${currency}${budget.toLocaleString()}${prefix}`;
+  } else if (budgetMax) {
+    return `Up to ${currency}${budgetMax.toLocaleString()}${prefix}`;
+  }
+  return period === 'hourly' ? 'Hourly rate not disclosed' : 'Project budget not disclosed';
+};
+
+
