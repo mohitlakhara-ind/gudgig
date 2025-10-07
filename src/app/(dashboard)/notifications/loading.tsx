@@ -2,7 +2,7 @@ import CustomLoader from "@/components/CustomLoader"
 
 export default function Loading() {
     return (
-        <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="flex items-center justify-center py-12">
             <div className="flex flex-col items-center space-y-4">
                 <CustomLoader size={80} color="#1FA9FF" />
                 <div className="text-center space-y-2">

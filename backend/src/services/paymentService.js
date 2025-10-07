@@ -1,161 +1,383 @@
 import Stripe from 'stripe';
-import crypto from 'crypto';
-import { subscriptionPlans, BILLING_CYCLES, PLAN_IDS } from '../config/subscriptionPlans.js';
-import { createOrder as createRazorpayOrder, verifyWebhookSignature as verifyRazorpayWebhookSignature } from './payments/razorpay.js';
-import { createOrder as createPaypalOrder, captureOrder as capturePaypalOrder, isPaypalEnabled } from './payments/paypal.js';
 
-const STRIPE_API_KEY = process.env.STRIPE_SECRET_KEY || '';
-const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || '';
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-let stripeClient = null;
-if (STRIPE_API_KEY) {
-	stripeClient = new Stripe(STRIPE_API_KEY, { apiVersion: '2023-10-16' });
-}
-
-export function getStripe() {
-	if (!stripeClient) throw new Error('Stripe is not configured');
-	return stripeClient;
-}
-
-export async function createSubscriptionCheckoutSession({
-	customerId,
-	priceId,
-	successUrl,
-	cancelUrl,
-	mode = 'subscription',
-	trialPeriodDays,
-	metadata
-}) {
-	const stripe = getStripe();
-	const params = {
-		mode,
-		customer: customerId,
-		line_items: [{ price: priceId, quantity: 1 }],
-		success_url: successUrl,
-		cancel_url: cancelUrl,
-		allow_promotion_codes: true
-	};
-	if (typeof trialPeriodDays === 'number') {
-		params.subscription_data = { trial_period_days: trialPeriodDays };
-	}
-	if (metadata && typeof metadata === 'object') {
-		params.metadata = metadata;
-	}
-	return await stripe.checkout.sessions.create(params);
-}
-
-export function verifyStripeSignature(rawBody, signature) {
-	const stripe = getStripe();
-	return stripe.webhooks.constructEvent(rawBody, signature, STRIPE_WEBHOOK_SECRET);
-}
-
-export async function handleStripeWebhook(event) {
-	switch (event.type) {
-        case 'checkout.session.completed': {
-            const session = event.data.object;
-            if (session?.metadata?.context === 'job_promotion') {
-                return { action: 'apply_promotion', payload: session };
-            }
-            return { action: 'activate_subscription', payload: session };
-        }
-		case 'invoice.payment_failed':
-			return { action: 'mark_past_due', payload: event.data.object };
-		case 'customer.subscription.deleted':
-			return { action: 'cancel_subscription', payload: event.data.object };
-		case 'customer.subscription.updated':
-			return { action: 'update_subscription', payload: event.data.object };
-		default:
-			return { action: 'noop', payload: event.data.object };
-	}
-}
-
-export async function createCustomerPortalSession({ customerId, returnUrl }) {
-	const stripe = getStripe();
-	const session = await stripe.billingPortal.sessions.create({
-		customer: customerId,
-		return_url: returnUrl || process.env.APP_URL || 'http://localhost:3000'
-	});
-	return session;
-}
-
-export async function createRefund(paymentIntentId, amount) {
-	const stripe = getStripe();
-	return await stripe.refunds.create({ payment_intent: paymentIntentId, amount });
-}
-
-// Unified provider-agnostic API
-export async function createUnifiedCheckout({ provider = 'stripe', user, planId, billingCycle = BILLING_CYCLES.MONTHLY, successUrl, cancelUrl, metadata = {}, mode = 'subscription' }) {
-    if (provider === 'stripe') {
-        if (!metadata.context) metadata.context = mode === 'subscription' ? 'subscription' : 'one_time';
-        // Stripe uses priceId; assume mapping handled upstream and passed in metadata or via plan config
-        const plan = subscriptionPlans[planId] || subscriptionPlans[PLAN_IDS.PRO];
-        const priceId = plan?.priceIds?.[billingCycle];
-        if (!priceId) throw new Error('Stripe price id not configured');
-        // Customer creation handled at controller level to reuse customer across sessions
-        return { provider: 'stripe', requiresRedirect: true, sessionFactory: async ({ customerId }) => {
-            const session = await createSubscriptionCheckoutSession({ customerId, priceId, successUrl, cancelUrl, metadata });
-            return { id: session.id, url: session.url };
-        }};
+// Initialize Razorpay if enabled
+let razorpay = null;
+const initializeRazorpay = async () => {
+  if (process.env.ENABLE_RAZORPAY === 'true' && process.env.RAZORPAY_KEY_ID) {
+    try {
+      const Razorpay = (await import('razorpay')).default;
+      razorpay = new Razorpay({
+        key_id: process.env.RAZORPAY_KEY_ID,
+        key_secret: process.env.RAZORPAY_KEY_SECRET,
+      });
+      console.log('Razorpay initialized successfully');
+    } catch (error) {
+      console.warn('Razorpay not available:', error.message);
     }
-    if (provider === 'razorpay') {
-        const plan = subscriptionPlans[planId] || subscriptionPlans[PLAN_IDS.PRO];
-        const price = plan?.pricing?.[billingCycle];
-        if (!price) throw new Error('Razorpay price not configured');
-        const amountInPaise = price.amount * 1; // already in minor units if stored that way; adjust if needed
-        const order = await createRazorpayOrder(amountInPaise, (price.currency || 'INR').toUpperCase(), undefined, { userId: user?.id || user?._id, planId, billingCycle, context: 'subscription' });
-        return { provider: 'razorpay', requiresRedirect: false, order };
-    }
-    if (provider === 'paypal') {
-        const plan = subscriptionPlans[planId] || subscriptionPlans[PLAN_IDS.PRO];
-        const price = plan?.pricing?.[billingCycle];
-        if (!price) throw new Error('PayPal price not configured');
-        const amount = (price.amount / 100).toFixed(2);
-        const order = await createPaypalOrder(amount, (price.currency || 'USD').toUpperCase(), successUrl, cancelUrl);
-        return { provider: 'paypal', requiresRedirect: true, order };
-    }
-    throw new Error('Unsupported provider');
-}
-
-export function verifyRazorpayWebhook(rawBody, signature) {
-    return verifyRazorpayWebhookSignature(rawBody, signature);
-}
-
-export async function handleRazorpayWebhook(event, payload) {
-    // Razorpay does not sign like Stripe; event type may be in headers. We trust verifyRazorpayWebhook.
-    // Basic mapping: payment.captured -> activate_subscription
-    const type = event || payload?.event;
-    switch (type) {
-        case 'payment.captured':
-        case 'order.paid':
-            return { action: 'activate_subscription', payload };
-        case 'payment.failed':
-            return { action: 'mark_past_due', payload };
-        default:
-            return { action: 'noop', payload };
-    }
-}
-
-export async function handlePaypalWebhook(eventBody) {
-    // Assuming PayPal webhooks configured; minimal mapping
-    const eventType = eventBody?.event_type;
-    switch (eventType) {
-        case 'CHECKOUT.ORDER.APPROVED':
-        case 'PAYMENT.CAPTURE.COMPLETED':
-            return { action: 'activate_subscription', payload: eventBody?.resource };
-        case 'PAYMENT.CAPTURE.DENIED':
-            return { action: 'mark_past_due', payload: eventBody?.resource };
-        default:
-            return { action: 'noop', payload: eventBody };
-    }
-}
-
-export const paymentProviders = {
-    stripe: {
-        createCheckoutSession: createSubscriptionCheckoutSession,
-        verifySignature: verifyStripeSignature,
-        handleWebhook: handleStripeWebhook,
-        createRefund
-    }
+  }
 };
 
+// Initialize Razorpay asynchronously
+initializeRazorpay();
 
+/**
+ * Create escrow payment intent
+ * Holds funds until order completion
+ */
+export const createEscrowPayment = async ({
+  amount,
+  currency = 'USD',
+  orderId,
+  buyerId,
+  sellerId,
+  description,
+  paymentMethod = 'stripe'
+}) => {
+  try {
+    switch (paymentMethod) {
+      case 'stripe':
+        return await createStripeEscrowPayment({
+          amount: Math.round(amount * 100), // Convert to cents
+          currency: currency.toLowerCase(),
+          orderId,
+          buyerId,
+          sellerId,
+          description
+        });
+        
+      case 'razorpay':
+        if (!razorpay) {
+          throw new Error('Razorpay not configured');
+        }
+        return await createRazorpayEscrowPayment({
+          amount: Math.round(amount * 100), // Convert to paise
+          currency,
+          orderId,
+          buyerId,
+          sellerId,
+          description
+        });
+        
+      default:
+        throw new Error(`Unsupported payment method: ${paymentMethod}`);
+    }
+  } catch (error) {
+    console.error('Error creating escrow payment:', error);
+    throw error;
+  }
+};
+
+/**
+ * Create Stripe escrow payment
+ */
+const createStripeEscrowPayment = async ({
+  amount,
+  currency,
+  orderId,
+  buyerId,
+  sellerId,
+  description
+}) => {
+  const paymentIntent = await stripe.paymentIntents.create({
+    amount,
+    currency,
+    capture_method: 'manual', // Hold funds until manual capture
+    metadata: {
+      type: 'escrow',
+      orderId,
+      buyerId,
+      sellerId
+    },
+    description,
+    automatic_payment_methods: {
+      enabled: true,
+    },
+  });
+
+  return paymentIntent;
+};
+
+/**
+ * Create Razorpay escrow payment
+ */
+const createRazorpayEscrowPayment = async ({
+  amount,
+  currency,
+  orderId,
+  buyerId,
+  sellerId,
+  description
+}) => {
+  const order = await razorpay.orders.create({
+    amount,
+    currency,
+    receipt: `order_${orderId}`,
+    notes: {
+      type: 'escrow',
+      orderId,
+      buyerId,
+      sellerId,
+      description
+    }
+  });
+
+  return {
+    id: order.id,
+    client_secret: order.id, // Razorpay uses order ID
+    amount: order.amount,
+    currency: order.currency
+  };
+};
+
+/**
+ * Confirm payment intent
+ */
+export const confirmPaymentIntent = async (paymentIntentId, paymentMethod = 'stripe') => {
+  try {
+    switch (paymentMethod) {
+      case 'stripe':
+        return await stripe.paymentIntents.retrieve(paymentIntentId);
+        
+      case 'razorpay':
+        // For Razorpay, confirmation happens on client side
+        // This would typically verify the payment signature
+        return { status: 'succeeded' };
+        
+      default:
+        throw new Error(`Unsupported payment method: ${paymentMethod}`);
+    }
+  } catch (error) {
+    console.error('Error confirming payment:', error);
+    throw error;
+  }
+};
+
+/**
+ * Release escrow funds to seller
+ */
+export const releaseEscrowFunds = async (paymentIntentId, amount, paymentMethod = 'stripe') => {
+  try {
+    switch (paymentMethod) {
+      case 'stripe':
+        // Capture the held payment
+        const paymentIntent = await stripe.paymentIntents.capture(paymentIntentId, {
+          amount_to_capture: amount
+        });
+        
+        // Create transfer to seller (if using Stripe Connect)
+        // This would require seller to have connected Stripe account
+        if (process.env.STRIPE_CONNECT_ENABLED === 'true') {
+          const sellerId = paymentIntent.metadata.sellerId;
+          const platformFee = Math.round(amount * 0.1); // 10% platform fee
+          const sellerAmount = amount - platformFee;
+          
+          await stripe.transfers.create({
+            amount: sellerAmount,
+            currency: paymentIntent.currency,
+            destination: sellerId, // Seller's Stripe account ID
+            transfer_group: paymentIntent.id,
+          });
+        }
+        
+        return paymentIntent;
+        
+      case 'razorpay':
+        // Razorpay route would handle fund release
+        // Implementation depends on Razorpay's escrow features
+        return { status: 'released' };
+        
+		default:
+        throw new Error(`Unsupported payment method: ${paymentMethod}`);
+    }
+  } catch (error) {
+    console.error('Error releasing escrow funds:', error);
+    throw error;
+  }
+};
+
+/**
+ * Refund escrow payment
+ */
+export const refundEscrowPayment = async (paymentIntentId, amount, reason, paymentMethod = 'stripe') => {
+  try {
+    switch (paymentMethod) {
+      case 'stripe':
+        const refund = await stripe.refunds.create({
+          payment_intent: paymentIntentId,
+          amount,
+          reason: 'requested_by_customer',
+          metadata: {
+            refund_reason: reason
+          }
+        });
+        return refund;
+        
+      case 'razorpay':
+        // Razorpay refund implementation
+        const refundData = await razorpay.payments.refund(paymentIntentId, {
+          amount,
+          notes: {
+            reason
+          }
+        });
+        return refundData;
+        
+		default:
+        throw new Error(`Unsupported payment method: ${paymentMethod}`);
+    }
+  } catch (error) {
+    console.error('Error refunding payment:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get payment details
+ */
+export const getPaymentDetails = async (paymentIntentId, paymentMethod = 'stripe') => {
+  try {
+    switch (paymentMethod) {
+      case 'stripe':
+        return await stripe.paymentIntents.retrieve(paymentIntentId);
+        
+      case 'razorpay':
+        return await razorpay.orders.fetch(paymentIntentId);
+        
+      default:
+        throw new Error(`Unsupported payment method: ${paymentMethod}`);
+    }
+  } catch (error) {
+    console.error('Error getting payment details:', error);
+    throw error;
+  }
+};
+
+/**
+ * Handle webhook events for payment updates
+ */
+export const handlePaymentWebhook = async (event, paymentMethod = 'stripe') => {
+  try {
+    switch (paymentMethod) {
+      case 'stripe':
+        return await handleStripeWebhook(event);
+        
+      case 'razorpay':
+        return await handleRazorpayWebhook(event);
+        
+      default:
+        throw new Error(`Unsupported payment method: ${paymentMethod}`);
+    }
+  } catch (error) {
+    console.error('Error handling payment webhook:', error);
+    throw error;
+  }
+};
+
+/**
+ * Handle Stripe webhook events
+ */
+const handleStripeWebhook = async (event) => {
+  switch (event.type) {
+    case 'payment_intent.succeeded':
+      // Payment was successful
+      const paymentIntent = event.data.object;
+      if (paymentIntent.metadata.type === 'escrow') {
+        // Update order status
+        const orderId = paymentIntent.metadata.orderId;
+        // This would trigger order status update
+        return { orderId, status: 'payment_confirmed' };
+      }
+      break;
+      
+    case 'payment_intent.payment_failed':
+      // Payment failed
+      const failedPayment = event.data.object;
+      if (failedPayment.metadata.type === 'escrow') {
+        const orderId = failedPayment.metadata.orderId;
+        return { orderId, status: 'payment_failed' };
+      }
+      break;
+      
+    default:
+      console.log(`Unhandled Stripe event type: ${event.type}`);
+  }
+  
+  return null;
+};
+
+/**
+ * Handle Razorpay webhook events
+ */
+const handleRazorpayWebhook = async (event) => {
+  switch (event.event) {
+        case 'payment.captured':
+      const payment = event.payload.payment.entity;
+      if (payment.notes.type === 'escrow') {
+        const orderId = payment.notes.orderId;
+        return { orderId, status: 'payment_confirmed' };
+      }
+      break;
+      
+        case 'payment.failed':
+      const failedPayment = event.payload.payment.entity;
+      if (failedPayment.notes.type === 'escrow') {
+        const orderId = failedPayment.notes.orderId;
+        return { orderId, status: 'payment_failed' };
+      }
+      break;
+      
+        default:
+      console.log(`Unhandled Razorpay event type: ${event.event}`);
+  }
+  
+  return null;
+};
+
+/**
+ * Calculate platform fees
+ */
+export const calculatePlatformFee = (amount, feePercentage = 10) => {
+  const fee = Math.round(amount * (feePercentage / 100));
+  const sellerAmount = amount - fee;
+  
+  return {
+    totalAmount: amount,
+    platformFee: fee,
+    sellerAmount,
+    feePercentage
+  };
+};
+
+/**
+ * Create payout to seller (for platforms with instant payouts)
+ */
+export const createSellerPayout = async (sellerId, amount, currency = 'USD', paymentMethod = 'stripe') => {
+  try {
+    switch (paymentMethod) {
+      case 'stripe':
+        // This requires Stripe Connect
+        if (process.env.STRIPE_CONNECT_ENABLED !== 'true') {
+          throw new Error('Stripe Connect not enabled');
+        }
+        
+        const payout = await stripe.transfers.create({
+          amount: Math.round(amount * 100),
+          currency: currency.toLowerCase(),
+          destination: sellerId, // Seller's connected Stripe account
+        });
+        
+        return payout;
+        
+      default:
+        throw new Error(`Payout not supported for payment method: ${paymentMethod}`);
+    }
+  } catch (error) {
+    console.error('Error creating seller payout:', error);
+    throw error;
+  }
+};
+
+// Legacy functions for backward compatibility
+export const createPaymentIntent = createEscrowPayment;

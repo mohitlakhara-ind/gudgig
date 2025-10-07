@@ -11,12 +11,13 @@ import {
   forgotPassword,
   resetPassword,
   verifyEmail,
-  sendOTP,
-  verifyOTP,
-  resendOTP
+  forgotPasswordOtp,
+  resetPasswordOtp
 } from '../controllers/authController.js';
+import { sendOtp, verifyOtp, resendOtp } from '../controllers/authController.js';
 import { protect } from '../middleware/auth.js';
 import rateLimit from 'express-rate-limit';
+import crypto from 'crypto';
 
 const router = express.Router();
 
@@ -35,8 +36,8 @@ const registerValidation = [
     .withMessage('Password must be at least 6 characters long'),
   body('role')
     .optional()
-    .isIn(['jobseeker', 'employer', 'admin'])
-    .withMessage('Role must be jobseeker, employer, or admin')
+    .isIn(['freelancer'])
+    .withMessage('Role must be freelancer')
 ];
 
 const loginValidation = [
@@ -92,25 +93,92 @@ const updatePasswordValidation = [
 router.post('/register', registerValidation, register);
 router.post('/login', loginValidation, login);
 router.post('/refresh', refreshToken);
-// CSRF route removed - JWT tokens provide sufficient protection
+// CSRF token endpoint (stateless basic token)
+router.get('/csrf-token', (req, res) => {
+  const token = crypto.randomBytes(32).toString('hex');
+  res.json({ success: true, csrfToken: token });
+});
 router.post('/forgotpassword', forgotPassword);
 router.put('/resetpassword/:resettoken', resetPassword);
 router.get('/verify/:token', verifyEmail);
 
-// OTP routes with validation and rate limiting
-const otpLimiter = rateLimit({ windowMs: 10 * 60 * 1000, max: 10 });
+// OTP Validation rules
 const sendOtpValidation = [
-  body('email').optional().isEmail().withMessage('Invalid email'),
-  body('phone').optional().isMobilePhone('any').withMessage('Invalid phone'),
+  body('email').optional().isEmail().withMessage('Valid email required'),
+  body('phone').optional().isMobilePhone().withMessage('Valid phone required'),
+  body().custom((value) => {
+    if (!value.email && !value.phone) {
+      throw new Error('Either email or phone is required');
+    }
+    return true;
+  }),
+  body('channel')
+    .isIn(['email', 'sms'])
+    .withMessage('Channel must be one of email or sms'),
+  body('purpose')
+    .isIn(['signup', 'login', 'password-reset', 'verification'])
+    .withMessage('Invalid purpose')
 ];
+
 const verifyOtpValidation = [
-  body('code').isLength({ min: 4, max: 10 }).withMessage('Invalid code'),
   body('email').optional().isEmail(),
-  body('phone').optional().isMobilePhone('any')
+  body('phone').optional().isMobilePhone(),
+  body().custom((value) => {
+    if (!value.email && !value.phone) {
+      throw new Error('Either email or phone is required');
+    }
+    return true;
+  }),
+  body('otp').isString().matches(/^\d{6}$/).withMessage('OTP must be 6 digits'),
+  body('purpose').isIn(['signup', 'login', 'password-reset', 'verification'])
 ];
-router.post('/send-otp', otpLimiter, sendOtpValidation, sendOTP);
-router.post('/verify-otp', otpLimiter, verifyOtpValidation, verifyOTP);
-router.post('/resend-otp', otpLimiter, sendOtpValidation, resendOTP);
+
+const resendOtpValidation = sendOtpValidation;
+
+// Forgot password OTP validation
+const forgotPasswordOtpValidation = [
+  body('email').optional().isEmail().withMessage('Valid email required'),
+  body('phone').optional().isMobilePhone().withMessage('Valid phone required'),
+  body().custom((value) => {
+    if (!value.email && !value.phone) {
+      throw new Error('Either email or phone is required');
+    }
+    return true;
+  }),
+  body('channel')
+    .isIn(['email', 'sms'])
+    .withMessage('Channel must be one of email or sms')
+];
+
+const resetPasswordOtpValidation = [
+  body('email').optional().isEmail(),
+  body('phone').optional().isMobilePhone(),
+  body().custom((value) => {
+    if (!value.email && !value.phone) {
+      throw new Error('Either email or phone is required');
+    }
+    return true;
+  }),
+  body('otp').isString().matches(/^\d{6}$/).withMessage('OTP must be 6 digits'),
+  body('newPassword')
+    .isLength({ min: 6 })
+    .withMessage('New password must be at least 6 characters long')
+];
+
+// OTP routes
+const otpLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 3,
+  message: 'Too many OTP requests, please try again later.'
+});
+
+router.post('/send-otp', sendOtpValidation, sendOtp);
+router.post('/verify-otp', verifyOtpValidation, verifyOtp);
+router.post('/resend-otp', otpLimiter, resendOtpValidation, resendOtp);
+
+// Forgot password OTP routes
+router.post('/forgot-password-otp', forgotPasswordOtpValidation, forgotPasswordOtp);
+router.post('/reset-password-otp', resetPasswordOtpValidation, resetPasswordOtp);
 
 // Protected routes
 router.get('/me', protect, getMe);

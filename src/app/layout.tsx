@@ -1,61 +1,74 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { Inter, Open_Sans } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
-import { SocketProvider } from "@/contexts/SocketContext";
 import { ThemeProvider } from "@/components/ui/theme-provider";
+import { Toaster } from "react-hot-toast";
+import AppLayout from "@/components/layouts/AppLayout";
 
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
 });
 
-const jetbrainsMono = JetBrains_Mono({
-  variable: "--font-jetbrains-mono",
+const openSans = Open_Sans({
+  variable: "--font-open-sans",
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
   title: {
-    default: "JobPortal - Find Your Dream Job",
-    template: "%s | JobPortal"
+    default: "Gigs Mint – Professional Freelancer Marketplace",
+    template: "%s | Gigs Mint",
   },
-  description: "Discover thousands of job opportunities on JobPortal. Connect with top employers, apply to jobs, and advance your career with our comprehensive job search platform.",
-  keywords: ["jobs", "careers", "employment", "job search", "hiring", "recruitment", "job portal"],
-  authors: [{ name: "JobPortal Team" }],
-  creator: "JobPortal",
-  publisher: "JobPortal",
+  description:
+    "Gigs Mint is a professional freelancer marketplace with LinkedIn-inspired design. Browse gigs, submit bids, and grow your freelance career with confidence.",
+  keywords: [
+    "freelance",
+    "marketplace",
+    "gigs",
+    "jobs",
+    "bids",
+    "hire",
+    "post a job",
+    "Gigs Mint",
+  ],
+  authors: [{ name: "Gigs Mint" }],
+  creator: "Gigs Mint",
+  publisher: "Gigs Mint",
   formatDetection: {
     email: false,
     address: false,
     telephone: false,
   },
-  metadataBase: new URL("https://jobportal.com"),
+  metadataBase: new URL("https://gigsmint.com"),
   alternates: {
     canonical: "/",
   },
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://jobportal.com",
-    title: "JobPortal - Find Your Dream Job",
-    description: "Discover thousands of job opportunities on JobPortal. Connect with top employers, apply to jobs, and advance your career.",
-    siteName: "JobPortal",
+    url: "https://gigsmint.com",
+    title: "Gigs Mint – Futuristic Freelancer Marketplace",
+    description:
+      "Browse jobs and hire talent on Gigs Mint. A modern, professional marketplace with bid-based workflows and LinkedIn-blue styling.",
+    siteName: "Gigs Mint",
     images: [
       {
         url: "/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "JobPortal - Find Your Dream Job",
+        alt: "Gigs Mint – Futuristic Freelancer Marketplace",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "JobPortal - Find Your Dream Job",
-    description: "Discover thousands of job opportunities on JobPortal. Connect with top employers, apply to jobs, and advance your career.",
+    title: "Gigs Mint – Futuristic Freelancer Marketplace",
+    description:
+      "Gigs Mint is the professional way to browse jobs, post a job, and bid confidently.",
     images: ["/og-image.jpg"],
-    creator: "@jobportal",
+    creator: "@gigsmint",
   },
   robots: {
     index: true,
@@ -81,14 +94,14 @@ export default function RootLayout({
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Organization",
-    "name": "JobPortal",
-    "url": "https://jobportal.com",
-    "logo": "https://jobportal.com/logo.png",
-    "description": "Discover thousands of job opportunities on JobPortal. Connect with top employers, apply to jobs, and advance your career with our comprehensive job search platform.",
+    "name": "Gigs Mint",
+    "url": "https://gigsmint.com",
+    "logo": "https://gigsmint.com/logo.png",
+    "description": "Gigs Mint is a futuristic freelancer marketplace. Browse jobs, post a job, and bid with confidence.",
     "sameAs": [
-      "https://www.facebook.com/jobportal",
-      "https://www.twitter.com/jobportal",
-      "https://www.linkedin.com/company/jobportal"
+      "https://www.facebook.com/gigsmint",
+      "https://www.twitter.com/gigsmint",
+      "https://www.linkedin.com/company/gigsmint"
     ],
     "contactPoint": {
       "@type": "ContactPoint",
@@ -106,12 +119,13 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}>
+      <body className={`${inter.variable} ${openSans.variable} antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <AuthProvider>
-            <SocketProvider>
+            <AppLayout>
+              <Toaster position="top-right" />
               {children}
-            </SocketProvider>
+            </AppLayout>
           </AuthProvider>
         </ThemeProvider>
       </body>

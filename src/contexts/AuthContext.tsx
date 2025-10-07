@@ -1,7 +1,8 @@
 'use client';
 
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
-import { User, LoginRequest, RegisterRequest, LoginResponse, AuthState, Subscription } from '@/types/api';
+import { log } from '@/lib/logger';
+import { User, LoginRequest, RegisterRequest, LoginResponse } from '@/types/api';
 import { apiClient, ApiClientError } from '@/lib/api';
 
 // Auth Actions
@@ -16,17 +17,22 @@ type AuthAction =
   | { type: 'REFRESH_START' }
   | { type: 'REFRESH_SUCCESS'; payload: { user: User; token: string; refreshToken: string } }
   | { type: 'REFRESH_FAILURE' }
-  | { type: 'SET_LOADING'; payload: boolean }
-  | { type: 'SET_SUBSCRIPTION'; payload: Subscription | null };
+  | { type: 'SET_LOADING'; payload: boolean };
 
 // Auth Context Type
+interface AuthState {
+  user: User | null;
+  token: string | null;
+  refreshToken: string | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+}
+
 interface AuthContextType extends AuthState {
   login: (credentials: LoginRequest) => Promise<LoginResponse>;
   register: (userData: RegisterRequest) => Promise<void>;
   logout: () => Promise<void>;
   refreshAuth: () => Promise<void>;
-  subscription: Subscription | null;
-  refreshSubscription: () => Promise<void>;
   setSession: (token: string, refreshToken: string, user: User) => void;
 }
 
@@ -68,8 +74,6 @@ function authReducer(state: AuthState, action: AuthAction): AuthState {
       };
     case 'SET_LOADING':
       return { ...state, isLoading: action.payload };
-    case 'SET_SUBSCRIPTION':
-      return { ...state, user: state.user ? { ...state.user, subscription: action.payload || undefined } : state.user } as AuthState;
     default:
       return state;
   }
@@ -89,26 +93,64 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const refreshToken = localStorage.getItem('refreshToken');
 
       if (token && refreshToken) {
+        // Set tokens in API client first
+        apiClient.setTokens(token, refreshToken);
+        
         try {
-          // Try to get current user with existing token
-          const user = await apiClient.getCurrentUser();
+          // Try to get current user with timeout
+          const userPromise = apiClient.getCurrentUser();
+          const timeoutPromise = new Promise<never>((_, reject) => 
+            setTimeout(() => reject(new Error('Request timeout')), 10000)
+          );
+          
+          const user = await Promise.race([userPromise, timeoutPromise]);
+          
           dispatch({
             type: 'REFRESH_SUCCESS',
             payload: { user, token, refreshToken },
           });
-          // Fetch subscription
-          try {
-            const subRes = await apiClient.getMySubscription();
-            dispatch({ type: 'SET_SUBSCRIPTION', payload: (subRes.data as any) || null });
-          } catch {}
+          
+          // Cache user data - handle nested structure
+          try { 
+            const actualUser = user?.data || user;
+            localStorage.setItem('user', JSON.stringify(actualUser)); 
+            const userRole = actualUser?.role;
+            log.debug('auth_store_role', { role: userRole });
+            localStorage.setItem('role', String(userRole || '')); 
+          } catch (e) {
+            log.warn('auth_cache_user_failed', { error: (e as any)?.message || String(e) });
+          }
         } catch (error) {
-          // Token might be expired, try refresh
+          log.warn('auth_fetch_user_failed_using_cache', { error: (error as any)?.message || String(error) });
+          
+          // Try cached user data as fallback
+          try {
+            const cachedUserRaw = localStorage.getItem('user');
+            if (cachedUserRaw) {
+              const cachedUser = JSON.parse(cachedUserRaw) as User;
+              dispatch({ 
+                type: 'REFRESH_SUCCESS', 
+                payload: { user: cachedUser, token, refreshToken } 
+              });
+              return;
+            }
+          } catch (cacheError) {
+            log.warn('auth_parse_cached_user_failed', { error: (cacheError as any)?.message || String(cacheError) });
+          }
+          
+          // Try token refresh as last resort
           try {
             await refreshAuth();
           } catch (refreshError) {
-            // Both token and refresh failed, clear storage
-            localStorage.removeItem('token');
-            localStorage.removeItem('refreshToken');
+            log.warn('auth_refresh_failed_clearing_state', { error: (refreshError as any)?.message || String(refreshError) });
+            // Clear invalid tokens
+            apiClient.clearTokens();
+            try { 
+              localStorage.removeItem('user'); 
+              localStorage.removeItem('role'); 
+            } catch (e) {
+              log.warn('auth_clear_localstorage_failed', { error: (e as any)?.message || String(e) });
+            }
             dispatch({ type: 'SET_LOADING', payload: false });
           }
         }
@@ -118,6 +160,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     initializeAuth();
+
+    // Cross-tab sync for auth tokens
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === 'token' || e.key === 'refreshToken') {
+        if (!localStorage.getItem('token') || !localStorage.getItem('refreshToken')) {
+          dispatch({ type: 'LOGOUT' });
+        } else {
+          refreshAuth().catch(() => dispatch({ type: 'REFRESH_FAILURE' }));
+        }
+      }
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
   }, []);
 
   // Login function
@@ -125,8 +180,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     dispatch({ type: 'LOGIN_START' });
     try {
       const response = await apiClient.login(credentials);
-      localStorage.setItem('token', response.token);
-      localStorage.setItem('refreshToken', response.refreshToken);
+      // Update API client tokens
+      apiClient.setTokens(response.token, response.refreshToken);
       dispatch({
         type: 'LOGIN_SUCCESS',
         payload: {
@@ -135,6 +190,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           refreshToken: response.refreshToken,
         },
       });
+      // Cache user and role to localStorage for offline/refresh guard - handle nested structure
+      try { 
+        const actualUser = response.user?.data || response.user;
+        localStorage.setItem('user', JSON.stringify(actualUser)); 
+        const userRole = actualUser?.role;
+        log.debug('auth_login_role', { role: userRole });
+        localStorage.setItem('role', String(userRole || '')); 
+      } catch (e) {
+        log.warn('auth_cache_login_failed', { error: (e as any)?.message || String(e) });
+      }
       return response;
     } catch (error) {
       const message = error instanceof ApiClientError ? error.message : 'Login failed';
@@ -168,12 +233,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     try {
       await apiClient.logout();
-    } catch (error) {
+    } catch (error: any) {
       // Even if logout fails on server, clear local state
-      console.error('Logout error:', error);
+      log.error('auth_logout_error', { error: error?.message || String(error) });
     } finally {
-      localStorage.removeItem('token');
-      localStorage.removeItem('refreshToken');
+      // Clear API client tokens
+      apiClient.clearTokens();
+      try { localStorage.removeItem('user'); localStorage.removeItem('role'); } catch {}
       dispatch({ type: 'LOGOUT' });
     }
   };
@@ -196,28 +262,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         type: 'REFRESH_SUCCESS',
         payload: { user, token, refreshToken },
       });
-      try {
-        const subRes = await apiClient.getMySubscription();
-        dispatch({ type: 'SET_SUBSCRIPTION', payload: (subRes.data as any) || null });
-      } catch {}
+      try { localStorage.setItem('user', JSON.stringify(user)); localStorage.setItem('role', String((user as any)?.role || '')); } catch {}
     } catch (error) {
       dispatch({ type: 'REFRESH_FAILURE' });
       throw error;
     }
   };
 
-  const refreshSubscription = async () => {
-    try {
-      const subRes = await apiClient.getMySubscription();
-      dispatch({ type: 'SET_SUBSCRIPTION', payload: (subRes.data as any) || null });
-    } catch (e) {
-      // ignore
-    }
-  };
-
   const setSession = (token: string, refreshToken: string, user: User) => {
-    localStorage.setItem('token', token);
-    localStorage.setItem('refreshToken', refreshToken);
+    // Update API client tokens
+    apiClient.setTokens(token, refreshToken);
+    try { localStorage.setItem('user', JSON.stringify(user)); localStorage.setItem('role', String((user as any)?.role || '')); } catch {}
     dispatch({ type: 'LOGIN_SUCCESS', payload: { user, token, refreshToken } });
   };
 
@@ -227,8 +282,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     register,
     logout,
     refreshAuth,
-    subscription: state.user?.subscription || null,
-    refreshSubscription,
     setSession
   };
 

@@ -1,182 +1,233 @@
-import asyncHandler from '../middleware/asyncHandler.js';
 import Notification from '../models/Notification.js';
-import NotificationService from '../services/notificationService.js';
-import User from '../models/User.js';
+import { validationResult } from 'express-validator';
 
-// @desc    Get notifications for authenticated user
-// @route   GET /api/notifications
-// @access  Private
-const getNotifications = asyncHandler(async (req, res) => {
-  const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 20;
-  const read = req.query.read;
-  const type = req.query.type;
+// Get user's notifications with pagination and filtering
+export const getNotifications = async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error',
+        errors: errors.array()
+      });
+    }
 
-  const query = { user: req.user._id };
-  
-  if (read !== undefined) {
-    query.read = read === 'true';
-  }
-  
-  if (type) {
-    query.type = type;
-  }
+    const userId = req.user.id;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const read = req.query.read;
 
-  const skip = (page - 1) * limit;
+    // Build query
+    const query = { user: userId };
+    if (read !== undefined) {
+      query.read = read === 'true';
+    }
 
-  const notifications = await Notification.find(query)
-    .sort({ createdAt: -1 })
-    .skip(skip)
-    .limit(limit)
-    .populate('user', 'name email');
+    const skip = (page - 1) * limit;
 
-  const total = await Notification.countDocuments(query);
+    // Get notifications with pagination
+    const notifications = await Notification.find(query)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .exec();
 
-  res.status(200).json({
-    success: true,
-    data: {
-      notifications,
-      pagination: {
-        page,
-        limit,
-        total,
-        pages: Math.ceil(total / limit)
+    const total = await Notification.countDocuments(query);
+    const pages = Math.ceil(total / limit);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        notifications,
+        pagination: {
+          page,
+          limit,
+          pages,
+          total
+        }
       }
-    }
-  });
-});
+    });
 
-// @desc    Update notification preferences
-// @route   PUT /api/notifications/preferences
-// @access  Private
-const updatePreferences = asyncHandler(async (req, res) => {
-  const { email, push, sms, inApp } = req.body;
-
-  const preferences = await NotificationService.updateUserPreferences(req.user._id, {
-    email: email !== undefined ? email : true,
-    push: push !== undefined ? push : true,
-    sms: sms !== undefined ? sms : false,
-    inApp: inApp !== undefined ? inApp : true
-  });
-
-  res.status(200).json({
-    success: true,
-    data: preferences
-  });
-});
-
-// @desc    Get notification preferences
-// @route   GET /api/notifications/preferences
-// @access  Private
-const getPreferences = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user._id).select('notificationPreferences');
-  
-  const preferences = user.notificationPreferences || {
-    email: true,
-    push: true,
-    sms: false,
-    inApp: true
-  };
-
-  res.status(200).json({
-    success: true,
-    data: preferences
-  });
-});
-
-// @desc    Mark notification as read
-// @route   PUT /api/notifications/:id/read
-// @access  Private
-const markAsRead = asyncHandler(async (req, res) => {
-  const notification = await Notification.findOne({
-    _id: req.params.id,
-    user: req.user._id
-  });
-
-  if (!notification) {
-    return res.status(404).json({
+  } catch (error) {
+    console.error('Error fetching notifications:', error);
+    res.status(500).json({
       success: false,
-      message: 'Notification not found'
+      message: 'Server error while fetching notifications'
     });
   }
-
-  notification.read = true;
-  notification.readAt = new Date();
-  await notification.save();
-
-  res.status(200).json({
-    success: true,
-    data: notification
-  });
-});
-
-// @desc    Mark all notifications as read
-// @route   PUT /api/notifications/read-all
-// @access  Private
-const markAllAsRead = asyncHandler(async (req, res) => {
-  const result = await Notification.updateMany(
-    { user: req.user._id, read: false },
-    { 
-      read: true, 
-      readAt: new Date() 
-    }
-  );
-
-  res.status(200).json({
-    success: true,
-    data: {
-      modifiedCount: result.modifiedCount
-    }
-  });
-});
-
-// @desc    Delete notification
-// @route   DELETE /api/notifications/:id
-// @access  Private
-const deleteNotification = asyncHandler(async (req, res) => {
-  const notification = await Notification.findOne({
-    _id: req.params.id,
-    user: req.user._id
-  });
-
-  if (!notification) {
-    return res.status(404).json({
-      success: false,
-      message: 'Notification not found'
-    });
-  }
-
-  await notification.deleteOne();
-
-  res.status(200).json({
-    success: true,
-    message: 'Notification deleted successfully'
-  });
-});
-
-// @desc    Get unread notifications count
-// @route   GET /api/notifications/unread-count
-// @access  Private
-const getUnreadCount = asyncHandler(async (req, res) => {
-  const count = await Notification.countDocuments({
-    user: req.user._id,
-    read: false
-  });
-
-  res.status(200).json({
-    success: true,
-    data: {
-      count
-    }
-  });
-});
-
-export {
-  getNotifications,
-  markAsRead,
-  markAllAsRead,
-  deleteNotification,
-  getUnreadCount,
-  updatePreferences,
-  getPreferences
 };
+
+// Get unread notifications count
+export const getUnreadCount = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    
+    const count = await Notification.countDocuments({
+      user: userId,
+      read: false
+    });
+
+    res.status(200).json({
+      success: true,
+      data: { count }
+    });
+
+  } catch (error) {
+    console.error('Error fetching unread count:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while fetching unread count'
+    });
+  }
+};
+
+// Mark notification as read
+export const markAsRead = async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error',
+        errors: errors.array()
+      });
+    }
+
+    const { notificationId } = req.params;
+    const userId = req.user.id;
+
+    const notification = await Notification.findOneAndUpdate(
+      { _id: notificationId, user: userId },
+      { read: true, readAt: new Date() },
+      { new: true }
+    );
+
+    if (!notification) {
+      return res.status(404).json({
+        success: false,
+        message: 'Notification not found'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: notification
+    });
+
+  } catch (error) {
+    console.error('Error marking notification as read:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while updating notification'
+    });
+  }
+};
+
+// Mark all notifications as read
+export const markAllAsRead = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const result = await Notification.updateMany(
+      { user: userId, read: false },
+      { read: true, readAt: new Date() }
+    );
+
+    res.status(200).json({
+      success: true,
+      data: {
+        modifiedCount: result.modifiedCount,
+        message: `${result.modifiedCount} notifications marked as read`
+      }
+    });
+
+  } catch (error) {
+    console.error('Error marking all notifications as read:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while updating notifications'
+    });
+  }
+};
+
+// Delete notification
+export const deleteNotification = async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error',
+        errors: errors.array()
+      });
+    }
+
+    const { notificationId } = req.params;
+    const userId = req.user.id;
+
+    const notification = await Notification.findOneAndDelete({
+      _id: notificationId,
+      user: userId
+    });
+
+    if (!notification) {
+      return res.status(404).json({
+        success: false,
+        message: 'Notification not found'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Notification deleted successfully'
+    });
+
+  } catch (error) {
+    console.error('Error deleting notification:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while deleting notification'
+    });
+  }
+};
+
+// Create notification (for internal use or admin)
+export const createNotification = async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error',
+        errors: errors.array()
+      });
+    }
+
+    const { user, type, title, message, data } = req.body;
+
+    const notification = await Notification.create({
+      user,
+      type,
+      title,
+      message,
+      data: data || {}
+    });
+
+    res.status(201).json({
+      success: true,
+      data: notification,
+      message: 'Notification created successfully'
+    });
+
+  } catch (error) {
+    console.error('Error creating notification:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while creating notification'
+    });
+  }
+};
+
+
+

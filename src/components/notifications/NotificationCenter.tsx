@@ -9,22 +9,32 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useSocketContext } from '@/contexts/SocketContext';
 import { apiClient } from '@/lib/api';
 import { Notification } from '@/types/api';
+import CustomLoader from '@/components/CustomLoader';
 
 interface NotificationCenterProps {
   className?: string;
   showHeader?: boolean;
   maxHeight?: string;
+  // Optional external control over filter; when provided, internal filter UI is hidden
+  filter?: 'all' | 'unread' | 'read' | 'applications' | 'messages';
+  // Optional callback when internal filter is changed (uncontrolled mode only)
+  onFilterChange?: (next: 'all' | 'unread' | 'read' | 'applications' | 'messages') => void;
+  // Optional signal to force reload when value changes
+  refreshSignal?: number;
 }
 
 export function NotificationCenter({ 
   className = '', 
   showHeader = true, 
-  maxHeight = '400px' 
+  maxHeight = '400px',
+  filter: externalFilter,
+  onFilterChange,
+  refreshSignal,
 }: NotificationCenterProps) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [filter, setFilter] = useState<'all' | 'unread' | 'read'>('all');
+  const [internalFilter, setInternalFilter] = useState<'all' | 'unread' | 'read' | 'applications' | 'messages'>('all');
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -37,16 +47,21 @@ export function NotificationCenter({
     isConnected 
   } = useSocketContext();
 
+  // Determine effective filter
+  const effectiveFilter = externalFilter ?? internalFilter;
+
   // Load notifications
-  const loadNotifications = useCallback(async (pageNum = 1, filterType = filter, reset = false) => {
+  const loadNotifications = useCallback(async (pageNum = 1, filterType = effectiveFilter, reset = false) => {
     try {
       if (pageNum === 1) setLoading(true);
       else setLoadingMore(true);
 
-      const params = {
+      const params: Record<string, unknown> = {
         page: pageNum,
         limit: 20,
-        ...(filterType !== 'all' && { read: filterType === 'read' })
+        ...(filterType === 'read' && { read: true }),
+        ...(filterType === 'unread' && { read: false }),
+        ...(filterType === 'messages' && { type: 'message' })
       };
 
       const response = await apiClient.getNotifications(params);
@@ -54,11 +69,18 @@ export function NotificationCenter({
       if (response.success && response.data) {
         const responseData = response.data as any;
         const newNotifications = Array.isArray(responseData) ? responseData : responseData?.notifications || [];
+        // Client-side filter for applications/messages if backend does not support a category
+        const filteredNotifications =
+          filterType === 'applications'
+            ? newNotifications.filter((n: any) => ['application_status', 'job_match', 'interview', 'offer'].includes(n.type))
+            : filterType === 'messages'
+              ? newNotifications.filter((n: any) => n.type === 'message')
+              : newNotifications;
         
         if (reset || pageNum === 1) {
-          setNotifications(newNotifications);
+          setNotifications(filteredNotifications);
         } else {
-          setNotifications(prev => [...prev, ...newNotifications]);
+          setNotifications(prev => [...prev, ...filteredNotifications]);
         }
 
         const pagination = responseData?.pagination;
@@ -73,7 +95,7 @@ export function NotificationCenter({
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [filter]);
+  }, [effectiveFilter]);
 
   // Load unread count
   const loadUnreadCount = useCallback(async () => {
@@ -87,11 +109,12 @@ export function NotificationCenter({
     }
   }, []);
 
-  // Initial load
+  // Initial load and when filter/refreshSignal changes
   useEffect(() => {
-    loadNotifications(1, filter, true);
+    loadNotifications(1, effectiveFilter, true);
     loadUnreadCount();
-  }, [filter, loadNotifications, loadUnreadCount]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [effectiveFilter, refreshSignal]);
 
   // Socket event listeners
   useEffect(() => {
@@ -172,13 +195,13 @@ export function NotificationCenter({
   // Handle load more
   const handleLoadMore = () => {
     if (hasMore && !loadingMore) {
-      loadNotifications(page + 1, filter, false);
+      loadNotifications(page + 1, effectiveFilter, false);
     }
   };
 
   // Handle refresh
   const handleRefresh = () => {
-    loadNotifications(1, filter, true);
+    loadNotifications(1, effectiveFilter, true);
     loadUnreadCount();
   };
 
@@ -278,7 +301,7 @@ export function NotificationCenter({
               onClick={handleRefresh}
               disabled={loading}
             >
-              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+              {loading ? <CustomLoader size={16} color="#1FA9FF" /> : <RefreshCw className="h-4 w-4" />}
             </Button>
             {unreadCount > 0 && (
               <Button
@@ -294,20 +317,25 @@ export function NotificationCenter({
       )}
 
       <div className="p-4">
-        {/* Filter buttons */}
-        <div className="flex space-x-2 mb-4">
-          {(['all', 'unread', 'read'] as const).map((filterType) => (
-            <Button
-              key={filterType}
-              variant={filter === filterType ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setFilter(filterType)}
-            >
-              <Filter className="h-3 w-3 mr-1" />
-              {filterType.charAt(0).toUpperCase() + filterType.slice(1)}
-            </Button>
-          ))}
-        </div>
+        {/* Filter buttons (only when uncontrolled) */}
+        {!externalFilter && (
+          <div className="flex space-x-2 mb-4">
+            {(['all', 'unread', 'read', 'applications', 'messages'] as const).map((filterType) => (
+              <Button
+                key={filterType}
+                variant={(effectiveFilter) === filterType ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => {
+                  setInternalFilter(filterType);
+                  onFilterChange?.(filterType);
+                }}
+              >
+                <Filter className="h-3 w-3 mr-1" />
+                {filterType.charAt(0).toUpperCase() + filterType.slice(1)}
+              </Button>
+            ))}
+          </div>
+        )}
 
         {/* Connection status */}
         {!isConnected && (
@@ -325,7 +353,7 @@ export function NotificationCenter({
 
         {/* Notifications list */}
         <div 
-          className="space-y-3 overflow-y-auto"
+          className="space-y-3 overflow-y-auto scrollbar-thin"
           style={{ maxHeight }}
         >
           {notifications.length === 0 ? (

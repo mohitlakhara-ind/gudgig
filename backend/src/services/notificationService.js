@@ -19,7 +19,8 @@ class NotificationService {
       subscriptionCancelled: this.subscriptionCancelledTemplate,
       subscriptionRenewalReminder: this.subscriptionRenewalReminderTemplate,
       passwordReset: this.passwordResetTemplate,
-      securityAlert: this.securityAlertTemplate
+      securityAlert: this.securityAlertTemplate,
+      otp: this.otpTemplate
     };
 
     // Readiness handling
@@ -40,6 +41,12 @@ class NotificationService {
           pass: process.env.SMTP_PASS
         }
       });
+      try {
+        await this.emailTransporter.verify();
+        console.log('[notificationService] SMTP verified and ready');
+      } catch (verifyErr) {
+        console.warn('[notificationService] SMTP verification failed:', verifyErr?.message || verifyErr);
+      }
 
       // Dynamic import for twilio (align env names)
       const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID || process.env.TWILIO_SID;
@@ -98,13 +105,29 @@ class NotificationService {
   // Multi-channel notification sending
   async sendNotification(userId, type, data, channels = ['email']) {
     try {
-      const user = await User.findById(userId).select('email phone notificationPreferences');
+      const user = await User.findById(userId).select('email phone notificationPreferences preferences');
       if (!user) throw new Error('User not found');
 
       const preferences = user.notificationPreferences || {};
       const results = [];
 
-      for (const channel of channels) {
+      // Priority routing per type
+      const priority = this.getPriorityForType(type);
+      const desiredChannels = this.resolveChannels(priority, channels);
+
+      // Quiet hours handling: restrict to inApp during quiet hours, queue email for later
+      const quiet = this.isWithinQuietHours(user.preferences);
+      const effectiveChannels = quiet
+        ? Array.from(new Set(['inApp', ...desiredChannels.filter(c => c === 'inApp')]))
+        : desiredChannels;
+
+      // Dedupe: skip if identical recent notification sent within window
+      const skip = await this.isDuplicateRecently(userId, type, data, 5 * 60 * 1000);
+      if (skip) {
+        return [{ channel: 'dedupe', success: true, result: 'skipped_duplicate' }];
+      }
+
+      for (const channel of effectiveChannels) {
         if (preferences[channel] !== false) { // Default to true if not set
           try {
             const result = await this.sendToChannel(channel, user, type, data);
@@ -118,6 +141,12 @@ class NotificationService {
 
       // Log notification
       await this.logNotification(userId, type, results);
+
+      // If quiet hours and email desired but not sent, schedule an email after quiet hours
+      if (quiet && desiredChannels.includes('email') && preferences.email !== false) {
+        const delay = this.msUntilQuietHoursEnd(user.preferences);
+        await this.queueNotification(userId, type, data, ['email'], delay);
+      }
 
       return results;
     } catch (error) {
@@ -163,7 +192,12 @@ class NotificationService {
   // Email sending
   async sendEmail(to, subject, html, text) {
     await this.initPromise;
-    if (!this.emailTransporter) throw new Error('Email service not initialized');
+    if (!this.emailTransporter) {
+      // Fallback logging in absence of SMTP configuration
+      console.warn('[notificationService] Email service not initialized. Falling back to console logging.');
+      console.log('[email:fallback]', { to, subject, text: text?.slice(0, 200) });
+      return { messageId: 'fallback-console' };
+    }
     const mailOptions = {
       from: process.env.FROM_EMAIL || 'noreply@microjobs.com',
       to,
@@ -174,6 +208,22 @@ class NotificationService {
 
     const result = await this.emailTransporter.sendMail(mailOptions);
     return { messageId: result.messageId };
+  }
+
+  async verifySMTP() {
+    await this.initPromise;
+    if (!this.emailTransporter) {
+      console.warn('[notificationService] SMTP not initialized. Skipping verification.');
+      return false;
+    }
+    try {
+      await this.emailTransporter.verify();
+      console.log('[notificationService] SMTP verification succeeded');
+      return true;
+    } catch (err) {
+      console.warn('[notificationService] SMTP verification failed:', err?.message || err);
+      return false;
+    }
   }
 
   // SMS sending
@@ -237,6 +287,19 @@ class NotificationService {
       data,
       read: false
     });
+
+    // Emit realtime if socket available
+    if (this.io && typeof this.io.to === 'function') {
+      this.io.to(`user:${userId}`).emit('notification:new', {
+        id: notification._id,
+        type: notification.type,
+        title: notification.title,
+        message: notification.message,
+        data: notification.data,
+        read: notification.read,
+        createdAt: notification.createdAt
+      });
+    }
 
     return { notificationId: notification._id };
   }
@@ -493,6 +556,27 @@ If this wasn't you, change your password immediately.`
     };
   }
 
+  otpTemplate(data) {
+    return {
+      subject: 'Your OTP Code - MicroJobs',
+      html: `
+        <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+          <h2 style="color: #111;">Your OTP Code</h2>
+          <p>Hello${data.recipientName ? ` ${data.recipientName}` : ''},</p>
+          <p>Use the following one-time password to continue:</p>
+          <div style="margin: 16px 0; padding: 16px; background: #f5f5f5; border-radius: 8px; text-align: center;">
+            <span style="font-size: 28px; font-weight: bold; letter-spacing: 6px;">${data.otp}</span>
+          </div>
+          <p>This code is for <strong>${data.purpose}</strong> and will expire in <strong>10 minutes</strong>.</p>
+          <p style="color: #555;">If you didn't request this code, you can safely ignore this email.</p>
+          <br>
+          <p>— MicroJobs Team</p>
+        </div>
+      `,
+      text: `Your OTP Code - MicroJobs\n\nCode: ${data.otp}\nPurpose: ${data.purpose}\nExpires: 10 minutes\n\nIf you didn't request this, ignore this message.`
+    };
+  }
+
   // Notification queuing and retry logic
   async queueNotification(userId, type, data, channels, delay = 0) {
     // In production, use a queue system like Bull or Redis
@@ -540,6 +624,83 @@ If this wasn't you, change your password immediately.`
   async logNotification(userId, type, results) {
     // In production, store delivery analytics
     console.log(`Notification sent to user ${userId}: ${type}`, results);
+  }
+
+  // --- Enhancement helpers ---
+  getPriorityForType(type) {
+    const map = {
+      securityAlert: 'critical',
+      payment_confirmed: 'high',
+      order_delivered: 'high',
+      order_started: 'normal',
+      order_placed: 'normal',
+      applicationStatusUpdate: 'normal',
+      jobApplicationReceived: 'low',
+      jobPostedConfirmation: 'low',
+      otp: 'critical'
+    };
+    return map[type] || 'normal';
+  }
+
+  resolveChannels(priority, requested) {
+    const unique = new Set(requested || []);
+    if (priority === 'critical') {
+      ['inApp', 'push', 'email', 'sms'].forEach(c => unique.add(c));
+    } else if (priority === 'high') {
+      ['inApp', 'push', 'email'].forEach(c => unique.add(c));
+    } else if (priority === 'normal') {
+      ['inApp', 'email'].forEach(c => unique.add(c));
+    } else {
+      ['inApp'].forEach(c => unique.add(c));
+    }
+    return Array.from(unique);
+  }
+
+  isWithinQuietHours(preferences) {
+    const quiet = preferences?.quietHours;
+    if (!quiet || !quiet.enabled) return false;
+    const now = new Date();
+    const start = this.parseHHMM(quiet.start || '22:00');
+    const end = this.parseHHMM(quiet.end || '07:00');
+    const minutes = now.getHours() * 60 + now.getMinutes();
+    const startMin = start.h * 60 + start.m;
+    const endMin = end.h * 60 + end.m;
+    if (startMin <= endMin) {
+      return minutes >= startMin && minutes < endMin;
+    } else {
+      // crosses midnight
+      return minutes >= startMin || minutes < endMin;
+    }
+  }
+
+  msUntilQuietHoursEnd(preferences) {
+    const end = this.parseHHMM(preferences?.quietHours?.end || '07:00');
+    const now = new Date();
+    const endDate = new Date(now);
+    endDate.setHours(end.h, end.m, 0, 0);
+    if (endDate <= now) endDate.setDate(endDate.getDate() + 1);
+    return Math.max(0, endDate.getTime() - now.getTime());
+  }
+
+  parseHHMM(s) { const [h, m] = String(s || '00:00').split(':').map(x => parseInt(x, 10) || 0); return { h, m }; }
+
+  async isDuplicateRecently(userId, type, data, windowMs) {
+    try {
+      const since = new Date(Date.now() - windowMs);
+      const keyFields = { type, 'data.key': data?.key || undefined };
+      const query = { user: userId, type, createdAt: { $gte: since } };
+      // Basic dedupe: same type and same data.message/title recently
+      if (data && (data.message || data.title)) {
+        query['$or'] = [
+          { 'data.message': data.message },
+          { 'data.title': data.title }
+        ];
+      }
+      const recent = await Notification.findOne(query).select('_id').lean();
+      return !!recent;
+    } catch {
+      return false;
+    }
   }
 
   // Automated notification workflows

@@ -1,3 +1,30 @@
+## Environment Variables
+
+Configure the following in your `.env` files:
+
+Frontend (root `.env.local` or environment):
+
+```
+NEXT_PUBLIC_BACKEND_URL=http://localhost:5000/api
+```
+
+Backend (in `backend/.env`):
+
+### SMTP (Email)
+- `SMTP_HOST` — SMTP server host
+- `SMTP_PORT` — SMTP server port (e.g., 587)
+- `SMTP_SECURE` — `true` to use TLS, otherwise `false`
+- `SMTP_USER` — SMTP username
+- `SMTP_PASS` — SMTP password
+
+The backend verifies SMTP on startup and falls back to console logging if not configured.
+
+### Cloudinary
+- `CLOUDINARY_CLOUD_NAME` — Your Cloudinary cloud name
+- `CLOUDINARY_API_KEY` — Cloudinary API key
+- `CLOUDINARY_API_SECRET` — Cloudinary API secret
+
+Cloudinary is initialized at server startup and used by upload endpoints.
 # Job Portal
 
 ## Setup
@@ -91,3 +118,14 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Backend database seeding
+
+To populate the backend with sample data reflecting the latest models (including bids with succeeded, pending, and failed payments):
+
+```bash
+cd backend
+npm run seed
+```
+
+This wipes existing collections and recreates users, jobs, profiles, services, bids, orders, applications, reviews, conversations, and notifications.

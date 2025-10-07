@@ -7,7 +7,7 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-inter);
-  --font-mono: var(--font-jetbrains-mono);
+  --font-alt: var(--font-open-sans);
 
   /* Sidebar */
   --color-sidebar-ring: var(--sidebar-ring);
@@ -56,87 +56,163 @@
 }
 
 :root {
-  --radius: 0.625rem;
+  /* LinkedIn-inspired radius system */
+  --radius: 0.5rem; /* More subtle, LinkedIn-like */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
 
-  /* Custom Color Palette - Light */
-  --background: #F6F7F8; /* Seasalt */
-  --foreground: #0A0908; /* Black */
+  /* LinkedIn Color System - Light Mode */
+  --background: #FFFFFF;
+  --foreground: #0F172A; /* LinkedIn's dark text */
 
   --card: #FFFFFF;
-  --card-foreground: #0A0908;
+  --card-foreground: #0F172A;
 
   --popover: #FFFFFF;
-  --popover-foreground: #0A0908;
+  --popover-foreground: #0F172A;
 
-  --primary: #2563eb; /* Professional Blue */
+  --primary: #0A66C2; /* LinkedIn Blue - exact match */
   --primary-foreground: #FFFFFF;
 
-  --secondary: #64748b; /* Muted Gray-Blue */
-  --secondary-foreground: #FFFFFF;
+  --secondary: #F8F9FA; /* LinkedIn's light gray */
+  --secondary-foreground: #0F172A;
 
-  --muted: #f1f5f9; /* Light Slate */
-  --muted-foreground: #0A0908;
+  --muted: #F3F2EF; /* LinkedIn's subtle background */
+  --muted-foreground: #666666; /* LinkedIn's muted text */
 
-  --text-readable: #0A0908; /* Black for readability */
+  --text-readable: #0F172A;
 
-  --accent: #10b981; /* Subtle Accent */
+  --accent: #0A66C2; /* Same as primary for consistency */
   --accent-foreground: #FFFFFF;
 
-  /* Professional Color Tokens */
-  --professional-blue: #2563eb;
-  --professional-gray: #64748b;
-  --muted-accent: #10b981;
+  /* LinkedIn Professional Colors */
+  --linkedin-blue: #0A66C2;
+  --linkedin-blue-light: #E7F3FF;
+  --linkedin-gray: #666666;
+  --linkedin-gray-light: #F3F2EF;
+  --linkedin-gray-dark: #0F172A;
+  --linkedin-green: #057642; /* LinkedIn's success green */
+  --linkedin-red: #C41E3A; /* LinkedIn's error red */
 
-  --destructive: #DC2626; /* Red (custom for errors) */
+  --destructive: #C41E3A;
 
-  --border: #e2e8f0;
-  --input: #e2e8f0;
-  --ring: #2563eb;
-  /* Semantic Colors */
-  --success: #10b981;
-  --warning: #f59e0b;
-  --error: #ef4444;
+  --border: #E1E5E9; /* LinkedIn's subtle borders */
+  --input: #E1E5E9;
+  --ring: #0A66C2;
 
-  /* Chart colors */
-  --chart-1: #2563eb; /* Professional Blue */
-  --chart-2: #64748b; /* Muted Gray-Blue */
-  --chart-3: #10b981; /* Subtle Accent */
-  --chart-4: #0A0908; /* Black */
-  --chart-5: #F6F7F8; /* Seasalt */
+  /* Semantic Colors - LinkedIn inspired */
+  --success: #057642;
+  --warning: #B54708;
+  --error: #C41E3A;
 
-  /* Sidebar */
-  --sidebar: #F6F7F8;
-  --sidebar-foreground: #0A0908;
-  --sidebar-primary: #2563eb;
+  /* Chart colors - LinkedIn palette */
+  --chart-1: #0A66C2;
+  --chart-2: #057642;
+  --chart-3: #B54708;
+  --chart-4: #0F172A;
+  --chart-5: #F3F2EF;
+
+  /* Sidebar - LinkedIn style */
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #0F172A;
+  --sidebar-primary: #0A66C2;
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #10b981;
-  --sidebar-accent-foreground: #FFFFFF;
-  --sidebar-border: #e2e8f0;
-  --sidebar-ring: #2563eb;
+  --sidebar-accent: #E7F3FF;
+  --sidebar-accent-foreground: #0A66C2;
+  --sidebar-border: #E1E5E9;
+  --sidebar-ring: #0A66C2;
 }
 
 @layer utilities {
-  .glass-card { @apply bg-card/80 backdrop-blur-sm border border-border; }
-  .glass { @apply bg-card/70 backdrop-blur-sm border border-border; }
-  .glow-primary { @apply shadow-[0_0_0_3px_rgba(37,99,235,0.15)] hover:shadow-[0_0_0_4px_rgba(37,99,235,0.2)]; }
-  .shadow-medium { @apply shadow-md; }
-  .shadow-strong { @apply shadow-lg; }
-  .animate-slide-in-left { animation: slide-in-left .4s ease-out both; }
-  .animate-slide-in-right { animation: slide-in-right .4s ease-out both; }
-  .animate-fade-in-up { animation: fade-in-up .6s ease-out both; }
+  /* Professional utility classes */
+  .professional-card { 
+    @apply bg-card border border-border rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200; 
+  }
+  .professional-button { 
+    @apply bg-primary text-primary-foreground px-4 py-2 rounded-full font-medium hover:bg-primary/90 transition-colors duration-200; 
+  }
+  .professional-button-outline { 
+    @apply border border-primary text-primary px-4 py-2 rounded-full font-medium hover:bg-primary/10 transition-colors duration-200; 
+  }
+  .professional-input { 
+    @apply border border-input rounded-md px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary transition-colors duration-200; 
+  }
+  .professional-text-muted { 
+    @apply text-muted-foreground text-sm; 
+  }
+  .professional-text-primary { 
+    @apply text-foreground font-medium; 
+  }
+  .professional-bg-subtle { 
+    @apply bg-muted; 
+  }
+  .professional-border { 
+    @apply border-border; 
+  }
+  
+  /* Glass effects - Professional style */
+  .glass-card { @apply bg-card/90 backdrop-blur-sm border border-border rounded-lg shadow-sm; }
+  .glass { @apply bg-card/80 backdrop-blur-sm border border-border rounded-lg; }
+  
+  /* Professional shadows */
+  .shadow-professional { @apply shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]; }
+  .shadow-professional-hover { @apply shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1)]; }
+  
+  /* Professional animations */
+  .animate-slide-in-left { animation: slide-in-left .3s ease-out both; }
+  .animate-slide-in-right { animation: slide-in-right .3s ease-out both; }
+  .animate-fade-in-up { animation: fade-in-up .4s ease-out both; }
+  .animate-soft-pop { animation: soft-pop .2s cubic-bezier(.22,1,.36,1) both; }
+  .animate-badge-pulse { animation: badge-pulse 1.2s ease-in-out infinite; }
+  
   /* Mobile-friendly touch targets */
   .touch-target { @apply min-h-[44px] min-w-[44px]; }
+  
   /* Responsive spacing helpers */
   .section { @apply px-4 sm:px-6 lg:px-8 py-6 sm:py-8; }
   .stack { @apply flex flex-col gap-3 sm:gap-4; }
-  /* Skeleton loading */
-  .skeleton { @apply animate-pulse bg-gray-200 dark:bg-gray-700 rounded; }
+  
+  /* Professional skeleton loading */
+  .skeleton { @apply animate-pulse bg-muted rounded; }
+  
+  /* Focus states - Professional style */
+  .focus-professional { @apply focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2; }
+  
+  /* Professional hover effects */
+  .hover-professional { @apply hover:bg-muted transition-colors duration-200; }
+  .hover-professional-primary { @apply hover:bg-primary/10 transition-colors duration-200; }
+  
+  /* Accessibility */
   .sr-only-focusable:focus { position: static; width: auto; height: auto; margin: 0; overflow: visible; clip: auto; }
+
+  /* Centralized gradient utilities */
+  .bg-surface-gradient { @apply bg-gradient-to-br from-background via-muted to-background; }
+  .bg-hero-gradient { @apply bg-gradient-to-br from-primary/5 via-background to-secondary/5; }
+  .bg-overlay-fade-b { @apply bg-gradient-to-b from-background/10 via-transparent to-background; }
+  .bg-card-sheen { @apply bg-gradient-to-r from-primary/10 via-transparent to-secondary/10; }
+  .bg-muted-gradient { @apply bg-gradient-to-r from-muted to-muted/80; }
+  .bg-divider-gradient { @apply bg-gradient-to-r from-transparent via-border to-transparent; }
+  .bg-banner-gradient { @apply bg-gradient-to-r from-primary to-primary/80; }
+  .bg-gradient-subtle-primary { @apply bg-gradient-to-r from-primary/10 to-primary/5; }
+  .bg-section-gradient { @apply bg-gradient-to-br from-blue-50 to-teal-50; }
+
+  .text-gradient { @apply text-primary; }
+  .text-gradient-brand { @apply text-primary; }
+
+  /* Backwards-compat helpers */
+  .gradient-primary { @apply bg-gradient-to-r from-primary to-secondary; }
 }
 
 @keyframes slide-in-left { from { opacity:0; transform:translateX(-12px);} to {opacity:1; transform:none;} }
 @keyframes slide-in-right { from { opacity:0; transform:translateX(12px);} to {opacity:1; transform:none;} }
 @keyframes fade-in-up { from { opacity:0; transform:translateY(12px);} to {opacity:1; transform:none;} }
+@keyframes soft-pop { 0% { transform: scale(.96); opacity:.6;} 100% { transform: scale(1); opacity:1; } }
+@keyframes badge-pulse {
+  0%, 100% { transform: translateZ(0) scale(1); box-shadow: 0 0 0 0 rgba(239,68,68,0.45); }
+  50% { transform: translateZ(0) scale(1.06); box-shadow: 0 0 0 6px rgba(239,68,68,0.0); }
+}
 
 /* High contrast mode adjustments */
 @media (prefers-contrast: more) {
@@ -144,6 +220,71 @@
     --border: #0A0908;
     --ring: #0A0908;
   }
+}
+
+  /* Modern Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: hsl(var(--muted-foreground) / 0.7);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Firefox scrollbar styling */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--muted-foreground) / 0.3) transparent;
+}
+
+/* Thin scrollbars for specific components */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.2);
+  border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.4);
+}
+
+/* Hide scrollbars for specific components when needed */
+.scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
 }
 
 /* Reduce motion for users who prefer it */
@@ -157,54 +298,55 @@
 }
 
 .dark {
-  /* Dark mode */
-  --background: #0A0908; /* Black */
-  --foreground: #F6F7F8; /* Seasalt */
+  /* LinkedIn Dark Mode */
+  --background: #000000; /* Pure black like LinkedIn */
+  --foreground: #FFFFFF; /* Pure white text */
 
-  --card: #1F1F1F;
-  --card-foreground: #F6F7F8;
+  --card: #1A1A1A; /* LinkedIn's dark card */
+  --card-foreground: #FFFFFF;
 
-  --popover: #1F1F1F;
-  --popover-foreground: #F6F7F8;
+  --popover: #1A1A1A;
+  --popover-foreground: #FFFFFF;
 
-  --primary: #2563eb;
-  --primary-foreground: #0A0908;
+  --primary: #0A66C2; /* Same blue in dark mode */
+  --primary-foreground: #FFFFFF;
 
-  --secondary: #64748b;
+  --secondary: #2A2A2A; /* LinkedIn's dark secondary */
   --secondary-foreground: #FFFFFF;
 
-  --muted: #334155;
-  --muted-foreground: #e2e8f0;
+  --muted: #2A2A2A; /* LinkedIn's dark muted */
+  --muted-foreground: #B3B3B3; /* LinkedIn's muted text in dark */
 
-  --text-readable: #F6F7F8;
+  --text-readable: #FFFFFF;
 
-  --accent: #10b981;
+  --accent: #0A66C2;
   --accent-foreground: #FFFFFF;
 
-  --destructive: #ef4444;
-  /* Semantic Colors */
-  --success: #10b981;
-  --warning: #f59e0b;
-  --error: #ef4444;
+  --destructive: #C41E3A;
 
-  --border: #475569;
-  --input: #475569;
-  --ring: #2563eb;
+  /* Semantic Colors - Dark mode */
+  --success: #057642;
+  --warning: #B54708;
+  --error: #C41E3A;
 
-  /* Chart colors */
-  --chart-1: #2563eb;
-  --chart-2: #64748b;
-  --chart-3: #10b981;
-  --chart-4: #F6F7F8;
-  --chart-5: #f87171;
+  --border: #2A2A2A; /* LinkedIn's dark borders */
+  --input: #2A2A2A;
+  --ring: #0A66C2;
 
-  /* Sidebar */
-  --sidebar: #0A0908;
-  --sidebar-foreground: #F6F7F8;
-  --sidebar-primary: #2563eb;
-  --sidebar-primary-foreground: #0A0908;
-  --sidebar-accent: #10b981;
+  /* Chart colors - Dark mode */
+  --chart-1: #0A66C2;
+  --chart-2: #057642;
+  --chart-3: #B54708;
+  --chart-4: #FFFFFF;
+  --chart-5: #2A2A2A;
+
+  /* Sidebar - Dark mode */
+  --sidebar: #000000;
+  --sidebar-foreground: #FFFFFF;
+  --sidebar-primary: #0A66C2;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #2A2A2A;
   --sidebar-accent-foreground: #FFFFFF;
-  --sidebar-border: #475569;
-  --sidebar-ring: #2563eb;
+  --sidebar-border: #2A2A2A;
+  --sidebar-ring: #0A66C2;
 }

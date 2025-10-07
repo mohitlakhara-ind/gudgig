@@ -1,15 +1,36 @@
+import os from 'os';
+import { performance, monitorEventLoopDelay } from 'perf_hooks';
+import * as Sentry from '@sentry/node';
+import logger from '../utils/logger.js';
+import metricsService from '../services/metricsService.js';
+
 export const performanceMonitoring = (req, res, next) => {
   const start = Date.now();
+  try { metricsService.recordPageView(req); } catch (_) {}
+  res.setHeader('X-Response-Time-Start', String(start));
   res.on('finish', () => {
     const duration = Date.now() - start;
-    console.log(`${req.method} ${req.originalUrl} - ${res.statusCode} [${duration}ms]`);
+    logger.info('request_completed', {
+      method: req.method,
+      url: req.originalUrl,
+      statusCode: res.statusCode,
+      durationMs: duration,
+      requestId: req.id
+    });
+    res.setHeader('X-Response-Time', `${duration}ms`);
   });
   next();
 };
 
 export const errorTracking = (err, req, res, next) => {
-  // In a real app, you'd send this to a service like Sentry, Datadog, etc.
-  console.error('Tracked error:', err);
+  if (process.env.SENTRY_DSN) {
+    Sentry.captureException(err, {
+      tags: { route: req.originalUrl },
+      extra: { method: req.method }
+    });
+  }
+  logger.error('error_tracked', { message: err?.message, stack: err?.stack });
+  try { metricsService.incrementErrorCount(); } catch (_) {}
   next(err);
 };
 
@@ -23,9 +44,25 @@ export const healthCheck = (req, res) => {
 };
 
 export const getMetrics = (req, res) => {
-  // In a real app, you'd expose Prometheus-compatible metrics here
-  res.status(200).json({
-    uptime: process.uptime(),
-    memoryUsage: process.memoryUsage(),
-  });
+  const mem = process.memoryUsage();
+  const cpu = process.cpuUsage();
+  const loadAvg = os.loadavg();
+  const eventLoop = monitorEventLoopDelay({ resolution: 10 });
+  eventLoop.enable();
+  setTimeout(() => {
+    eventLoop.disable();
+    res.status(200).json({
+      uptime: process.uptime(),
+      memoryUsage: mem,
+      cpuUser: cpu.user,
+      cpuSystem: cpu.system,
+      loadAverage: { '1m': loadAvg[0], '5m': loadAvg[1], '15m': loadAvg[2] },
+      eventLoopDelay: {
+        mean: eventLoop.mean / 1e6,
+        max: eventLoop.max / 1e6,
+        stddev: eventLoop.stddev / 1e6
+      },
+      timestamp: new Date().toISOString()
+    });
+  }, 50);
 };

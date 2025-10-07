@@ -1,120 +1,198 @@
 import express from 'express';
-import { body } from 'express-validator';
+import { param, body, query } from 'express-validator';
+import { protect, authorize } from '../middleware/auth.js';
 import {
-  applyForJob,
-  getMyApplications,
+  submitApplication,
+  getUserApplications,
   getJobApplications,
+  getApplication,
   updateApplicationStatus,
+  addEmployerNote,
   withdrawApplication,
   getApplicationStats,
-  getEmployerApplications,
-  getEmployerApplicationStats
+  getAllApplications
 } from '../controllers/applicationController.js';
-import { protect, authorize } from '../middleware/auth.js';
-import { attachSubscription, requireActiveSubscription, checkApplicationAccess, trackApplicationUsageSuccess } from '../middleware/subscription.js';
-import Application from '../models/Application.js';
 
 const router = express.Router();
 
 // Validation rules
-const applyValidation = [
+const applicationValidation = [
   body('job')
     .isMongoId()
     .withMessage('Valid job ID is required'),
   body('coverLetter')
-    .trim()
-    .isLength({ min: 50, max: 1000 })
-    .withMessage('Cover letter must be between 50 and 1000 characters'),
-  body('additionalInfo')
     .optional()
-    .trim()
-    .isLength({ max: 500 })
-    .withMessage('Additional info cannot be more than 500 characters')
+    .isLength({ max: 2000 })
+    .withMessage('Cover letter cannot exceed 2000 characters'),
+  body('expectedSalary.min')
+    .optional()
+    .isFloat({ min: 0 })
+    .withMessage('Minimum salary must be a positive number'),
+  body('expectedSalary.max')
+    .optional()
+    .isFloat({ min: 0 })
+    .withMessage('Maximum salary must be a positive number'),
+  body('availability')
+    .optional()
+    .isIn(['immediate', '2-weeks', '1-month', '2-months', 'negotiable'])
+    .withMessage('Invalid availability option'),
+  body('questionnaire')
+    .optional()
+    .isArray()
+    .withMessage('Questionnaire must be an array'),
+  body('questionnaire.*.question')
+    .if(body('questionnaire').exists())
+    .notEmpty()
+    .withMessage('Question is required'),
+  body('questionnaire.*.answer')
+    .if(body('questionnaire').exists())
+    .isLength({ min: 1, max: 1000 })
+    .withMessage('Answer must be between 1 and 1000 characters'),
+  body('skills')
+    .optional()
+    .isArray()
+    .withMessage('Skills must be an array'),
+  body('experience.years')
+    .optional()
+    .isInt({ min: 0, max: 50 })
+    .withMessage('Experience years must be between 0 and 50'),
+  body('experience.level')
+    .optional()
+    .isIn(['entry', 'junior', 'mid', 'senior', 'lead', 'architect'])
+    .withMessage('Invalid experience level'),
+  body('source')
+    .optional()
+    .isIn(['direct', 'referral', 'job-board', 'social-media', 'company-website'])
+    .withMessage('Invalid application source'),
+  body('referredBy')
+    .optional()
+    .isMongoId()
+    .withMessage('Invalid referrer ID')
 ];
 
-const updateStatusValidation = [
+const statusUpdateValidation = [
   body('status')
-    .isIn(['pending', 'reviewing', 'shortlisted', 'interviewed', 'rejected', 'accepted', 'withdrawn'])
-    .withMessage('Invalid application status'),
-  body('notes')
+    .isIn(['pending', 'reviewing', 'shortlisted', 'interviewing', 'rejected', 'accepted'])
+    .withMessage('Invalid status'),
+  body('reason')
     .optional()
-    .trim()
-    .isLength({ min: 10, max: 500 })
-    .withMessage('Notes must be between 10 and 500 characters'),
-  body('rating')
-    .optional()
-    .isInt({ min: 1, max: 5 })
-    .withMessage('Rating must be between 1 and 5'),
-  body('interviewDate')
-    .optional()
-    .isISO8601()
-    .withMessage('Invalid interview date format'),
-  body('interviewFeedback')
-    .optional()
-    .trim()
-    .isLength({ max: 1000 })
-    .withMessage('Interview feedback cannot be more than 1000 characters')
+    .isLength({ max: 500 })
+    .withMessage('Reason cannot exceed 500 characters')
 ];
 
-// All routes require authentication
+const noteValidation = [
+  body('note')
+    .trim()
+    .isLength({ min: 1, max: 1000 })
+    .withMessage('Note must be between 1 and 1000 characters'),
+  body('isPrivate')
+    .optional()
+    .isBoolean()
+    .withMessage('isPrivate must be a boolean')
+];
+
+const withdrawValidation = [
+  body('reason')
+    .optional()
+    .isLength({ max: 500 })
+    .withMessage('Reason cannot exceed 500 characters')
+];
+
+const getApplicationsValidation = [
+  query('page')
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage('Page must be a positive integer'),
+  query('limit')
+    .optional()
+    .isInt({ min: 1, max: 100 })
+    .withMessage('Limit must be between 1 and 100'),
+  query('status')
+    .optional()
+    .isIn(['all', 'pending', 'reviewing', 'shortlisted', 'interviewing', 'rejected', 'accepted', 'withdrawn'])
+    .withMessage('Invalid status filter'),
+  query('sortBy')
+    .optional()
+    .isIn(['newest', 'oldest', 'status', 'job-title', 'name'])
+    .withMessage('Invalid sort option')
+];
+
+const applicationIdValidation = [
+  param('applicationId')
+    .isMongoId()
+    .withMessage('Invalid application ID')
+];
+
+const jobIdValidation = [
+  param('jobId')
+    .isMongoId()
+    .withMessage('Invalid job ID')
+];
+
+// Protected routes
 router.use(protect);
-router.use(attachSubscription);
 
-// Jobseeker routes
-router.post('/', authorize('jobseeker'), requireActiveSubscription, checkApplicationAccess(), applyValidation, trackApplicationUsageSuccess, applyForJob);
-router.get('/', getMyApplications);
-router.put('/:id/withdraw', withdrawApplication);
+// Submit new application
+router.post('/',
+  applicationValidation,
+  submitApplication
+);
 
-// Employer and Admin routes
-router.get('/employer', authorize('employer', 'admin'), getEmployerApplications);
-router.get('/stats/employer', authorize('employer', 'admin'), getEmployerApplicationStats);
-router.get('/:jobId', authorize('employer', 'admin'), getJobApplications);
-router.put('/:id/status', authorize('employer', 'admin'), updateStatusValidation, updateApplicationStatus);
+// Get user's applications (for job seekers)
+router.get('/my-applications',
+  getApplicationsValidation,
+  getUserApplications
+);
 
-// Bulk actions
-router.post('/bulk', authorize('employer', 'admin'), async (req, res, next) => {
-  try {
-    const { applicationIds, action } = req.body;
-    if (!Array.isArray(applicationIds) || applicationIds.length === 0) {
-      return res.status(400).json({ success: false, message: 'applicationIds array is required' });
-    }
+// Get applications for a specific job (for employers)
+router.get('/job/:jobId',
+  jobIdValidation,
+  getApplicationsValidation,
+  getJobApplications
+);
 
-    // Ensure employer owns the applications unless admin
-    const match = {
-      _id: { $in: applicationIds },
-      ...(req.user.role === 'admin' ? {} : { employer: req.user._id })
-    };
+// Get application statistics
+router.get('/stats',
+  getApplicationStats
+);
 
-    const applications = await Application.find(match);
-    if (applications.length !== applicationIds.length) {
-      return res.status(403).json({ success: false, message: 'Not authorized to modify all specified applications' });
-    }
+// Get single application details
+router.get('/:applicationId',
+  applicationIdValidation,
+  getApplication
+);
 
-    let updatedCount = 0;
-    if (action === 'accept' || action === 'reject' || action === 'reviewing' || action === 'shortlist') {
-      const statusMap = {
-        accept: 'accepted',
-        reject: 'rejected',
-        reviewing: 'reviewing',
-        shortlist: 'shortlisted'
-      };
-      const newStatus = statusMap[action];
-      const result = await Application.updateMany(match, { status: newStatus, reviewedAt: new Date(), reviewedBy: req.user._id });
-      updatedCount = result.modifiedCount || result.nModified || 0;
-    } else if (action === 'delete') {
-      const result = await Application.deleteMany(match);
-      updatedCount = result.deletedCount || 0;
-    } else {
-      return res.status(400).json({ success: false, message: 'Unsupported action' });
-    }
+// Update application status (for employers)
+router.put('/:applicationId/status',
+  applicationIdValidation,
+  statusUpdateValidation,
+  updateApplicationStatus
+);
 
-    res.json({ success: true, message: `Bulk ${action} completed`, data: { affected: updatedCount } });
-  } catch (err) {
-    next(err);
-  }
-});
+// Add employer note to application
+router.post('/:applicationId/notes',
+  applicationIdValidation,
+  noteValidation,
+  addEmployerNote
+);
 
-// Admin only routes
-router.get('/stats/overview', authorize('admin'), getApplicationStats);
+// Withdraw application (for job seekers)
+router.put('/:applicationId/withdraw',
+  applicationIdValidation,
+  withdrawValidation,
+  withdrawApplication
+);
+
+// Admin routes
+router.get('/admin/all',
+  authorize('admin'),
+  getApplicationsValidation,
+  query('jobId').optional().isMongoId().withMessage('Invalid job ID'),
+  query('applicantId').optional().isMongoId().withMessage('Invalid applicant ID'),
+  getAllApplications
+);
 
 export default router;
+
+
+

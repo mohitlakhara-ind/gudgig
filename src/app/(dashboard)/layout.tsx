@@ -1,29 +1,33 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import SecondaryNavigation from '@/components/SecondaryNavigation';
+import DashboardLayout from '@/components/layouts/DashboardLayout';
+import CustomLoader from '@/components/CustomLoader';
 
-export default function DashboardLayout({
+export default function DashboardRouteLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      router.push('/login');
+      const next = `${pathname}${searchParams?.toString() ? `?${searchParams.toString()}` : ''}`;
+      router.push(`/login?next=${encodeURIComponent(next)}`);
     }
-  }, [isAuthenticated, isLoading, router]);
+  }, [isAuthenticated, isLoading, router, pathname, searchParams]);
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <CustomLoader size={32} color="#1FA9FF" />
           <p className="mt-2 text-muted-foreground">Loading...</p>
         </div>
       </div>
@@ -35,13 +39,8 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="flex">
-        <SecondaryNavigation />
-        <main className="flex-1 p-6">
-          {children}
-        </main>
-      </div>
-    </div>
+    <DashboardLayout>
+      {children}
+    </DashboardLayout>
   );
 }

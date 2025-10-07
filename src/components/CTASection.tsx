@@ -10,38 +10,44 @@ export default function CTASection() {
   const router = useRouter();
 
   return (
-    <section className="py-16 md:py-24 bg-gradient-to-r from-muted to-background">
+    <section className="py-24 md:py-32 bg-surface-gradient relative overflow-hidden">
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-primary/10 blur-2xl" />
+        <div className="absolute -bottom-10 -left-10 w-40 h-40 rounded-full bg-secondary/10 blur-2xl" />
+      </div>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-4xl mx-auto">
-          <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-6">
-            Start Your Journey Today
-          </h2>
-          <p className="text-xl md:text-2xl text-muted-foreground mb-8 leading-relaxed">
-            Subscribe & unlock MicroJobs – Find gigs and short-term projects that match your skills
-          </p>
+        <div className="max-w-5xl mx-auto">
+          <div className="relative rounded-3xl border border-border bg-card/70 backdrop-blur-md shadow-xl overflow-hidden">
+            <div className="absolute inset-0 bg-card-sheen" />
+            <div className="relative text-center px-6 sm:px-10 md:px-14 py-12 md:py-16">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-background/80 border border-border text-xs uppercase tracking-wider text-muted-foreground mb-5">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                Ready to begin?
+              </div>
+              <h2 className="text-3xl md:text-5xl font-extrabold text-foreground mb-4 tracking-tight">
+                Start Your Journey Today
+              </h2>
+              <p className="text-base md:text-xl text-muted-foreground mb-8 leading-relaxed max-w-3xl mx-auto">
+                Subscribe & unlock MicroJobs — find gigs and short-term projects that match your skills.
+              </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button
-              size="lg"
-              className="text-lg px-8 py-4 bg-primary-foreground text-primary hover:bg-primary-foreground/90 shadow-lg hover:shadow-xl"
-              onClick={() => isAuthenticated ? router.push('/dashboard') : router.push('/register/jobseeker')}
-            >
-              Get Started
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="text-lg px-8 py-4 text-foreground border-2 border-foreground bg-transparent hover:bg-foreground hover:text-background"
-              onClick={() => router.push('/pricing')}
-            >
-              Learn More
-            </Button>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Button
+                  size="lg"
+                  className="text-base md:text-lg px-7 md:px-8 py-4 bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl"
+                  onClick={() => isAuthenticated ? router.push('/dashboard') : router.push('/register/freelancer')}
+                >
+                  Get Started
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+                {/* Pricing link removed */}
+              </div>
+
+              <p className="text-muted-foreground mt-6 text-xs md:text-sm">
+                Free to start • No credit card required • Cancel anytime
+              </p>
+            </div>
           </div>
-
-          <p className="text-muted-foreground mt-6 text-sm">
-            Free to start • No credit card required • Cancel anytime
-          </p>
         </div>
       </div>
     </section>

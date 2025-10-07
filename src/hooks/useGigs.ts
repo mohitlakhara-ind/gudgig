@@ -28,12 +28,15 @@ export function useGigs(options: UseGigsOptions = {}) {
       const searchParams = { ...initialParams, ...params };
       const response: JobsResponse = await apiClient.getGigs(searchParams);
 
-      setGigs(response.data);
+      // Handle both direct data array and nested data structure
+      const gigsData = Array.isArray(response.data) ? response.data : response.data || [];
+      
+      setGigs(gigsData);
       setPagination({
-        page: response.pagination.page,
-        limit: response.pagination.limit,
-        total: response.total,
-        totalPages: response.pagination.totalPages
+        page: response.pagination?.page || 1,
+        limit: response.pagination?.limit || 10,
+        total: response.total || gigsData.length,
+        totalPages: response.pagination?.totalPages || 1
       });
     } catch (err) {
       setError(err instanceof ApiClientError ? err.message : 'Failed to fetch gigs');
@@ -53,7 +56,10 @@ export function useGigs(options: UseGigsOptions = {}) {
         page: nextPage
       });
 
-      setGigs(prev => [...prev, ...response.data]);
+      // Handle both direct data array and nested data structure
+      const newGigsData = Array.isArray(response.data) ? response.data : response.data || [];
+      
+      setGigs(prev => [...prev, ...newGigsData]);
       setPagination(prev => ({ ...prev, page: nextPage }));
     } catch (err) {
       setError(err instanceof ApiClientError ? err.message : 'Failed to load more gigs');

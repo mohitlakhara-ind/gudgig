@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Mail, CheckCircle, ArrowRight, Bell } from 'lucide-react';
+import CustomLoader from '@/components/CustomLoader';
 
 export default function ProfessionalNewsletterSection() {
   const [email, setEmail] = useState('');
@@ -85,9 +86,7 @@ export default function ProfessionalNewsletterSection() {
                         className="px-8 py-4 rounded-xl font-semibold transition-all duration-300 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[160px] text-primary-foreground bg-primary hover:bg-primary/90"
                       >
                         {isLoading ? (
-                          <div
-                            className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin"
-                          ></div>
+                          <CustomLoader size={20} color="#ffffff" />
                         ) : (
                           <>
                             Subscribe Now

@@ -2,80 +2,111 @@
 
 import { useEffect, useState } from 'react';
 import { Users, Briefcase, TrendingUp, Star, Award, Globe } from 'lucide-react';
+import { apiClient } from '@/lib/api';
 
 type StatColor = 'primary' | 'secondary' | 'accent' | 'warning' | 'success' | 'error';
 
-const stats: Array<{
+interface StatData {
   icon: React.ComponentType<{ className?: string }>;
   value: number;
   suffix: string;
   label: string;
   color: StatColor;
   description: string;
-}> = [
-  {
-    icon: Users,
-    value: 10000,
-    suffix: '+',
-    label: 'Active Users',
-    color: 'primary',
-    description: 'Growing community'
-  },
-  {
-    icon: Briefcase,
-    value: 5000,
-    suffix: '+',
-    label: 'Jobs Posted',
-    color: 'secondary',
-    description: 'Quality opportunities'
-  },
-  {
-    icon: TrendingUp,
-    value: 95,
-    suffix: '%',
-    label: 'Success Rate',
-    color: 'accent',
-    description: 'High completion rate'
-  },
-  {
-    icon: Star,
-    value: 4.9,
-    suffix: '/5',
-    label: 'User Rating',
-    color: 'warning',
-    description: 'Excellent reviews'
-  },
-  {
-    icon: Award,
-    value: 50,
-    suffix: '+',
-    label: 'Categories',
-    color: 'success',
-    description: 'Diverse skills'
-  },
-  {
-    icon: Globe,
-    value: 120,
-    suffix: '+',
-    label: 'Countries',
-    color: 'error',
-    description: 'Global reach'
-  }
-];
+}
 
 const colorClasses = {
-  primary: 'text-primary bg-secondary/10',
-  secondary: 'text-secondary bg-primary/10',
-  accent: 'text-accent bg-warning/10',
-  warning: 'text-warning bg-destructive/10',
-  success: 'text-success bg-warning/10',
-  error: 'text-destructive bg-accent-foreground/10'
+  primary: 'text-primary bg-primary/10',
+  secondary: 'text-secondary bg-secondary/10',
+  accent: 'text-accent bg-accent/10',
+  warning: 'text-warning bg-warning/10',
+  success: 'text-success bg-success/10',
+  error: 'text-destructive bg-destructive/10'
 };
 
 export default function StatsSection() {
-  const [counters, setCounters] = useState(stats.map(() => 0));
+  const [stats, setStats] = useState<StatData[]>([]);
+  const [counters, setCounters] = useState<number[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        setLoading(true);
+        // TODO: Replace with real API call when stats API is implemented
+        // const response = await apiClient.getPublicStats();
+        // const apiStats = response.data;
+        
+        // For now, use default stats structure with real API data when available
+        const defaultStats: StatData[] = [
+          {
+            icon: Users,
+            value: 0, // Will be updated from API
+            suffix: '+',
+            label: 'Active Users',
+            color: 'primary',
+            description: 'Growing community'
+          },
+          {
+            icon: Briefcase,
+            value: 0, // Will be updated from API
+            suffix: '+',
+            label: 'Jobs Posted',
+            color: 'secondary',
+            description: 'Quality opportunities'
+          },
+          {
+            icon: TrendingUp,
+            value: 0, // Will be updated from API
+            suffix: '%',
+            label: 'Success Rate',
+            color: 'accent',
+            description: 'High completion rate'
+          },
+          {
+            icon: Star,
+            value: 0, // Will be updated from API
+            suffix: '/5',
+            label: 'User Rating',
+            color: 'warning',
+            description: 'Excellent reviews'
+          },
+          {
+            icon: Award,
+            value: 0, // Will be updated from API
+            suffix: '+',
+            label: 'Categories',
+            color: 'success',
+            description: 'Diverse skills'
+          },
+          {
+            icon: Globe,
+            value: 0, // Will be updated from API
+            suffix: '+',
+            label: 'Countries',
+            color: 'error',
+            description: 'Global reach'
+          }
+        ];
+        
+        setStats(defaultStats);
+        setCounters(defaultStats.map(() => 0));
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+        // Fallback to empty stats
+        setStats([]);
+        setCounters([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
+
+  useEffect(() => {
+    if (stats.length === 0) return;
+
     const timers = stats.map((stat, index) => {
       const increment = stat.value / 50; // 50 steps
       let current = 0;
@@ -96,10 +127,10 @@ export default function StatsSection() {
     });
 
     return () => timers.forEach(clearInterval);
-  }, []);
+  }, [stats]);
 
   return (
-    <section className="py-16 md:py-24 bg-gradient-to-br from-background via-muted to-background relative overflow-hidden">
+    <section className="py-20 md:py-28 bg-surface-gradient relative overflow-hidden">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute top-10 left-10 w-20 h-20 bg-primary rounded-full"></div>
@@ -109,42 +140,62 @@ export default function StatsSection() {
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="text-center mb-16">
-          <h2 className="heading-1 text-foreground mb-4">
-            Trusted by <span className="text-gradient-primary">Thousands</span>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-card/60 border border-border text-xs uppercase tracking-wider text-muted-foreground mb-4">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
+            Platform impact
+          </div>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-foreground mb-4">
+            Trusted by <span className="text-primary">Thousands</span>
           </h2>
-          <p className="body-large text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
             Join our growing community of freelancers and employers making success happen
           </p>
+          <div className="mt-8 h-px w-24 mx-auto bg-divider-gradient" />
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-          {stats.map((stat, index) => {
-            const Icon = stat.icon;
-            const displayValue = stat.suffix === '/5' && counters[index] === stat.value
-              ? stat.value
-              : counters[index];
-
-            return (
-              <div key={index} className="text-center group">
-                <div className={`w-16 h-16 ${colorClasses[stat.color]} rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-110`}>
-                  <Icon className="h-8 w-8" />
-                </div>
-
-                <div className="space-y-2">
-                  <div className="text-2xl md:text-3xl font-bold text-foreground">
-                    {typeof displayValue === 'number' && displayValue >= 1000
-                      ? `${(displayValue / 1000).toFixed(1)}K`
-                      : displayValue
-                    }
-                    <span className="text-primary">{stat.suffix}</span>
-                  </div>
-                  <div className="heading-3 text-foreground">{stat.label}</div>
-                  <div className="body-small text-muted-foreground">{stat.description}</div>
+        {loading ? (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-5 md:gap-6">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="text-center group bg-card border border-border rounded-2xl px-4 py-6 md:px-5 md:py-7 shadow-sm animate-pulse">
+                <div className="w-14 h-14 bg-muted rounded-xl mx-auto mb-4"></div>
+                <div className="space-y-1.5">
+                  <div className="h-8 bg-muted rounded w-16 mx-auto"></div>
+                  <div className="h-4 bg-muted rounded w-20 mx-auto"></div>
+                  <div className="h-3 bg-muted rounded w-24 mx-auto"></div>
                 </div>
               </div>
-            );
-          })}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-5 md:gap-6">
+            {stats.map((stat, index) => {
+              const Icon = stat.icon;
+              const displayValue = stat.suffix === '/5' && counters[index] === stat.value
+                ? stat.value
+                : counters[index];
+
+              return (
+                <div key={index} className="text-center group bg-card border border-border rounded-2xl px-4 py-6 md:px-5 md:py-7 shadow-sm hover:shadow-md transition-all">
+                  <div className={`w-14 h-14 ${colorClasses[stat.color]} rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-105 transition-transform`}>
+                    <Icon className="h-7 w-7" />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <div className="text-2xl md:text-3xl font-extrabold text-foreground leading-none">
+                      {typeof displayValue === 'number' && displayValue >= 1000
+                        ? `${(displayValue / 1000).toFixed(1)}K`
+                        : displayValue
+                      }
+                      <span className="ml-0.5 text-primary">{stat.suffix}</span>
+                    </div>
+                    <div className="text-sm font-medium text-foreground">{stat.label}</div>
+                    <div className="text-xs text-muted-foreground">{stat.description}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
 
         {/* Bottom CTA */}
         <div className="text-center mt-16">

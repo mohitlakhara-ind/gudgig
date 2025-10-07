@@ -1,13 +1,11 @@
 import Conversation from '../models/Conversation.js';
-import Order from '../models/Order.js';
 
 // GET /api/conversations
 export const getConversations = async (req, res, next) => {
   try {
     const conversations = await Conversation.find({ participants: req.user._id })
       .sort({ lastMessageAt: -1 })
-      .populate('participants', 'name avatar')
-      .populate('order', 'status');
+      .populate('participants', 'name');
     res.status(200).json({ success: true, count: conversations.length, data: conversations });
   } catch (error) {
     next(error);
@@ -17,26 +15,16 @@ export const getConversations = async (req, res, next) => {
 // POST /api/conversations
 export const startConversation = async (req, res, next) => {
   try {
-    const { participantId, orderId } = req.body;
+    const { participantId } = req.body;
     if (!participantId) return res.status(400).json({ success: false, message: 'participantId is required' });
 
-    // If orderId provided, ensure user is part of the order
-    if (orderId) {
-      const order = await Order.findById(orderId);
-      if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
-      const isParticipant = [order.buyer.toString(), order.seller.toString()].includes(req.user.id);
-      if (!isParticipant) return res.status(403).json({ success: false, message: 'Not authorized for this order' });
-    }
-
     let conversation = await Conversation.findOne({
-      participants: { $all: [req.user._id, participantId] },
-      order: orderId || null
+      participants: { $all: [req.user._id, participantId] }
     });
 
     if (!conversation) {
       conversation = await Conversation.create({
         participants: [req.user._id, participantId],
-        order: orderId || null,
         lastMessageAt: new Date(),
         unreadBy: [participantId]
       });

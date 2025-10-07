@@ -2,191 +2,96 @@ import mongoose from 'mongoose';
 
 const applicationSchema = new mongoose.Schema({
   job: {
-    type: mongoose.Schema.ObjectId,
+    type: mongoose.Schema.Types.ObjectId,
     ref: 'Job',
-    required: [true, 'Application must be for a job']
+    required: true,
+    index: true
   },
   applicant: {
-    type: mongoose.Schema.ObjectId,
+    type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: [true, 'Application must have an applicant']
-  },
-  employer: {
-    type: mongoose.Schema.ObjectId,
-    ref: 'User',
-    required: [true, 'Application must have an employer']
+    required: true,
+    index: true
   },
   status: {
     type: String,
-    enum: ['pending', 'reviewing', 'shortlisted', 'interviewed', 'rejected', 'accepted', 'withdrawn'],
-    default: 'pending'
+    enum: [
+      'pending',        // Application submitted, waiting for review
+      'reviewing',      // Application is being reviewed
+      'shortlisted',    // Moved to shortlist
+      'interviewing',   // Interview scheduled/in progress
+      'rejected',       // Application rejected
+      'accepted',       // Application accepted/hired
+      'withdrawn'       // Applicant withdrew application
+    ],
+    default: 'pending',
+    index: true
   },
   coverLetter: {
     type: String,
-    required: [true, 'Please provide a cover letter'],
-    maxlength: [1000, 'Cover letter cannot be more than 1000 characters']
+    maxlength: 2000,
+    trim: true
   },
   resume: {
-    type: String, // URL to uploaded resume
-    default: null
+    filename: String,
+    url: String,
+    cloudinaryId: String
   },
-  additionalInfo: {
-    type: String,
-    maxlength: [500, 'Additional info cannot be more than 500 characters'],
-    default: null
+  portfolio: {
+    filename: String,
+    url: String,
+    cloudinaryId: String
   },
-  appliedAt: {
-    type: Date,
-    default: Date.now
-  },
-  reviewedAt: {
-    type: Date,
-    default: null
-  },
-  reviewedBy: {
-    type: mongoose.Schema.ObjectId,
-    ref: 'User',
-    default: null
-  },
-  notes: [{
-    content: {
-      type: String,
-      required: true
-    },
-    addedBy: {
-      type: mongoose.Schema.ObjectId,
-      ref: 'User',
-      required: true
-    },
-    isPrivate: {
-      type: Boolean,
-      default: false // If true, only visible to employer/recruiter
-    },
-    createdAt: {
-      type: Date,
-      default: Date.now
-    }
-  }],
-  rating: {
-    type: Number,
-    min: 1,
-    max: 5,
-    default: null
-  },
-  interviewDate: {
-    type: Date,
-    default: null
-  },
-  interviewFeedback: {
-    type: String,
-    maxlength: [1000, 'Interview feedback cannot be more than 1000 characters'],
-    default: null
-  },
-  offerDetails: {
-    salary: {
+  expectedSalary: {
+    min: {
       type: Number,
-      default: null
+      min: 0
     },
-    benefits: [{
-      type: String
-    }],
-    startDate: {
-      type: Date,
-      default: null
+    max: {
+      type: Number,
+      min: 0
     },
-    additionalTerms: {
+    currency: {
       type: String,
-      default: null
+      default: 'USD'
     }
   },
-  withdrawnAt: {
-    type: Date,
-    default: null
-  },
-  withdrawnReason: {
+  availability: {
     type: String,
-    default: null
+    enum: ['immediate', '2-weeks', '1-month', '2-months', 'negotiable'],
+    default: 'negotiable'
   },
-  applicationAnswers: [{
-    questionId: {
-      type: mongoose.Schema.ObjectId,
-      required: true
-    },
+  questionnaire: [{
     question: {
       type: String,
       required: true
     },
     answer: {
-      type: mongoose.Schema.Types.Mixed,
-      required: true
-    },
-    type: {
       type: String,
-      enum: ['text', 'textarea', 'select', 'multiselect', 'boolean', 'file'],
-      required: true
+      required: true,
+      maxlength: 1000
     }
   }],
-  screeningResults: {
-    score: {
+  skills: [{
+    type: String,
+    trim: true
+  }],
+  experience: {
+    years: {
       type: Number,
       min: 0,
-      max: 100,
-      default: null
+      max: 50
     },
-    passed: {
-      type: Boolean,
-      default: null
-    },
-    answers: [{
-      questionId: {
-        type: mongoose.Schema.ObjectId,
-        required: true
-      },
-      question: {
-        type: String,
-        required: true
-      },
-      answer: {
-        type: String,
-        required: true
-      },
-      correct: {
-        type: Boolean,
-        required: true
-      },
-      points: {
-        type: Number,
-        required: true
-      }
-    }],
-    completedAt: {
-      type: Date,
-      default: null
+    level: {
+      type: String,
+      enum: ['entry', 'junior', 'mid', 'senior', 'lead', 'architect']
     }
   },
-  timeline: [{
-    status: {
-      type: String,
-      enum: ['pending', 'reviewing', 'shortlisted', 'interviewed', 'rejected', 'accepted', 'withdrawn'],
-      required: true
-    },
-    timestamp: {
-      type: Date,
-      default: Date.now
-    },
-    note: {
-      type: String,
-      trim: true
-    },
-    updatedBy: {
-      type: mongoose.Schema.ObjectId,
-      ref: 'User'
-    }
-  }],
+  // Interview scheduling
   interviews: [{
     type: {
       type: String,
-      enum: ['phone', 'video', 'in-person', 'technical', 'panel'],
+      enum: ['phone', 'video', 'in-person', 'technical', 'final'],
       required: true
     },
     scheduledAt: {
@@ -194,172 +99,244 @@ const applicationSchema = new mongoose.Schema({
       required: true
     },
     duration: {
-      type: Number, // in minutes
+      type: Number, // minutes
       default: 60
     },
-    location: {
-      type: String,
-      trim: true
-    },
-    meetingLink: {
-      type: String,
-      trim: true
-    },
-    interviewer: {
-      type: mongoose.Schema.ObjectId,
-      ref: 'User'
-    },
-    interviewers: [{
-      type: mongoose.Schema.ObjectId,
-      ref: 'User'
-    }],
+    location: String, // for in-person or video link
     status: {
       type: String,
-      enum: ['scheduled', 'completed', 'cancelled', 'rescheduled'],
+      enum: ['scheduled', 'completed', 'cancelled', 'no-show'],
       default: 'scheduled'
     },
+    notes: String,
     feedback: {
-      type: String,
-      trim: true
+      rating: {
+        type: Number,
+        min: 1,
+        max: 5
+      },
+      comments: String,
+      interviewer: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+      }
     },
-    rating: {
-      type: Number,
-      min: 1,
-      max: 5
-    },
-    notes: {
-      type: String,
-      trim: true
-    },
-    completedAt: {
-      type: Date
+    createdAt: {
+      type: Date,
+      default: Date.now
     }
   }],
-  documents: [{
-    name: {
+  // Employer notes and feedback
+  employerNotes: [{
+    note: {
       type: String,
       required: true,
-      trim: true
+      maxlength: 1000
     },
-    url: {
-      type: String,
-      required: true
-    },
-    type: {
-      type: String,
-      enum: ['resume', 'cover_letter', 'portfolio', 'certificate', 'other'],
-      required: true
-    },
-    uploadedAt: {
-      type: Date,
-      default: Date.now
-    },
-    uploadedBy: {
-      type: mongoose.Schema.ObjectId,
-      ref: 'User',
-      required: true
-    }
-  }],
-  communication: [{
-    type: {
-      type: String,
-      enum: ['email', 'message', 'call', 'meeting'],
-      required: true
-    },
-    subject: {
-      type: String,
-      trim: true
-    },
-    content: {
-      type: String,
-      required: true
-    },
-    from: {
-      type: mongoose.Schema.ObjectId,
+    addedBy: {
+      type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true
     },
-    to: {
-      type: mongoose.Schema.ObjectId,
-      ref: 'User',
-      required: true
-    },
-    timestamp: {
-      type: Date,
-      default: Date.now
-    },
-    read: {
+    isPrivate: {
       type: Boolean,
-      default: false
+      default: true
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now
     }
   }],
-  analytics: {
-    timeToReview: {
-      type: Number, // in hours
-      default: null
-    },
-    timeToInterview: {
-      type: Number, // in hours
-      default: null
-    },
-    timeToDecision: {
-      type: Number, // in hours
-      default: null
-    },
-    source: {
+  // Status change history
+  statusHistory: [{
+    status: {
       type: String,
-      enum: ['direct', 'job_board', 'referral', 'social_media', 'company_website', 'other'],
-      default: 'direct'
+      required: true
     },
-    referrer: {
-      type: String,
-      trim: true
+    changedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
+    },
+    reason: String,
+    changedAt: {
+      type: Date,
+      default: Date.now
     }
-  },
-  tags: [{
-    type: String,
-    trim: true
   }],
-  priority: {
+  // Application source tracking
+  source: {
     type: String,
-    enum: ['low', 'medium', 'high', 'urgent'],
-    default: 'medium'
+    enum: ['direct', 'referral', 'job-board', 'social-media', 'company-website'],
+    default: 'direct'
   },
-  matchScore: {
+  referredBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  // Communication tracking
+  lastContactedAt: Date,
+  communicationCount: {
     type: Number,
-    min: 0,
-    max: 100,
-    default: null
-  }
+    default: 0
+  },
+  // Metadata
+  appliedAt: {
+    type: Date,
+    default: Date.now,
+    index: true
+  },
+  lastUpdatedAt: {
+    type: Date,
+    default: Date.now
+  },
+  // Soft delete
+  isActive: {
+    type: Boolean,
+    default: true,
+    index: true
+  },
+  deletedAt: Date
 }, {
-  timestamps: true,
-  toJSON: { virtuals: true },
-  toObject: { virtuals: true }
+  timestamps: true
 });
 
-// Compound index to prevent duplicate applications
-applicationSchema.index({ job: 1, applicant: 1 }, { unique: true });
-
-// Index for better query performance
-applicationSchema.index({ applicant: 1, status: 1 });
-applicationSchema.index({ employer: 1, status: 1 });
+// Compound indexes for common queries
+applicationSchema.index({ job: 1, applicant: 1 }, { unique: true }); // Prevent duplicate applications
 applicationSchema.index({ job: 1, status: 1 });
-applicationSchema.index({ createdAt: -1 });
+applicationSchema.index({ applicant: 1, status: 1 });
+applicationSchema.index({ appliedAt: -1 });
+applicationSchema.index({ status: 1, appliedAt: -1 });
 
-// Virtual for applicant details
-applicationSchema.virtual('applicantDetails', {
-  ref: 'User',
-  localField: 'applicant',
-  foreignField: '_id',
-  justOne: true
+// Middleware to update lastUpdatedAt on save
+applicationSchema.pre('save', function(next) {
+  if (this.isModified() && !this.isNew) {
+    this.lastUpdatedAt = new Date();
+  }
+  next();
 });
 
-// Virtual for job details
-applicationSchema.virtual('jobDetails', {
-  ref: 'Job',
-  localField: 'job',
-  foreignField: '_id',
-  justOne: true
+// Virtual for calculating days since application
+applicationSchema.virtual('daysSinceApplication').get(function() {
+  return Math.floor((new Date() - this.appliedAt) / (1000 * 60 * 60 * 24));
 });
+
+// Method to update status with history tracking
+applicationSchema.methods.updateStatus = function(newStatus, changedBy, reason) {
+  const oldStatus = this.status;
+  
+  // Add to status history
+  this.statusHistory.push({
+    status: oldStatus,
+    changedBy,
+    reason,
+    changedAt: new Date()
+  });
+  
+  // Update current status
+  this.status = newStatus;
+  this.lastUpdatedAt = new Date();
+  
+  return this.save();
+};
+
+// Method to add employer note
+applicationSchema.methods.addEmployerNote = function(note, addedBy, isPrivate = true) {
+  this.employerNotes.push({
+    note,
+    addedBy,
+    isPrivate,
+    createdAt: new Date()
+  });
+  
+  this.lastUpdatedAt = new Date();
+  return this.save();
+};
+
+// Method to schedule interview
+applicationSchema.methods.scheduleInterview = function(interviewData) {
+  this.interviews.push({
+    ...interviewData,
+    createdAt: new Date()
+  });
+  
+  this.lastUpdatedAt = new Date();
+  return this.save();
+};
+
+// Static method to get application statistics
+applicationSchema.statics.getApplicationStats = async function(filters = {}) {
+  const pipeline = [
+    { $match: { isActive: true, ...filters } },
+    {
+      $group: {
+        _id: '$status',
+        count: { $sum: 1 }
+      }
+    }
+  ];
+  
+  const stats = await this.aggregate(pipeline);
+  
+  // Convert to object format
+  const result = {
+    total: 0,
+    pending: 0,
+    reviewing: 0,
+    shortlisted: 0,
+    interviewing: 0,
+    rejected: 0,
+    accepted: 0,
+    withdrawn: 0
+  };
+  
+  stats.forEach(stat => {
+    result[stat._id] = stat.count;
+    result.total += stat.count;
+  });
+  
+  return result;
+};
+
+// Static method to get applications with pagination and population
+applicationSchema.statics.getApplicationsWithDetails = async function(filters = {}, options = {}) {
+  const {
+    page = 1,
+    limit = 20,
+    sort = { appliedAt: -1 },
+    populate = ['job', 'applicant']
+  } = options;
+  
+  const skip = (page - 1) * limit;
+  
+  const query = this.find({ isActive: true, ...filters })
+    .skip(skip)
+    .limit(parseInt(limit))
+    .sort(sort);
+  
+  // Add population
+  if (populate.includes('job')) {
+    query.populate('job', 'title company location type salary status');
+  }
+  if (populate.includes('applicant')) {
+    query.populate('applicant', 'name email avatar profile');
+  }
+  
+  const applications = await query.exec();
+  const total = await this.countDocuments({ isActive: true, ...filters });
+  
+  return {
+    applications,
+    pagination: {
+      page: parseInt(page),
+      limit: parseInt(limit),
+      total,
+      pages: Math.ceil(total / limit)
+    }
+  };
+};
 
 export default mongoose.model('Application', applicationSchema);
+
+
+

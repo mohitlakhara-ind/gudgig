@@ -5,7 +5,7 @@ A comprehensive Node.js + Express backend API for a job portal application with 
 ## 🚀 Features
 
 - **Authentication & Authorization**: JWT-based authentication with role-based access control
-- **User Management**: Support for job seekers, employers, and administrators
+- **User Management**: Support for freelancers, employers, and administrators
 - **Job Management**: Complete CRUD operations for job postings
 - **Company Profiles**: Company management with verification system
 - **Job Applications**: Application tracking and management
@@ -294,7 +294,7 @@ npm run seed
 ```
 
 This creates:
-- Sample users (admin, employers, job seekers)
+- Sample users (admin, employers, freelancers)
 - Sample companies
 - Sample job postings
 - Sample applications

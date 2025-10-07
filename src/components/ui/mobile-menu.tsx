@@ -55,7 +55,7 @@ export default function MobileMenu({
         <nav className="p-4" aria-label="Primary">
           <ul className="flex flex-col gap-1">
             {navigation.map((item) => (
-              <li key={item.href}>
+              <li key={`${item.href}:${item.name}`}>
                 <Link
                   href={item.href}
                   onClick={onClose}

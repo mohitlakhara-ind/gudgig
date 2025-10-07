@@ -95,7 +95,7 @@ export function Drawer({
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="flex-1 overflow-y-auto p-4 scrollbar-thin">
           {children}
         </div>
       </div>

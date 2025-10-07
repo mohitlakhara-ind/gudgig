@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   Facebook,
   Twitter,
@@ -18,13 +19,13 @@ const footerLinks = {
     { name: 'Contact', href: '/contact' }
   ],
   candidates: [
-    { name: 'Browse MicroJobs', href: '/jobs' },
-    { name: 'Pricing', href: '/pricing' }
+    { name: 'Browse Gigs', href: '/gigs' },
+    // Pricing link removed
   ],
   employers: [
-    { name: 'Post MicroJobs', href: '/employer/post-job' },
-    { name: 'Dashboard', href: '/employer/dashboard' },
-    { name: 'Hire Talent', href: '/employer/post-job' }
+    { name: 'Post a Gig', href: '/admin/login' },
+    { name: 'Admin Dashboard', href: '/admin' },
+    { name: 'Hire Talent', href: '/admin/login' }
   ],
   support: [
     { name: 'FAQ', href: '/faq' },
@@ -42,6 +43,9 @@ const socialLinks = [
 ];
 
 export default function Footer() {
+  const { user, isAuthenticated } = useAuth();
+  const actualUser = (user as any)?.data || user;
+  const isAdmin = isAuthenticated && (actualUser as any)?.role === 'admin';
   return (
     <footer className="bg-background text-foreground border-t border-border">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -49,20 +53,20 @@ export default function Footer() {
           {/* Company Info */}
           <div className="lg:col-span-2">
             <div className="flex items-center space-x-2 mb-4">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm">MJ</span>
+              <div className="w-8 h-8 bg-primary rounded-2xl flex items-center justify-center shadow-strong">
+                <span className="text-primary-foreground font-bold text-sm">GM</span>
               </div>
-              <span className="text-xl font-bold">MicroJobs</span>
+              <span className="text-xl font-bold">Gigs Mint</span>
             </div>
             <p className="text-muted-foreground mb-6 leading-relaxed">
-              Connecting talented candidates with employers looking for skilled professionals. Find your next opportunity or hire the perfect candidate.
+              A futuristic freelancer marketplace with professional LinkedIn-blue aesthetics. Browse jobs, post a job, and bid with confidence.
             </p>
 
             {/* Contact Info */}
             <div className="space-y-2">
               <div className="flex items-center text-muted-foreground">
                 <Mail className="h-4 w-4 mr-2" />
-                <span>hello@microjobs.com</span>
+                <span>hello@gigsmint.com</span>
               </div>
               <div className="flex items-center text-muted-foreground">
                 <Phone className="h-4 w-4 mr-2" />
@@ -109,22 +113,24 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Employers Links */}
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Employers</h3>
-            <ul className="space-y-2">
-              {footerLinks.employers.map((link) => (
-                <li key={link.name}>
-                  <Link
-                    href={link.href}
-                    className="text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+          {/* Employers Links (admin only) */}
+          {isAdmin && (
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Employers</h3>
+              <ul className="space-y-2">
+                {footerLinks.employers.map((link) => (
+                  <li key={link.name}>
+                    <Link
+                      href={link.href}
+                      className="text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {link.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
 
         {/* Bottom Section */}
@@ -132,7 +138,7 @@ export default function Footer() {
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-6">
               <p className="text-muted-foreground text-sm">
-                © 2024 MicroJobs. All rights reserved.
+                © 2024 Gigs Mint. All rights reserved.
               </p>
               <div className="flex space-x-4">
                 {footerLinks.support.map((link) => (

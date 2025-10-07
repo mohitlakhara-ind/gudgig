@@ -1,74 +1,99 @@
 import express from 'express';
+import { param, body, query } from 'express-validator';
+import { protect } from '../middleware/auth.js';
 import {
   getNotifications,
+  getUnreadCount,
   markAsRead,
   markAllAsRead,
   deleteNotification,
-  getUnreadCount,
-  updatePreferences,
-  getPreferences
+  createNotification
 } from '../controllers/notificationController.js';
-import { protect } from '../middleware/auth.js';
-import { body, param, query } from 'express-validator';
-import { validate } from '../middleware/validation.js';
 
 const router = express.Router();
 
-// Validation middleware
-const validateNotificationId = [
-  param('id').isMongoId().withMessage('Invalid notification ID')
+// Validation rules
+const notificationValidation = [
+  body('user')
+    .isMongoId()
+    .withMessage('Valid user ID is required'),
+  body('type')
+    .trim()
+    .notEmpty()
+    .withMessage('Notification type is required'),
+  body('title')
+    .trim()
+    .isLength({ min: 1, max: 200 })
+    .withMessage('Title must be between 1 and 200 characters'),
+  body('message')
+    .trim()
+    .isLength({ min: 1, max: 1000 })
+    .withMessage('Message must be between 1 and 1000 characters'),
+  body('data')
+    .optional()
+    .isObject()
+    .withMessage('Data must be an object')
 ];
 
-const validatePagination = [
-  query('page').optional().isInt({ min: 1 }).withMessage('Page must be a positive integer'),
-  query('limit').optional().isInt({ min: 1, max: 100 }).withMessage('Limit must be between 1 and 100'),
-  query('read').optional().isBoolean().withMessage('Read must be a boolean'),
-  query('type').optional().isIn(['application_status', 'job_match', 'interview', 'offer', 'message', 'job_new_application']).withMessage('Invalid notification type')
+const getNotificationsValidation = [
+  query('page')
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage('Page must be a positive integer'),
+  query('limit')
+    .optional()
+    .isInt({ min: 1, max: 100 })
+    .withMessage('Limit must be between 1 and 100'),
+  query('read')
+    .optional()
+    .isIn(['true', 'false'])
+    .withMessage('Read must be true or false')
 ];
 
-const validatePreferences = [
-  body('email').optional().isBoolean().withMessage('Email preference must be a boolean'),
-  body('push').optional().isBoolean().withMessage('Push preference must be a boolean'),
-  body('sms').optional().isBoolean().withMessage('SMS preference must be a boolean'),
-  body('inApp').optional().isBoolean().withMessage('In-app preference must be a boolean')
+const notificationIdValidation = [
+  param('notificationId')
+    .isMongoId()
+    .withMessage('Invalid notification ID')
 ];
 
-// All routes require authentication
+// Protected routes
 router.use(protect);
 
-// @route   GET /api/notifications
-// @desc    Get notifications for authenticated user
-// @access  Private
-router.get('/', validate(validatePagination), getNotifications);
+// Get user's notifications
+router.get('/',
+  getNotificationsValidation,
+  getNotifications
+);
 
-// @route   GET /api/notifications/unread-count
-// @desc    Get unread notifications count
-// @access  Private
-router.get('/unread-count', getUnreadCount);
+// Get unread notifications count
+router.get('/unread-count',
+  getUnreadCount
+);
 
-// @route   PUT /api/notifications/read-all
-// @desc    Mark all notifications as read
-// @access  Private
-router.put('/read-all', markAllAsRead);
+// Mark notification as read
+router.put('/:notificationId/read',
+  notificationIdValidation,
+  markAsRead
+);
 
-// @route   PUT /api/notifications/:id/read
-// @desc    Mark notification as read
-// @access  Private
-router.put('/:id/read', validate(validateNotificationId), markAsRead);
+// Mark all notifications as read
+router.put('/read-all',
+  markAllAsRead
+);
 
-// @route   DELETE /api/notifications/:id
-// @desc    Delete notification
-// @access  Private
-router.delete('/:id', validate(validateNotificationId), deleteNotification);
+// Delete notification
+router.delete('/:notificationId',
+  notificationIdValidation,
+  deleteNotification
+);
 
-// @route   GET /api/notifications/preferences
-// @desc    Get notification preferences
-// @access  Private
-router.get('/preferences', getPreferences);
-
-// @route   PUT /api/notifications/preferences
-// @desc    Update notification preferences
-// @access  Private
-router.put('/preferences', validate(validatePreferences), updatePreferences);
+// Create notification (for admin or internal use)
+router.post('/',
+  notificationValidation,
+  createNotification
+);
 
 export default router;
+
+
+

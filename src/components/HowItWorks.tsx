@@ -56,15 +56,19 @@ export default function HowItWorksMinimal() {
   const [activeTab, setActiveTab] = useState('employers');
 
   return (
-    <section className="py-20 md:py-32 bg-background">
+    <section className="py-24 md:py-36 bg-background">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
         {/* Header */}
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-light text-foreground mb-6 tracking-tight">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-card/60 border border-border text-xs uppercase tracking-wider text-muted-foreground mb-4">
+            <span className="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+            How it works
+          </div>
+          <h2 className="text-4xl md:text-5xl font-extrabold text-foreground mb-6 tracking-tight">
             How It Works
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto font-light leading-relaxed mb-10">
-            Simple steps for both employers and job seekers to connect and collaborate
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto font-normal leading-relaxed mb-10">
+            Simple steps for both employers and freelancers to connect and collaborate
           </p>
 
           {/* Tab Switcher */}
@@ -87,7 +91,7 @@ export default function HowItWorksMinimal() {
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              For Job Seekers
+              For Freelancers
             </button>
           </div>
         </div>
@@ -110,7 +114,7 @@ export default function HowItWorksMinimal() {
                       </div>
                     )}
 
-                    <Card className="h-full border border-accent/20 hover:border-primary/30 hover:shadow-lg transition-all duration-300 bg-card group-hover:bg-muted/30 rounded-2xl">
+                    <Card className="h-full border border-border hover:border-primary/40 hover:shadow-lg transition-all duration-300 bg-card/60 backdrop-blur-sm group-hover:bg-card rounded-2xl">
                       <CardContent className="p-8">
                         {/* Step Number & Icon */}
                         <div className="flex items-center mb-6">
@@ -122,11 +126,11 @@ export default function HowItWorksMinimal() {
                           </span>
                         </div>
 
-                        <h3 className="text-xl font-semibold text-card-foreground mb-4 tracking-tight">
+                        <h3 className="text-xl font-semibold text-card-foreground mb-2 tracking-tight">
                           {step.title}
                         </h3>
 
-                        <p className="text-muted-foreground mb-4 leading-relaxed text-sm">
+                        <p className="text-muted-foreground mb-3 leading-relaxed text-sm">
                           {step.description}
                         </p>
 
@@ -165,7 +169,7 @@ export default function HowItWorksMinimal() {
                       </div>
                     )}
 
-                    <Card className="h-full border border-accent/20 hover:border-secondary/30 hover:shadow-lg transition-all duration-300 bg-card group-hover:bg-muted/30 rounded-2xl">
+                    <Card className="h-full border border-border hover:border-secondary/40 hover:shadow-lg transition-all duration-300 bg-card/60 backdrop-blur-sm group-hover:bg-card rounded-2xl">
                       <CardContent className="p-8">
                         {/* Step Number & Icon */}
                         <div className="flex items-center mb-6">
@@ -177,11 +181,11 @@ export default function HowItWorksMinimal() {
                           </span>
                         </div>
 
-                        <h3 className="text-xl font-semibold text-card-foreground mb-4 tracking-tight">
+                        <h3 className="text-xl font-semibold text-card-foreground mb-2 tracking-tight">
                           {step.title}
                         </h3>
 
-                        <p className="text-muted-foreground mb-4 leading-relaxed text-sm">
+                        <p className="text-muted-foreground mb-3 leading-relaxed text-sm">
                           {step.description}
                         </p>
 

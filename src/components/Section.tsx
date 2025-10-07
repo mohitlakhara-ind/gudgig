@@ -18,7 +18,7 @@ export default function Section({
   const backgroundClasses = {
     white: 'bg-white',
     gray: 'bg-gray-50',
-    gradient: 'bg-gradient-to-br from-blue-50 to-teal-50'
+    gradient: 'bg-section-gradient'
   };
 
   return (

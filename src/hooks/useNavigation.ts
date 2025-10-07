@@ -5,16 +5,24 @@ import { usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   primaryNavigation,
-  jobSeekerNavigation,
-  employerNavigation,
+  freelancerNavigation,
   adminNavigation,
   NavigationItem,
+  NAVIGATION_SECTIONS,
 } from '@/config/navigation';
+// Removed notification counts import
+
+export interface GroupedNavigationItem {
+  sectionKey: keyof typeof NAVIGATION_SECTIONS | 'ungrouped';
+  sectionLabel: string;
+  items: NavigationItem[];
+}
 
 export function useNavigation() {
   const { user, isAuthenticated } = useAuth();
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  // Removed notification counts functionality
 
   // Check if a link is active
   const isActiveLink = (href: string): boolean => {
@@ -32,13 +40,12 @@ export function useNavigation() {
 
     switch (user.role) {
       case 'jobseeker':
-        return jobSeekerNavigation;
-      case 'employer':
-        return employerNavigation;
+      case 'freelancer':
+        return freelancerNavigation;
       case 'admin':
         return adminNavigation;
       default:
-        return jobSeekerNavigation; // fallback
+        return freelancerNavigation; // fallback
     }
   };
 
@@ -66,11 +73,47 @@ export function useNavigation() {
   // Memoized navigation items
   const navigationItems = useMemo(() => getNavigationForRole(), [user, isAuthenticated]);
 
+  // Enrich items with badge counts
+  const enrichNavigationWithBadges = (items: NavigationItem[], counts: NotificationCounts): NavigationItem[] => {
+    return items.map(item => {
+      const key = item.badgeKey;
+      if (!key) return item;
+      const value = counts[key] ?? 0;
+      return { ...item, badgeCount: value };
+    });
+  };
+
+  const groupNavigationItems = (items: NavigationItem[]): GroupedNavigationItem[] => {
+    const sectionOrder: (keyof typeof NAVIGATION_SECTIONS | 'ungrouped')[] = [];
+    const groups: Record<string, NavigationItem[]> = {};
+
+    for (const item of items) {
+      const key = (item.section as keyof typeof NAVIGATION_SECTIONS) || 'ungrouped';
+      if (!groups[key]) {
+        groups[key] = [];
+        sectionOrder.push(key);
+      }
+      groups[key].push(item);
+    }
+
+    return sectionOrder.map((key) => ({
+      sectionKey: key,
+      sectionLabel: key === 'ungrouped' ? '' : NAVIGATION_SECTIONS[key as keyof typeof NAVIGATION_SECTIONS],
+      items: groups[key] || [],
+    }));
+  };
+
+  const enrichedItems = useMemo(() => navigationItems, [navigationItems]);
+  const groupedNavigationItems = useMemo(() => groupNavigationItems(enrichedItems), [enrichedItems]);
+
   return {
     isActiveLink,
     getNavigationForRole,
     getPrimaryNavigation,
     navigationItems,
+    groupedNavigationItems,
+    // Removed notification counts
+    // Removed refresh notification counts
     isSidebarOpen,
     toggleSidebar,
     closeSidebar,

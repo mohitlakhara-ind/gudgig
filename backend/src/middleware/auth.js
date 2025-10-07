@@ -19,6 +19,15 @@ export const protect = async (req, res, next) => {
       // Get user from the token
       req.user = await User.findById(decoded.id).select('-password');
 
+      // Auto-reactivate if deactivation period expired
+      if (req.user && req.user.deactivatedUntil && req.user.isActive === false) {
+        if (new Date(req.user.deactivatedUntil).getTime() <= Date.now()) {
+          req.user.isActive = true;
+          req.user.deactivatedUntil = null;
+          await req.user.save();
+        }
+      }
+
       if (!req.user) {
         return res.status(401).json({
           success: false,

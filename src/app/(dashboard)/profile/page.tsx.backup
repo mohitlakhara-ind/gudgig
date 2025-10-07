@@ -1,0 +1,557 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { Separator } from '@/components/ui/separator';
+import PageHeader from '@/components/dashboard/PageHeader';
+// import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
+import {
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  Calendar,
+  Camera,
+  Save,
+  Eye,
+  EyeOff,
+  Plus,
+  X,
+  Award,
+  Briefcase,
+  GraduationCap,
+  Link as LinkIcon,
+  AlertCircle,
+  CheckCircle
+} from 'lucide-react';
+import Link from 'next/link';
+import { apiClient, ApiClientError } from '@/lib/api';
+import { useAuth } from '@/contexts/AuthContext';
+import CustomLoader from '@/components/CustomLoader';
+import { User as UserType } from '@/types/api';
+import ProfileSummary from '@/components/profile/ProfileSummary';
+import ProfileTips from '@/components/profile/ProfileTips';
+import DashboardLayout from '@/components/layouts/DashboardLayout';
+
+export default function ProfilePage() {
+  const router = useRouter();
+  const { user: authUser, isAuthenticated } = useAuth();
+  const [user, setUser] = useState<any | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    location: '',
+    bio: '',
+    skills: [] as string[],
+    experience: [] as any[],
+    education: [] as any[],
+    certifications: [] as any[]
+  });
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push('/login');
+      return;
+    }
+    fetchUserProfile();
+  }, [isAuthenticated, router]);
+
+  const fetchUserProfile = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const currentUser: any = await apiClient.getCurrentUser();
+      if (currentUser) {
+        setUser(currentUser);
+        setFormData({
+          name: currentUser.name || '',
+          email: currentUser.email || '',
+          phone: currentUser.phone || '',
+          location: currentUser.location || '',
+          bio: currentUser.bio || '',
+          skills: (currentUser.skills as any[]) || [],
+          experience: (currentUser.experience as any[]) || [],
+          education: (currentUser.education as any[]) || [],
+          certifications: (currentUser.certifications as any[]) || []
+        });
+      }
+    } catch (err) {
+      setError(err instanceof ApiClientError ? err.message : 'Failed to fetch profile');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    try {
+      setSaving(true);
+      setError(null);
+      setSuccess(null);
+      
+      const response = await apiClient.updateProfile(formData);
+      if (response.success) {
+        setSuccess('Profile updated successfully!');
+        setUser(response.data as any);
+      }
+    } catch (err) {
+      setError(err instanceof ApiClientError ? err.message : 'Failed to update profile');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleInputChange = (field: string, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const addSkill = (skill: string) => {
+    if (skill.trim() && !formData.skills.includes(skill.trim())) {
+      setFormData(prev => ({
+        ...prev,
+        skills: [...prev.skills, skill.trim()]
+      }));
+    }
+  };
+
+  const removeSkill = (skillToRemove: string) => {
+    setFormData(prev => ({
+      ...prev,
+      skills: prev.skills.filter(skill => skill !== skillToRemove)
+    }));
+  };
+
+  const calculateProfileCompleteness = () => {
+    if (!user) return 0;
+    
+    let completeness = 0;
+    const fields = [
+      user.name,
+      user.email,
+      user.phone,
+      user.location,
+      user.bio,
+      user.skills?.length > 0,
+      user.experience?.length > 0,
+      user.education?.length > 0
+    ];
+    
+    fields.forEach(field => {
+      if (field) completeness += 12.5;
+    });
+    
+    return Math.round(completeness);
+  };
+
+  if (!isAuthenticated) {
+    return null;
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen">
+        <main className="container mx-auto px-4 py-8">
+          <div className="flex justify-center items-center py-12">
+            <CustomLoader size={32} color="#1FA9FF" />
+            <span className="ml-2 text-muted-foreground">Loading profile...</span>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen">
+        <main className="container mx-auto px-4 py-8">
+          <div className="flex flex-col items-center justify-center py-12">
+            <AlertCircle className="h-12 w-12 text-destructive mb-4" />
+            <h3 className="text-lg font-semibold text-foreground mb-2">Failed to load profile</h3>
+            <p className="text-muted-foreground text-center mb-4">{error}</p>
+            <Button onClick={fetchUserProfile} variant="outline" className="bg-transparent">
+              Try Again
+            </Button>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  return (
+    <DashboardLayout>
+      <div className="max-w-7xl mx-auto">
+        <PageHeader
+          title="Profile Management"
+          description="Keep your profile up to date to attract the best opportunities."
+          actions={(
+            <Button onClick={handleSaveProfile} disabled={saving}>
+              <Save className="h-4 w-4 mr-2" />
+              {saving ? 'Saving...' : 'Save Changes'}
+            </Button>
+          )}
+        />
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Left Sidebar - Profile Overview */}
+            <div className="lg:col-span-1 space-y-6">
+              <ProfileSummary 
+                user={user} 
+                profileCompleteness={calculateProfileCompleteness()} 
+              />
+
+              <ProfileTips 
+                user={user} 
+                profileCompleteness={calculateProfileCompleteness()} 
+              />
+            </div>
+
+            {/* Main Content - Profile Form with Tabs (desktop) and Accordion (mobile) */}
+            <div className="lg:col-span-2 space-y-8">
+              <div className="hidden md:block">
+                <Tabs defaultValue="basic">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="basic">Basic Info</TabsTrigger>
+                    <TabsTrigger value="experience">Experience</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="basic" className="space-y-8 mt-6">
+                    {/* Basic + Skills */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Basic Information</CardTitle>
+                        <CardDescription>Update your personal and contact information</CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-foreground mb-1">Full Name *</label>
+                            <Input value={formData.name} onChange={(e) => handleInputChange('name', e.target.value)} />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-foreground mb-1">Email Address *</label>
+                            <div className="relative">
+                              <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                              <Input type="email" value={formData.email} onChange={(e) => handleInputChange('email', e.target.value)} className="pl-10" />
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-foreground mb-1">Phone Number</label>
+                            <div className="relative">
+                              <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                              <Input type="tel" value={formData.phone} onChange={(e) => handleInputChange('phone', e.target.value)} className="pl-10" />
+                            </div>
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-foreground mb-1">Location *</label>
+                          <div className="relative">
+                            <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                            <Input value={formData.location} onChange={(e) => handleInputChange('location', e.target.value)} className="pl-10" />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-foreground mb-1">Professional Bio</label>
+                          <Textarea value={formData.bio} onChange={(e) => handleInputChange('bio', e.target.value)} rows={4} />
+                          <p className="text-xs text-muted-foreground mt-1">{(formData.bio || '').length} / 500 characters</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardHeader>
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <CardTitle>Skills</CardTitle>
+                            <CardDescription>Add skills that showcase your expertise</CardDescription>
+                          </div>
+                          <Button size="sm" variant="outline" className="bg-transparent"><Plus className="h-4 w-4 mr-2" />Add Skill</Button>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex flex-wrap gap-2 mb-4">
+                          {(formData.skills || []).map((skill: any, index: number) => (
+                            <Badge key={index} variant="secondary" className="px-3 py-1">
+                              {typeof skill === 'string' ? skill : skill.name}
+                              <button className="ml-2 hover:text-red-600" onClick={() => removeSkill(typeof skill === 'string' ? skill : (skill as any).name)}>
+                                <X className="h-3 w-3" />
+                              </button>
+                            </Badge>
+                          ))}
+                        </div>
+                        <Input placeholder="Add a new skill..." onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addSkill((e.target as HTMLInputElement).value); (e.target as HTMLInputElement).value = ''; } }} />
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                  
+                  <TabsContent value="experience" className="space-y-8 mt-6">
+                    <Accordion type="multiple" className="w-full">
+                      <AccordionItem value="work-experience">
+                        <AccordionTrigger>Work Experience</AccordionTrigger>
+                        <AccordionContent>
+                          <Card>
+                            <CardHeader>
+                              <div className="flex justify-between items-center">
+                                <div>
+                                  <CardTitle>Work Experience</CardTitle>
+                                  <CardDescription>Add your professional experience</CardDescription>
+                                </div>
+                                <Button size="sm" variant="outline" className="bg-transparent"><Plus className="h-4 w-4 mr-2" />Add Experience</Button>
+                              </div>
+                            </CardHeader>
+                            <CardContent className="space-y-6">
+                              {(user.experience || []).length === 0 ? (
+                                <div className="text-center py-8 text-muted-foreground">
+                                  <Briefcase className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+                                  <p>No work experience added yet</p>
+                                  <p className="text-sm">Add your professional experience to showcase your background</p>
+                                </div>
+                              ) : (
+                                (user.experience || []).map((exp: any, index: number) => (
+                                  <div key={index} className="border rounded-lg p-4">
+                                    <div className="flex justify-between items-start mb-3">
+                                      <div>
+                                        <h4 className="font-semibold">{exp.title}</h4>
+                                        <p className="text-muted-foreground">{exp.company}</p>
+                                        <div className="flex items-center text-sm text-muted-foreground mt-1">
+                                          <MapPin className="h-3 w-3 mr-1" />
+                                          {exp.location}
+                                          <span className="mx-2">•</span>
+                                          <Calendar className="h-3 w-3 mr-1" />
+                                          {new Date(exp.startDate).toLocaleDateString()} - {exp.isCurrent ? 'Present' : new Date(exp.endDate).toLocaleDateString()}
+                                        </div>
+                                      </div>
+                                      <Button size="sm" variant="ghost">Edit</Button>
+                                    </div>
+                                    <p className="text-foreground text-sm">{exp.description}</p>
+                                  </div>
+                                ))
+                              )}
+                            </CardContent>
+                          </Card>
+                        </AccordionContent>
+                      </AccordionItem>
+                      <AccordionItem value="education">
+                        <AccordionTrigger>Education</AccordionTrigger>
+                        <AccordionContent>
+                          <Card>
+                            <CardHeader>
+                              <div className="flex justify-between items-center">
+                                <div>
+                                  <CardTitle>Education</CardTitle>
+                                  <CardDescription>Add your educational background</CardDescription>
+                                </div>
+                                <Button size="sm" variant="outline" className="bg-transparent"><Plus className="h-4 w-4 mr-2" />Add Education</Button>
+                              </div>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                              {(user.education || []).map((edu: any, index: number) => (
+                                <div key={index} className="border rounded-lg p-4">
+                                  <div className="flex justify-between items-start">
+                                    <div>
+                                      <h4 className="font-semibold">{edu.degree}</h4>
+                                      <p className="text-muted-foreground">{edu.school}</p>
+                                      <div className="flex items-center text-sm text-muted-foreground mt-1">
+                                        <MapPin className="h-3 w-3 mr-1" />
+                                        {edu.location}
+                                        <span className="mx-2">•</span>
+                                        <Calendar className="h-3 w-3 mr-1" />
+                                        {edu.startDate} - {edu.endDate}
+                                      </div>
+                                      {edu.gpa && (<p className="text-sm text-muted-foreground mt-1">GPA: {edu.gpa}</p>)}
+                                    </div>
+                                    <Button size="sm" variant="ghost">Edit</Button>
+                                  </div>
+                                </div>
+                              ))}
+                            </CardContent>
+                          </Card>
+                        </AccordionContent>
+                      </AccordionItem>
+                      <AccordionItem value="certifications">
+                        <AccordionTrigger>Certifications</AccordionTrigger>
+                        <AccordionContent>
+                          <Card>
+                            <CardHeader>
+                              <div className="flex justify-between items-center">
+                                <div>
+                                  <CardTitle>Certifications</CardTitle>
+                                  <CardDescription>Add your professional certifications</CardDescription>
+                                </div>
+                                <Button size="sm" variant="outline" className="bg-transparent"><Plus className="h-4 w-4 mr-2" />Add Certification</Button>
+                              </div>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                              {(user.certifications || []).map((cert: any, index: number) => (
+                                <div key={index} className="border rounded-lg p-4">
+                                  <div className="flex justify-between items-start">
+                                    <div>
+                                      <h4 className="font-semibold">{cert.name}</h4>
+                                      <p className="text-muted-foreground">{cert.issuer}</p>
+                                      <div className="flex items-center text-sm text-muted-foreground mt-1">
+                                        <Calendar className="h-3 w-3 mr-1" />
+                                        {cert.date}
+                                        {cert.credentialId && (<><span className="mx-2">•</span><span>ID: {cert.credentialId}</span></>)}
+                                      </div>
+                                    </div>
+                                    <Button size="sm" variant="ghost">Edit</Button>
+                                  </div>
+                                </div>
+                              ))}
+                            </CardContent>
+                          </Card>
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
+                  </TabsContent>
+                  
+                </Tabs>
+              </div>
+              <div className="md:hidden">
+                <Accordion type="single" collapsible className="w-full">
+                  <AccordionItem value="basic">
+                    <AccordionTrigger>Basic Info</AccordionTrigger>
+                    <AccordionContent>
+                      {/* Reuse content from Tabs - Basic + Skills */}
+                      <Card>
+                        <CardHeader>
+                          <CardTitle>Basic Information</CardTitle>
+                          <CardDescription>Update your personal and contact information</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-sm font-medium text-foreground mb-1">Full Name *</label>
+                              <Input value={formData.name} onChange={(e) => handleInputChange('name', e.target.value)} />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-foreground mb-1">Professional Title *</label>
+                              <Input value={(formData as any).title || ''} onChange={(e) => handleInputChange('title', e.target.value)} />
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-sm font-medium text-foreground mb-1">Email Address *</label>
+                              <div className="relative">
+                                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                <Input type="email" value={formData.email} onChange={(e) => handleInputChange('email', e.target.value)} className="pl-10" />
+                              </div>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-foreground mb-1">Phone Number</label>
+                              <div className="relative">
+                                <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                <Input type="tel" value={formData.phone} onChange={(e) => handleInputChange('phone', e.target.value)} className="pl-10" />
+                              </div>
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-foreground mb-1">Location *</label>
+                            <div className="relative">
+                              <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                              <Input value={formData.location} onChange={(e) => handleInputChange('location', e.target.value)} className="pl-10" />
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-foreground mb-1">Professional Bio</label>
+                            <Textarea value={formData.bio} onChange={(e) => handleInputChange('bio', e.target.value)} rows={4} />
+                            <p className="text-xs text-muted-foreground mt-1">{(formData.bio || '').length} / 500 characters</p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                      <Card>
+                        <CardHeader>
+                          <div className="flex justify-between items-center">
+                            <div>
+                              <CardTitle>Skills</CardTitle>
+                              <CardDescription>Add skills that showcase your expertise</CardDescription>
+                            </div>
+                            <Button size="sm" variant="outline" className="bg-transparent"><Plus className="h-4 w-4 mr-2" />Add Skill</Button>
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="flex flex-wrap gap-2 mb-4">
+                            {(formData.skills || []).map((skill: any, index: number) => (
+                              <Badge key={index} variant="secondary" className="px-3 py-1">
+                                {typeof skill === 'string' ? skill : skill.name}
+                                <button className="ml-2 hover:text-red-600" onClick={() => removeSkill(typeof skill === 'string' ? skill : (skill as any).name)}>
+                                  <X className="h-3 w-3" />
+                                </button>
+                              </Badge>
+                            ))}
+                          </div>
+                          <Input placeholder="Add a new skill..." onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addSkill((e.target as HTMLInputElement).value); (e.target as HTMLInputElement).value = ''; } }} />
+                        </CardContent>
+                      </Card>
+                    </AccordionContent>
+                  </AccordionItem>
+                  
+                  <AccordionItem value="experience">
+                    <AccordionTrigger>Experience</AccordionTrigger>
+                    <AccordionContent>
+                      <Card>
+                        <CardHeader>
+                          <div className="flex justify-between items-center">
+                            <div>
+                              <CardTitle>Work Experience</CardTitle>
+                              <CardDescription>Add your professional experience</CardDescription>
+                            </div>
+                            <Button size="sm" variant="outline" className="bg-transparent"><Plus className="h-4 w-4 mr-2" />Add Experience</Button>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                          {(user.experience || []).length === 0 ? (
+                            <div className="text-center py-8 text-muted-foreground">
+                              <Briefcase className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+                              <p>No work experience added yet</p>
+                              <p className="text-sm">Add your professional experience to showcase your background</p>
+                            </div>
+                          ) : (
+                            (user.experience || []).map((exp: any, index: number) => (
+                              <div key={index} className="border rounded-lg p-4">
+                                <div className="flex justify-between items-start mb-3">
+                                  <div>
+                                    <h4 className="font-semibold">{exp.title}</h4>
+                                    <p className="text-muted-foreground">{exp.company}</p>
+                                    <div className="flex items-center text-sm text-muted-foreground mt-1">
+                                      <MapPin className="h-3 w-3 mr-1" />
+                                      {exp.location}
+                                      <span className="mx-2">•</span>
+                                      <Calendar className="h-3 w-3 mr-1" />
+                                      {new Date(exp.startDate).toLocaleDateString()} - {exp.isCurrent ? 'Present' : new Date(exp.endDate).toLocaleDateString()}
+                                    </div>
+                                  </div>
+                                  <Button size="sm" variant="ghost">Edit</Button>
+                                </div>
+                                <p className="text-foreground text-sm">{exp.description}</p>
+                              </div>
+                            ))
+                          )}
+                        </CardContent>
+                      </Card>
+                    </AccordionContent>
+                  </AccordionItem>
+                  
+                </Accordion>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </DashboardLayout>
+  );
+}
