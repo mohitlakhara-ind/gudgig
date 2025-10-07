@@ -150,7 +150,7 @@ userSchema.methods.clearOtp = function() {
 };
 
 // Performance indexes
-userSchema.index({ email: 1 }); // Already unique, so indexed
+// Email already has a unique index via schema; avoid duplicate
 userSchema.index({ role: 1 }); // For filtering by role
 userSchema.index({ isActive: 1 }); // For filtering by status
 userSchema.index({ role: 1, isActive: 1 }); // Compound index for common queries

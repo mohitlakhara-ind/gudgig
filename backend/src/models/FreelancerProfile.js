@@ -516,7 +516,7 @@ const FreelancerProfileSchema = new mongoose.Schema({
 });
 
 // Indexes for performance
-FreelancerProfileSchema.index({ userId: 1 });
+// userId is unique at schema level; avoid duplicate single-field index
 FreelancerProfileSchema.index({ 'skills.name': 1, 'settings.isPublic': 1 });
 FreelancerProfileSchema.index({ level: 1, 'stats.averageRating': -1 });
 FreelancerProfileSchema.index({ 'location.country': 1, 'settings.isPublic': 1 });

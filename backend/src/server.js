@@ -191,20 +191,31 @@ if (process.env.NODE_ENV === 'development') {
   app.use(morgan('combined'));
 }
 
-// Health check endpoint
+// Health and diagnostics endpoints
 app.get('/health', healthCheck);
-app.get('/metrics', getMetrics);
-app.get('/ready', (req, res) => {
-  // Basic readiness check: can extend to DB ping
+
+const adminToken = process.env.ADMIN_DASHBOARD_TOKEN;
+const adminOnly = (req, res, next) => {
+  if (process.env.NODE_ENV !== 'production') return next();
+  if (!adminToken) {
+    return res.status(404).json({ message: 'Not found' });
+  }
+  const token = req.headers['x-admin-token'] || req.query.token;
+  if (token !== adminToken) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+  next();
+};
+
+// Protect diagnostics in production
+app.get('/metrics', adminOnly, getMetrics);
+app.get('/ready', adminOnly, (req, res) => {
   res.status(200).json({ ready: true, timestamp: new Date().toISOString() });
 });
-app.get('/dashboard/health', async (req, res) => {
+app.get('/dashboard/health', adminOnly, async (req, res) => {
   try {
     const metrics = await (async () => new Promise((resolve) => {
-      // call getMetrics handler programmatically
-      const fakeRes = {
-        status: () => ({ json: (data) => resolve(data) })
-      };
+      const fakeRes = { status: () => ({ json: (data) => resolve(data) }) };
       getMetrics(req, fakeRes);
     }))();
     res.status(200).json({

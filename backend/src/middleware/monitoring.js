@@ -7,7 +7,20 @@ import metricsService from '../services/metricsService.js';
 export const performanceMonitoring = (req, res, next) => {
   const start = Date.now();
   try { metricsService.recordPageView(req); } catch (_) {}
+  // Mark request start early
   res.setHeader('X-Response-Time-Start', String(start));
+
+  // Inject response time header right before headers are written
+  const originalWriteHead = res.writeHead;
+  res.writeHead = function(...args) {
+    try {
+      const durationMs = Date.now() - start;
+      // Safe to set before headers are sent
+      res.setHeader('X-Response-Time', `${durationMs}ms`);
+    } catch (_) {}
+    return originalWriteHead.apply(this, args);
+  };
+
   res.on('finish', () => {
     const duration = Date.now() - start;
     logger.info('request_completed', {
@@ -17,7 +30,6 @@ export const performanceMonitoring = (req, res, next) => {
       durationMs: duration,
       requestId: req.id
     });
-    res.setHeader('X-Response-Time', `${duration}ms`);
   });
   next();
 };

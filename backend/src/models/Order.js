@@ -348,7 +348,7 @@ const OrderSchema = new mongoose.Schema({
 OrderSchema.index({ buyerId: 1, status: 1, createdAt: -1 });
 OrderSchema.index({ sellerId: 1, status: 1, createdAt: -1 });
 OrderSchema.index({ serviceId: 1, status: 1 });
-OrderSchema.index({ orderNumber: 1 });
+// orderNumber already unique => implicit index; avoid duplicate
 OrderSchema.index({ status: 1, expectedDeliveryDate: 1 });
 OrderSchema.index({ 'payment.status': 1, createdAt: -1 });
 OrderSchema.index({ expectedDeliveryDate: 1, status: 1 });
