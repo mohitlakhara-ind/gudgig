@@ -11,6 +11,8 @@ Create a `.env.local` file in the project root with the following variables:
 # The backend API base URL (default: http://localhost:5000/api)
 NEXT_PUBLIC_BACKEND_URL=http://localhost:5000/api
 
+
+
 # The SOCKET_URL should point to the backend server for WebSocket connections
 NEXT_PUBLIC_SOCKET_URL=http://localhost:5000
 
