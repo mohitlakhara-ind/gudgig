@@ -1,2 +1,45 @@
-// Duplicate of /api/notifications/[id] - remove to avoid confusion
-export {};
+import { NextRequest, NextResponse } from 'next/server';
+import { getBackendUrl } from '@/lib/backend-url';
+
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    const { id } = params;
+    const backendUrl = getBackendUrl(false);
+    const notificationUrl = `${backendUrl}/api/notifications/${id}`;
+    
+    const response = await fetch(notificationUrl, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        // Forward authorization header if present
+        ...(request.headers.get('authorization') && {
+          'authorization': request.headers.get('authorization')!
+        }),
+      },
+    });
+
+    if (!response.ok) {
+      return NextResponse.json(
+        { 
+          success: false, 
+          message: 'Backend server error',
+          status: response.status
+        },
+        { status: response.status }
+      );
+    }
+
+    const data = await response.json();
+    return NextResponse.json(data);
+
+  } catch (error: any) {
+    console.error('Error deleting notification:', error);
+    return NextResponse.json(
+      { 
+        success: false, 
+        message: 'Failed to delete notification'
+      },
+      { status: 500 }
+    );
+  }
+}

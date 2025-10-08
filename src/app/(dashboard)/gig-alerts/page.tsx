@@ -75,7 +75,22 @@ export default function GigAlertsPage() {
         }
       } catch (error) {
         console.error('Error fetching gig alerts:', error);
-        toast.error('Failed to load gig alerts');
+        
+        // Show more specific error message
+        let errorMessage = 'Failed to load gig alerts';
+        if (error instanceof Error) {
+          if (error.message.includes('401') || error.message.includes('Unauthorized')) {
+            errorMessage = 'Please log in to view your gig alerts';
+          } else if (error.message.includes('404')) {
+            errorMessage = 'Gig alerts service not available';
+          } else if (error.message.includes('500')) {
+            errorMessage = 'Server error. Please try again later';
+          } else if (error.message.includes('Network error')) {
+            errorMessage = 'Network error. Please check your connection';
+          }
+        }
+        
+        toast.error(errorMessage);
         setAlerts([]);
       } finally {
         setLoading(false);
@@ -108,7 +123,19 @@ export default function GigAlertsPage() {
       }
     } catch (error) {
       console.error('Error creating gig alert:', error);
-      toast.error('Failed to create gig alert');
+      
+      let errorMessage = 'Failed to create gig alert';
+      if (error instanceof Error) {
+        if (error.message.includes('401') || error.message.includes('Unauthorized')) {
+          errorMessage = 'Please log in to create gig alerts';
+        } else if (error.message.includes('400')) {
+          errorMessage = 'Invalid alert data. Please check your inputs';
+        } else if (error.message.includes('500')) {
+          errorMessage = 'Server error. Please try again later';
+        }
+      }
+      
+      toast.error(errorMessage);
     }
     
     setFormData({
@@ -169,7 +196,19 @@ export default function GigAlertsPage() {
       toast.success('Gig alert deleted successfully');
     } catch (error) {
       console.error('Error deleting gig alert:', error);
-      toast.error('Failed to delete gig alert');
+      
+      let errorMessage = 'Failed to delete gig alert';
+      if (error instanceof Error) {
+        if (error.message.includes('401') || error.message.includes('Unauthorized')) {
+          errorMessage = 'Please log in to delete gig alerts';
+        } else if (error.message.includes('404')) {
+          errorMessage = 'Gig alert not found';
+        } else if (error.message.includes('500')) {
+          errorMessage = 'Server error. Please try again later';
+        }
+      }
+      
+      toast.error(errorMessage);
     }
   };
 
@@ -260,13 +299,13 @@ export default function GigAlertsPage() {
               Create Alert
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px]">
+          <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
                 {editingAlert ? 'Edit Gig Alert' : 'Create Gig Alert'}
               </DialogTitle>
             </DialogHeader>
-            <div className="space-y-4">
+            <div className="space-y-4 pr-2">
               <div>
                 <Label htmlFor="name">Alert Name</Label>
                 <Input
@@ -300,7 +339,7 @@ export default function GigAlertsPage() {
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="max-h-[200px]">
                     <SelectItem value="all">All Types</SelectItem>
                     <SelectItem value="full-time">Full Time</SelectItem>
                     <SelectItem value="part-time">Part Time</SelectItem>
@@ -309,7 +348,7 @@ export default function GigAlertsPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="salaryMin">Min Salary</Label>
                   <Input
@@ -335,7 +374,7 @@ export default function GigAlertsPage() {
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="max-h-[200px]">
                     <SelectItem value="immediate">Immediate</SelectItem>
                     <SelectItem value="daily">Daily</SelectItem>
                     <SelectItem value="weekly">Weekly</SelectItem>
@@ -350,7 +389,7 @@ export default function GigAlertsPage() {
                 />
                 <Label htmlFor="isActive">Active</Label>
               </div>
-              <div className="flex justify-end space-x-2">
+              <div className="flex flex-col sm:flex-row justify-end gap-2 pt-4">
                 <Button variant="outline" onClick={() => {
                   setIsCreateDialogOpen(false);
                   setEditingAlert(null);

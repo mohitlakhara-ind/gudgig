@@ -48,7 +48,7 @@ export default function BidPage() {
       try {
         setLoading(true);
         const response = await apiClient.getGig(gigId);
-        setGig(response.data);
+        setGig(response.data || null);
         
         // Check if user already has a bid for this gig
         try {

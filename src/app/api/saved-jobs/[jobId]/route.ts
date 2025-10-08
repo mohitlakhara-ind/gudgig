@@ -2,16 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { jobId: string } }
+  { params }: { params: Promise<{ jobId: string }> }
 ) {
   try {
-    const { jobId } = params;
+    const { jobId } = await params;
     
     console.log('Getting saved job by ID:', jobId);
 
     // Try to fetch from backend first
     try {
-      const backendUrl = new URL(`/saved-jobs/${jobId}`, process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000/api');
+      const backendUrl = new URL(`/saved-jobs/${jobId}`, process.env.NEXT_PUBLIC_BACKEND_URL as string);
       
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000);
@@ -86,16 +86,16 @@ export async function GET(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { jobId: string } }
+  { params }: { params: Promise<{ jobId: string }> }
 ) {
   try {
-    const { jobId } = params;
+    const { jobId } = await params;
     
     console.log('Removing saved job:', jobId);
 
     // Try to delete from backend first
     try {
-      const backendUrl = new URL(`/saved-jobs/${jobId}`, process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000/api');
+      const backendUrl = new URL(`/saved-jobs/${jobId}`, process.env.NEXT_PUBLIC_BACKEND_URL as string);
       
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000);

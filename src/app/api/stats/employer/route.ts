@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Proxy to the backend /app-api/stats/employer endpoint
-    const backendUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000/api'}/stats/employer`;
+    const backendUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/stats/employer`;
     
     const response = await fetch(backendUrl.replace('/api/', '/app-api/'), {
       method: 'GET',

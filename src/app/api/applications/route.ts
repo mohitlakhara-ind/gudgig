@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     
     // Construct the backend URL with all query parameters
-    const backendUrl = new URL('/app-api/applications/my-applications', (process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000/api').replace('/api', ''));
+    const backendUrl = new URL('/app-api/applications/my-applications', String(process.env.NEXT_PUBLIC_BACKEND_URL || '').replace('/api', ''));
     
     // Forward all query parameters to the backend
     searchParams.forEach((value, key) => {
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     
     // Proxy to the backend /api/applications endpoint
-    const backendUrl = `${(process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000/api').replace('/api', '')}/app-api/applications`;
+    const backendUrl = `${String(process.env.NEXT_PUBLIC_BACKEND_URL || '').replace('/api', '')}/app-api/applications`;
     
     const response = await fetch(backendUrl, {
       method: 'POST',

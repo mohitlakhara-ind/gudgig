@@ -274,9 +274,11 @@ export default function ProfilePage() {
     const s = primarySkillDraft.trim();
     if (!s) return;
     try {
-      const current = [...(freelancerProfile?.primarySkills || [])];
-      if (current.includes(s)) return;
-      const resp = await apiClient.updateFreelancerProfile({ primarySkills: [...current, s] });
+      const current = [...(freelancerProfile?.skills || [])];
+      if (current.some(skill => skill.name === s)) return;
+      const resp = await apiClient.updateFreelancerProfile({ 
+        skills: [...current, { name: s, level: 'intermediate' }] 
+      });
       if ((resp as any)?.success) {
         setFreelancerProfile((resp as any).data);
         setPrimarySkillDraft('');
@@ -288,8 +290,8 @@ export default function ProfilePage() {
 
   const removePrimarySkill = async (skillToRemove: string) => {
     try {
-      const next = (freelancerProfile?.primarySkills || []).filter((s: string) => s !== skillToRemove);
-      const resp = await apiClient.updateFreelancerProfile({ primarySkills: next });
+      const next = (freelancerProfile?.skills || []).filter((s: any) => s.name !== skillToRemove);
+      const resp = await apiClient.updateFreelancerProfile({ skills: next });
       if ((resp as any)?.success) {
         setFreelancerProfile((resp as any).data);
       }
@@ -472,9 +474,11 @@ export default function ProfilePage() {
                     <div>
                       <div className="text-sm text-muted-foreground mb-2">Primary Skills</div>
                       <div className="flex flex-wrap gap-2">
-                        {(freelancerProfile.primarySkills || []).length > 0 ? (
-                          (freelancerProfile.primarySkills || []).map((s: string, i: number) => (
-                            <Badge key={i} variant="secondary" className="px-3 py-1">{s}</Badge>
+                        {(freelancerProfile.skills || []).length > 0 ? (
+                          (freelancerProfile.skills || []).map((s: any, i: number) => (
+                            <Badge key={i} variant="secondary" className="px-3 py-1">
+                              {typeof s === 'string' ? s : s?.name}
+                            </Badge>
                           ))
                         ) : (
                           <span className="text-sm text-muted-foreground">—</span>
@@ -574,10 +578,10 @@ export default function ProfilePage() {
                       <div className="mb-4">
                         <div className="text-sm font-medium mb-2">Primary Skills</div>
                         <div className="flex flex-wrap gap-2 mb-2">
-                          {(freelancerProfile?.primarySkills || []).map((s: string, i: number) => (
+                          {(freelancerProfile?.skills || []).map((s: any, i: number) => (
                             <Badge key={i} variant="secondary" className="px-3 py-1">
-                              {s}
-                              <button className="ml-2 hover:text-red-600" onClick={() => removePrimarySkill(s)}>
+                              {typeof s === 'string' ? s : s?.name}
+                              <button className="ml-2 hover:text-red-600" onClick={() => removePrimarySkill(typeof s === 'string' ? s : s?.name)}>
                                 <X className="h-3 w-3" />
                               </button>
                             </Badge>

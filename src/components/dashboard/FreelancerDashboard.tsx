@@ -151,7 +151,7 @@ export default function FreelancerDashboard() {
                   <p className="text-muted-foreground">Professional Freelancer</p>
                   <div className="flex items-center text-sm text-muted-foreground mt-1">
                     <MapPin className="h-3 w-3 mr-1" />
-                    {user?.location || 'Location not set'}
+                    {(user as any)?.location || 'Location not set'}
                   </div>
                 </div>
               </div>

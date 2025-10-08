@@ -9,6 +9,7 @@ import { Server } from 'socket.io';
 import dotenv from 'dotenv';
 import { v2 as cloudinary } from 'cloudinary';
 import notificationService from './services/notificationService.js';
+import chatNotificationService from './services/chatNotificationService.js';
 import automationService from './services/automationService.js';
 import * as Sentry from '@sentry/node';
 import logger from './utils/logger.js';
@@ -29,6 +30,7 @@ import adminSettingsRoutes from './routes/admin-settings.js';
 import adminBidsRoutes from './routes/admin-bids.js';
 import adminRoutes from './routes/admin.js';
 import chatRoutes from './routes/chat.js';
+import chatNotificationRoutes from './routes/chat-notifications.js';
 import serviceRoutes from './routes/services.js';
 import orderRoutes from './routes/orders.js';
 import reviewRoutes from './routes/reviews.js';
@@ -243,6 +245,7 @@ app.use('/api/admin/settings', adminSettingsRoutes);
 app.use('/api/admin/bids', adminBidsRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/chat-notifications', chatNotificationRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/reviews', reviewRoutes);
@@ -396,6 +399,9 @@ try {
 
 // Make io accessible to our routes
 app.set('io', io);
+
+// Initialize chat notification service with Socket.io
+chatNotificationService.setSocketIO(io);
 
 // Notifications removed in simplified version
 

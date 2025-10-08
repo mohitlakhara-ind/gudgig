@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     
     // Construct the backend URL with all query parameters
-    const backendUrl = new URL('/notifications', process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000/api');
+    const backendUrl = new URL('/notifications', process.env.NEXT_PUBLIC_BACKEND_URL as string);
     
     // Forward all query parameters to the backend
     searchParams.forEach((value, key) => {

@@ -19,7 +19,7 @@ export async function GET(
     
     for (const endpoint of possibleEndpoints) {
       try {
-        const backendUrl = new URL(endpoint, process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000/api');
+        const backendUrl = new URL(endpoint, process.env.NEXT_PUBLIC_BACKEND_URL as string);
         
         // Set a timeout for the backend request
         const controller = new AbortController();

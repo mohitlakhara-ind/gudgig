@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { bidService } from '@/services/bidService';
 
 export async function POST(
   request: NextRequest,
@@ -26,7 +27,7 @@ export async function POST(
     }
 
     // Forward to backend /api/bids
-    const base = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000/api';
+    const base = process.env.NEXT_PUBLIC_BACKEND_URL;
     const backendUrl = new URL('/bids', base);
 
     const controller = new AbortController();
@@ -88,7 +89,7 @@ export async function GET(
     
     for (const endpoint of possibleEndpoints) {
       try {
-        const backendUrl = new URL(endpoint, process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000/api');
+        const backendUrl = new URL(endpoint, process.env.NEXT_PUBLIC_BACKEND_URL);
         
         // Set a timeout for the backend request
         const controller = new AbortController();

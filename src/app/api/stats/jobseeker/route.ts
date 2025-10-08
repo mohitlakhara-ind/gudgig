@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Proxy to the backend /app-api/stats/jobseeker endpoint
-    const rawBase = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000/api';
+    const rawBase = process.env.NEXT_PUBLIC_BACKEND_URL as string;
     const statsUrl = rawBase.replace(/\/$/, '').replace('/api', '/app-api') + '/stats/jobseeker';
 
     const controller = new AbortController();

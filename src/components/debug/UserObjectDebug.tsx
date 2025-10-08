@@ -47,8 +47,8 @@ export default function UserObjectDebug() {
   }
 
   // Handle nested user structure
-  const actualUser = user?.data || user;
-  const isNested = user?.data !== undefined;
+  const actualUser = (user as any)?.data || user;
+  const isNested = (user as any)?.data !== undefined;
 
   return (
     <Card>

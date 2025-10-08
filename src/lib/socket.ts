@@ -1,4 +1,5 @@
 import { io, Socket } from 'socket.io-client';
+import { getBackendWsUrl } from './backend-url';
 
 let socket: Socket | null = null;
 
@@ -10,8 +11,7 @@ export function getSocket(token?: string): Socket {
 
   const authToken = token || (typeof window !== 'undefined' ? localStorage.getItem('token') || undefined : undefined);
 
-  const base = (process as any)?.env?.NEXT_PUBLIC_BACKEND_WS_URL || (process as any)?.env?.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
-  const origin = String(base).replace(/\/$/, '').replace(/\/api$/, '');
+  const origin = getBackendWsUrl();
 
   socket = io(origin, {
     path: '/socket.io',

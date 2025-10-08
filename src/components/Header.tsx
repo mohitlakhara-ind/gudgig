@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils';
 import MobileMenu from '@/components/ui/mobile-menu';
 import DarkModeToggle from '@/components/ui/dark-mode-toggle';
 import ProfileDropdown from '@/components/ProfileDropdown';
-import { Bell } from 'lucide-react';
+import { NotificationBell } from '@/components/notifications/NotificationBell';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -46,13 +46,7 @@ export default function Header() {
 
             {/* Right utilities (minimal) */}
             <div className="hidden md:flex items-center space-x-2">
-              {isAuthenticated && (
-                <Link href="/notifications" aria-label="Notifications" className="relative">
-                  <Button variant="ghost" size="icon" className="tap-target rounded-xl hover:bg-muted/80">
-                    <Bell className="h-5 w-5" />
-                  </Button>
-                </Link>
-              )}
+              {isAuthenticated && <NotificationBell />}
               <DarkModeToggle />
               {isAuthenticated ? (
                 <ProfileDropdown />

@@ -102,7 +102,7 @@ function SelectContent({ children, className, isOpen, setIsOpen, ...props }: Sel
           if (React.isValidElement(child)) {
             return React.cloneElement(child, {
               onClick: () => {
-                context.onValueChange?.(child.props.value)
+                context.onValueChange?.((child as any).props.value)
                 setIsOpen?.(false)
               }
             } as any)
@@ -124,7 +124,7 @@ function SelectItem({ children, className, value, onClick, ...props }: SelectIte
         context.value === value && "bg-accent text-accent-foreground",
         className
       )}
-      onClick={() => onClick?.()}
+      onClick={(event) => onClick?.(event)}
       {...props}
     >
       {children}

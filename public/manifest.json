@@ -1,0 +1,57 @@
+{
+  "name": "Gigs Mint - Professional Freelancer Marketplace",
+  "short_name": "Gigs Mint",
+  "description": "Professional freelancer marketplace connecting talented freelancers with clients seeking quality work.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0966C2",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en",
+  "categories": ["business", "productivity", "social"],
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "16x16 32x32 48x48",
+      "type": "image/x-icon"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    },
+    {
+      "src": "/screenshot-mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Browse Gigs",
+      "short_name": "Gigs",
+      "description": "Browse available freelance gigs",
+      "url": "/gigs"
+    },
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "View your dashboard",
+      "url": "/dashboard"
+    },
+    {
+      "name": "Notifications",
+      "short_name": "Notifications",
+      "description": "View your notifications",
+      "url": "/notifications"
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
+}
+

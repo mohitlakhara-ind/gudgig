@@ -23,7 +23,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   // Check if we're on admin pages
   const isAdminPage = pathname.startsWith('/admin');
-  const actualUser = user?.data || user;
+  const actualUser = (user as any)?.data || user;
   const userRole = actualUser?.role;
   const isAdmin = userRole === 'admin';
 
@@ -156,10 +156,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
           {/* Page Content */}
           <main className="flex-1 overflow-auto">
-            <div className="h-full">
-              <div className="container mx-auto px-3 py-4 sm:px-4 sm:py-6 lg:px-6">
-                {children}
-              </div>
+            <div className="container mx-auto px-3 py-4 sm:px-4 sm:py-6 lg:px-6">
+              {children}
             </div>
           </main>
         </div>

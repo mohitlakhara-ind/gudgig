@@ -109,11 +109,13 @@ export default function BidsPage() {
       }
       
       // Fallback to local storage
-      const localBids = bidService.getBidsByUser(user?.id || 'demo_user');
+      const localBids = bidService.getBidsByUser(user?._id || 'demo_user');
       
       // Convert to the expected format with job data
       const formattedBids = localBids.map(bid => ({
         ...bid,
+        updatedAt: bid.createdAt, // Add missing updatedAt property
+        quotation: bid.quotation?.toString() || '0', // Convert to string
         job: {
           _id: bid.jobId,
           title: `Gig ${bid.jobId}`,

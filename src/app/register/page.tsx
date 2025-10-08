@@ -91,9 +91,7 @@ export default function RegisterPage() {
         name: formData.name,
         email: formData.email,
         password: formData.password,
-        phone: formData.phone || undefined,
-        role: formData.userType,
-        skills: formData.skills
+        role: formData.userType as 'freelancer' | 'admin'
       });
 
       if (response.success) {
@@ -236,7 +234,6 @@ export default function RegisterPage() {
                 <Select 
                   value={formData.userType} 
                   onValueChange={(value) => handleInputChange('userType', value)}
-                  disabled={loading}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select your role" />

@@ -45,6 +45,7 @@ export default function FreelancerRegisterPage() {
     name: '',
     email: '',
     password: '',
+    confirmPassword: '',
     phone: '',
     location: '',
     currentPosition: '',
@@ -87,6 +88,8 @@ export default function FreelancerRegisterPage() {
         email: '',
         password: '',
         confirmPassword: '',
+        phone: '',
+        location: '',
         currentPosition: '',
         experience: '',
         skills: ''
@@ -101,6 +104,8 @@ export default function FreelancerRegisterPage() {
         email: '',
         password: '',
         confirmPassword: '',
+        phone: '',
+        location: '',
         currentPosition: '',
         experience: '',
         skills: ''

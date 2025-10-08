@@ -67,6 +67,20 @@ const userSchema = new mongoose.Schema({
   deletedAt: {
     type: Date,
     default: null
+  },
+  // Notification preferences
+  notificationPreferences: {
+    email: { type: Boolean, default: true },
+    push: { type: Boolean, default: true },
+    sms: { type: Boolean, default: false },
+    chatNotifications: { type: Boolean, default: true },
+    inApp: { type: Boolean, default: true },
+    // Quiet hours settings
+    quietHours: {
+      enabled: { type: Boolean, default: false },
+      start: { type: String, default: '22:00' }, // HH:MM format
+      end: { type: String, default: '07:00' }    // HH:MM format
+    }
   }
 }, {
   timestamps: true

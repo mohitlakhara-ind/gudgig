@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getBackendUrl } from '@/lib/backend-url';
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,8 +13,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Proxy to the backend /app-api/stats/freelancer endpoint
-    const rawBase = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000/api';
-    const statsUrl = rawBase.replace(/\/$/, '').replace('/api', '/app-api') + '/stats/freelancer';
+    const backendUrl = getBackendUrl(false);
+    const statsUrl = `${backendUrl}/app-api/stats/freelancer`;
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);

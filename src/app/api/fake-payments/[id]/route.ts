@@ -3,10 +3,11 @@ import { fakePaymentsService } from '@/services/fakePaymentsService';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const payment = fakePaymentsService.getPaymentById(params.id);
+    const { id } = await params;
+    const payment = fakePaymentsService.getPaymentById(id);
 
     if (!payment) {
       return NextResponse.json(
@@ -31,9 +32,10 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await request.json();
     const { status } = body;
 
@@ -44,7 +46,7 @@ export async function PUT(
       );
     }
 
-    const updatedPayment = fakePaymentsService.updatePaymentStatus(params.id, status);
+    const updatedPayment = fakePaymentsService.updatePaymentStatus(id, status);
 
     if (!updatedPayment) {
       return NextResponse.json(
@@ -70,10 +72,11 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const deleted = fakePaymentsService.deletePayment(params.id);
+    const { id } = await params;
+    const deleted = fakePaymentsService.deletePayment(id);
 
     if (!deleted) {
       return NextResponse.json(

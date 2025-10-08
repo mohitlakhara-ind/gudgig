@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, message: 'title and message required' }, { status: 400 });
     }
 
-    const backendBase = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000/api';
+    const backendBase = process.env.NEXT_PUBLIC_BACKEND_URL as string;
 
     let page = 1;
     const limit = 100;

@@ -44,7 +44,7 @@ export default function GigDetailPage() {
       try {
         setLoading(true);
         const response = await apiClient.getGig(gigId);
-        setGig(response.data);
+        setGig(response.data || null);
       } catch (err: unknown) {
         setError(err instanceof Error ? err.message : 'Failed to load gig');
         toast.error('Failed to load gig details');
@@ -108,7 +108,7 @@ export default function GigDetailPage() {
         body: JSON.stringify({
           gigId,
           gigTitle: gig?.title || 'Unknown Gig',
-          amount: gig?.budget || 0,
+          amount: (gig as any)?.budget || 0,
           currency: 'INR',
           description: `Payment for gig: ${gig?.title}`
         }),
@@ -191,7 +191,7 @@ export default function GigDetailPage() {
               <FakeGigPayment
                 gigId={gigId}
                 gigTitle={gig?.title || 'Unknown Gig'}
-                amount={gig?.budget || 0}
+                amount={(gig as any)?.budget || 0}
                 currency="INR"
                 description={`Payment for gig: ${gig?.title}`}
                 onSuccess={handlePaymentSuccess}
@@ -256,7 +256,7 @@ export default function GigDetailPage() {
                         </div>
                       </div>
                       <div className="flex flex-wrap gap-2">
-                        {gig.skills?.map((skill, index) => (
+                        {(gig as any).skills?.map((skill: string, index: number) => (
                           <Badge key={index} variant="secondary">
                             {skill}
                           </Badge>
@@ -309,12 +309,12 @@ export default function GigDetailPage() {
                     <div className="flex items-center gap-2">
                       <DollarSign className="h-4 w-4 text-primary" />
                       <span className="font-medium">Budget:</span>
-                      <span className="text-foreground font-bold text-lg">{formatBudget(gig.budget)}</span>
+                      <span className="text-foreground font-bold text-lg">{formatBudget((gig as any).budget)}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Clock className="h-4 w-4 text-primary" />
                       <span className="font-medium">Duration:</span>
-                      <span className="text-foreground">{gig.duration || 'Not specified'}</span>
+                      <span className="text-foreground">{(gig as any).duration || 'Not specified'}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <MapPin className="h-4 w-4 text-primary" />
@@ -324,7 +324,7 @@ export default function GigDetailPage() {
                     <div className="flex items-center gap-2">
                       <Users className="h-4 w-4 text-primary" />
                       <span className="font-medium">Experience:</span>
-                      <span className="text-foreground">{gig.experienceLevel || 'Any'}</span>
+                      <span className="text-foreground">{(gig as any).experienceLevel || 'Any'}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -394,7 +394,7 @@ export default function GigDetailPage() {
                   <div className="space-y-3">
                     <div className="text-center p-4 bg-primary/5 rounded-lg">
                       <div className="text-2xl font-bold text-primary mb-1">
-                        {formatBudget(gig.budget)}
+                        {formatBudget((gig as any).budget)}
                       </div>
                       <div className="text-sm text-muted-foreground">
                         One-time payment
@@ -420,7 +420,7 @@ export default function GigDetailPage() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Bids</span>
-                      <span className="font-medium">{gig.bidCount || 0}</span>
+                      <span className="font-medium">{(gig as any).bidCount || 0}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Posted</span>

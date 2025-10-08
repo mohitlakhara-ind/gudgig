@@ -107,7 +107,7 @@ export default function OtpVerification({
         toast.success('OTP verified successfully!');
         onSuccess(response);
       } else {
-        setError(response.message || 'Invalid OTP');
+        setError((response as any).message || 'Invalid OTP');
       }
     } catch (err: any) {
       const errorMessage = err?.message || 'OTP verification failed';
@@ -171,7 +171,7 @@ export default function OtpVerification({
             {otp.map((digit, index) => (
               <Input
                 key={index}
-                ref={(el) => (inputRefs.current[index] = el)}
+                ref={(el) => { inputRefs.current[index] = el; }}
                 type="text"
                 inputMode="numeric"
                 maxLength={1}

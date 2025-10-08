@@ -12,7 +12,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Proxy to the backend /api/notifications/read-all endpoint
-    const backendUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000/api'}/notifications/read-all`;
+    const backendUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/notifications/read-all`;
     
     const response = await fetch(backendUrl, {
       method: 'PUT',

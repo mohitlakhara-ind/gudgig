@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { apiClient, ApiClientError } from '@/lib/api';
-import { Job, JobsResponse, SearchJobsRequest } from '@/types/api';
+import { Job, JobsResponse } from '@/types/api';
 
 interface UseGigsOptions {
-  initialParams?: SearchJobsRequest;
+  initialParams?: any;
   autoFetch?: boolean;
 }
 
@@ -20,7 +20,7 @@ export function useGigs(options: UseGigsOptions = {}) {
     totalPages: 0
   });
 
-  const fetchGigs = useCallback(async (params?: SearchJobsRequest) => {
+  const fetchGigs = useCallback(async (params?: any) => {
     try {
       setLoading(true);
       setError(null);
@@ -33,10 +33,10 @@ export function useGigs(options: UseGigsOptions = {}) {
       
       setGigs(gigsData);
       setPagination({
-        page: response.pagination?.page || 1,
-        limit: response.pagination?.limit || 10,
-        total: response.total || gigsData.length,
-        totalPages: response.pagination?.totalPages || 1
+        page: (response as any).pagination?.page || 1,
+        limit: (response as any).pagination?.limit || 10,
+        total: (response as any).total || gigsData.length,
+        totalPages: (response as any).pagination?.totalPages || 1
       });
     } catch (err) {
       setError(err instanceof ApiClientError ? err.message : 'Failed to fetch gigs');

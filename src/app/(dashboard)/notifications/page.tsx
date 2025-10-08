@@ -15,11 +15,14 @@ import {
   MessageCircle,
   DollarSign,
   Briefcase,
-  AlertCircle
+  AlertCircle,
+  Settings
 } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { useRouter } from 'next/navigation';
+import { NotificationCenter } from '@/components/notifications/NotificationCenter';
 
 interface Notification {
   _id: string;
@@ -38,6 +41,7 @@ interface Notification {
 
 export default function NotificationsPage() {
   const { user } = useAuth();
+  const router = useRouter();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -50,7 +54,11 @@ export default function NotificationsPage() {
         setLoading(true);
         const response = await apiClient.getNotifications();
         if (response.success && response.data) {
-          setNotifications(response.data);
+          // Handle both NotificationList and Notification[] formats
+          const notifications = Array.isArray(response.data) 
+            ? response.data 
+            : (response.data as any).notifications || [];
+          setNotifications(notifications);
         } else {
           setNotifications([]);
         }
@@ -220,6 +228,14 @@ export default function NotificationsPage() {
           >
             Clear all
           </Button>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => router.push('/settings/notifications')}
+          >
+            <Settings className="h-4 w-4 mr-1" />
+            Settings
+          </Button>
         </div>
       </div>
 
@@ -264,71 +280,17 @@ export default function NotificationsPage() {
       </Card>
 
       {/* Notifications List */}
-      <div className="space-y-3">
-        {filteredNotifications.length === 0 ? (
-          <Card>
-            <CardContent className="p-8 text-center">
-              <Bell className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No notifications</h3>
-              <p className="text-muted-foreground">
-                {searchQuery || filter !== 'all' 
-                  ? 'No notifications match your current filter.'
-                  : 'You\'re all caught up! New notifications will appear here.'
-                }
-              </p>
-            </CardContent>
-          </Card>
-        ) : (
-          filteredNotifications.map((notification) => (
-            <Card key={notification._id} className={`transition-colors ${!notification.isRead ? 'bg-muted/40 border-primary/20' : ''}`}>
-              <CardContent className="p-4">
-                <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0 mt-1">
-                    {getNotificationIcon(notification.type)}
-                  </div>
-                  
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      {!notification.isRead && (
-                        <span className="inline-block h-2 w-2 rounded-full bg-primary flex-shrink-0" />
-                      )}
-                      <h3 className="font-medium truncate">{notification.title}</h3>
-                      {!notification.isRead && (
-                        <Badge variant="secondary" className="text-xs">New</Badge>
-                      )}
-                    </div>
-                    <p className="text-sm text-muted-foreground mb-2">{notification.message}</p>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground">
-                        {formatTime(notification.createdAt)}
-                      </span>
-                      <div className="flex gap-2">
-                        {!notification.isRead ? (
-                          <Button 
-                            size="sm" 
-                            variant="outline" 
-                            onClick={() => markRead(notification._id)}
-                          >
-                            Mark read
-                          </Button>
-                        ) : (
-                          <Button 
-                            size="sm" 
-                            variant="ghost" 
-                            onClick={() => removeOne(notification._id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))
-        )}
-      </div>
+      <NotificationCenter 
+        className="w-full"
+        showHeader={false}
+        maxHeight="600px"
+        filter={filter === 'all' ? 'all' : filter === 'unread' ? 'unread' : 'read'}
+        onFilterChange={(newFilter) => {
+          if (newFilter === 'all') setFilter('all');
+          else if (newFilter === 'unread') setFilter('unread');
+          else if (newFilter === 'read') setFilter('read');
+        }}
+      />
     </div>
   );
 }

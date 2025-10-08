@@ -6,7 +6,7 @@ export async function GET(request: NextRequest) {
 
     // Try to fetch from backend first
     try {
-      const backendUrl = new URL('/saved-jobs/count', process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000/api');
+      const backendUrl = new URL('/saved-jobs/count', process.env.NEXT_PUBLIC_BACKEND_URL as string);
       
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000);

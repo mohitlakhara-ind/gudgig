@@ -112,24 +112,24 @@ export default function SettingsPage() {
             profile: {
               name: response.name || prev.profile.name,
               email: response.email || prev.profile.email,
-              bio: response.bio || prev.profile.bio,
-              location: response.location || prev.profile.location,
-              website: response.website || prev.profile.website,
-              timezone: response.timezone || prev.profile.timezone
+              bio: (response as any).bio || prev.profile.bio,
+              location: (response as any).location || prev.profile.location,
+              website: (response as any).website || prev.profile.website,
+              timezone: (response as any).timezone || prev.profile.timezone
             },
             privacy: {
-              showProfile: response.privacySettings?.showProfile ?? prev.privacy.showProfile,
-              showBids: response.privacySettings?.showBids ?? prev.privacy.showBids,
-              showEarnings: response.privacySettings?.showEarnings ?? prev.privacy.showEarnings,
-              allowMessages: response.privacySettings?.allowMessages ?? prev.privacy.allowMessages
+              showProfile: (response as any).privacySettings?.showProfile ?? prev.privacy.showProfile,
+              showBids: (response as any).privacySettings?.showBids ?? prev.privacy.showBids,
+              showEarnings: (response as any).privacySettings?.showEarnings ?? prev.privacy.showEarnings,
+              allowMessages: (response as any).privacySettings?.allowMessages ?? prev.privacy.allowMessages
             },
             notifications: {
-              emailNotifications: response.notificationSettings?.emailNotifications ?? prev.notifications.emailNotifications,
-              pushNotifications: response.notificationSettings?.pushNotifications ?? prev.notifications.pushNotifications,
-              bidUpdates: response.notificationSettings?.bidUpdates ?? prev.notifications.bidUpdates,
-              messageNotifications: response.notificationSettings?.messageNotifications ?? prev.notifications.messageNotifications,
-              paymentNotifications: response.notificationSettings?.paymentNotifications ?? prev.notifications.paymentNotifications,
-              marketingEmails: response.notificationSettings?.marketingEmails ?? prev.notifications.marketingEmails
+              emailNotifications: (response as any).notificationSettings?.emailNotifications ?? prev.notifications.emailNotifications,
+              pushNotifications: (response as any).notificationSettings?.pushNotifications ?? prev.notifications.pushNotifications,
+              bidUpdates: (response as any).notificationSettings?.bidUpdates ?? prev.notifications.bidUpdates,
+              messageNotifications: (response as any).notificationSettings?.messageNotifications ?? prev.notifications.messageNotifications,
+              paymentNotifications: (response as any).notificationSettings?.paymentNotifications ?? prev.notifications.paymentNotifications,
+              marketingEmails: (response as any).notificationSettings?.marketingEmails ?? prev.notifications.marketingEmails
             }
           }));
         }
@@ -176,7 +176,7 @@ export default function SettingsPage() {
 
   const savePrivacyDebounced = useMemo(() => debounce(async (nextPrivacy: UserSettings['privacy']) => {
     try {
-      await apiClient.updateProfile({ privacySettings: nextPrivacy });
+      await apiClient.updateProfile({ privacySettings: nextPrivacy } as any);
       toast.success('Privacy saved');
     } catch {
       toast.error('Failed to save privacy');
@@ -193,7 +193,7 @@ export default function SettingsPage() {
 
   const saveNotificationsDebounced = useMemo(() => debounce(async (nextNotif: UserSettings['notifications']) => {
     try {
-      await apiClient.updateProfile({ notificationSettings: nextNotif });
+      await apiClient.updateProfile({ notificationSettings: nextNotif } as any);
       toast.success('Notifications saved');
     } catch {
       toast.error('Failed to save notifications');
@@ -235,7 +235,7 @@ export default function SettingsPage() {
       // Use profile update API to save privacy settings
       const response = await apiClient.updateProfile({ 
         privacySettings: settings.privacy 
-      });
+      } as any);
       if (response.success) {
         toast.success('Privacy settings updated');
       } else {
@@ -255,7 +255,7 @@ export default function SettingsPage() {
       // Use profile update API to save notification settings
       const response = await apiClient.updateProfile({ 
         notificationSettings: settings.notifications 
-      });
+      } as any);
       if (response.success) {
         toast.success('Notification preferences updated');
       } else {
@@ -286,7 +286,7 @@ export default function SettingsPage() {
       const response = await apiClient.updateProfile({
         currentPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword
-      });
+      } as any);
       if (response.success) {
         toast.success('Password changed successfully');
         setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });

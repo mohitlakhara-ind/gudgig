@@ -46,7 +46,7 @@ export default function GigsListing() {
         setError(null);
         const res = await apiClient.getGigs({ category: selectedCategory || undefined, query: searchTerm || undefined } as any);
         const data = (res as any)?.data as JobsResponse;
-        setJobs(data?.jobs || (Array.isArray(res?.data) ? (res.data as any) : []));
+        setJobs((data as any)?.jobs || (Array.isArray(res?.data) ? (res.data as any) : []));
       } catch (e: any) {
         if (e?.name !== 'AbortError') setError(e?.message || 'Failed to load projects');
       } finally {

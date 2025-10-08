@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { log } from '@/lib/logger';
+import { getBackendUrl } from '@/lib/backend-url';
 
-const BACKEND_URL = (process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000/api').replace(/\/$/, '').replace(/\/?api$/, '');
+const BACKEND_URL = getBackendUrl(false);
 
 export async function GET() {
   try {

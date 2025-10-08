@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, message: 'subject and message are required' }, { status: 400 });
     }
 
-    const rawBase = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000/api';
+    const rawBase = process.env.NEXT_PUBLIC_BACKEND_URL as string;
     const backendUrl = `${rawBase.replace(/\/$/, '')}/support`;
 
     const controller = new AbortController();

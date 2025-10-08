@@ -2,9 +2,11 @@ import type { Metadata } from "next";
 import { Inter, Open_Sans } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { NotificationProvider } from "@/contexts/NotificationContext";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import { Toaster } from "react-hot-toast";
 import AppLayout from "@/components/layouts/AppLayout";
+import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -114,6 +116,12 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#0966C2" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="Gigs Mint" />
+        <link rel="apple-touch-icon" href="/icon-192.png" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -122,10 +130,13 @@ export default function RootLayout({
       <body className={`${inter.variable} ${openSans.variable} antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <AuthProvider>
-            <AppLayout>
-              <Toaster position="top-right" />
-              {children}
-            </AppLayout>
+            <NotificationProvider>
+              <AppLayout>
+                <Toaster position="top-right" />
+                <ServiceWorkerRegistration />
+                {children}
+              </AppLayout>
+            </NotificationProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>

@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Bell, X, Check, CheckCheck, Trash2, Filter, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useSocketContext } from '@/contexts/SocketContext';
+import { useNotifications } from '@/contexts/NotificationContext';
 import { apiClient } from '@/lib/api';
 import { Notification } from '@/types/api';
 import CustomLoader from '@/components/CustomLoader';
@@ -31,178 +31,67 @@ export function NotificationCenter({
   onFilterChange,
   refreshSignal,
 }: NotificationCenterProps) {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [internalFilter, setInternalFilter] = useState<'all' | 'unread' | 'read' | 'applications' | 'messages'>('all');
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [loadingMore, setLoadingMore] = useState(false);
 
   const { 
-    onNotificationReceived, 
-    onNotificationUpdated, 
-    markNotificationAsRead,
-    isConnected 
-  } = useSocketContext();
+    notifications: contextNotifications,
+    unreadCount: contextUnreadCount,
+    isLoading,
+    error,
+    markAsRead,
+    markAllAsRead,
+    deleteNotification,
+    refreshNotifications
+  } = useNotifications();
 
   // Determine effective filter
   const effectiveFilter = externalFilter ?? internalFilter;
 
-  // Load notifications
-  const loadNotifications = useCallback(async (pageNum = 1, filterType = effectiveFilter, reset = false) => {
-    try {
-      if (pageNum === 1) setLoading(true);
-      else setLoadingMore(true);
-
-      const params: Record<string, unknown> = {
-        page: pageNum,
-        limit: 20,
-        ...(filterType === 'read' && { read: true }),
-        ...(filterType === 'unread' && { read: false }),
-        ...(filterType === 'messages' && { type: 'message' })
-      };
-
-      const response = await apiClient.getNotifications(params);
-      
-      if (response.success && response.data) {
-        const responseData = response.data as any;
-        const newNotifications = Array.isArray(responseData) ? responseData : responseData?.notifications || [];
-        // Client-side filter for applications/messages if backend does not support a category
-        const filteredNotifications =
-          filterType === 'applications'
-            ? newNotifications.filter((n: any) => ['application_status', 'job_match', 'interview', 'offer'].includes(n.type))
-            : filterType === 'messages'
-              ? newNotifications.filter((n: any) => n.type === 'message')
-              : newNotifications;
-        
-        if (reset || pageNum === 1) {
-          setNotifications(filteredNotifications);
-        } else {
-          setNotifications(prev => [...prev, ...filteredNotifications]);
-        }
-
-        const pagination = responseData?.pagination;
-        if (pagination) {
-          setHasMore(pagination.page < pagination.pages);
-        }
-        setPage(pageNum);
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load notifications');
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
+  // Filter notifications based on the current filter
+  const filteredNotifications = useMemo(() => {
+    if (!contextNotifications) return [];
+    
+    switch (effectiveFilter) {
+      case 'unread':
+        return contextNotifications.filter(n => !n.read);
+      case 'read':
+        return contextNotifications.filter(n => n.read);
+      case 'applications':
+        return contextNotifications.filter(n => 
+          ['application_status', 'job_match', 'interview', 'offer', 'bid_accepted', 'bid_rejected'].includes(n.type)
+        );
+      case 'messages':
+        return contextNotifications.filter(n => n.type === 'message');
+      default:
+        return contextNotifications;
     }
-  }, [effectiveFilter]);
+  }, [contextNotifications, effectiveFilter]);
 
-  // Load unread count
-  const loadUnreadCount = useCallback(async () => {
-    try {
-      const response = await apiClient.getUnreadNotificationCount();
-      if (response.success && response.data) {
-        setUnreadCount(response.data.count);
-      }
-    } catch (err) {
-      console.error('Failed to load unread count:', err);
+  // Refresh notifications when refreshSignal changes
+  useEffect(() => {
+    if (refreshSignal) {
+      refreshNotifications();
     }
-  }, []);
-
-  // Initial load and when filter/refreshSignal changes
-  useEffect(() => {
-    loadNotifications(1, effectiveFilter, true);
-    loadUnreadCount();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [effectiveFilter, refreshSignal]);
-
-  // Socket event listeners
-  useEffect(() => {
-    const unsubscribeNewNotification = onNotificationReceived((notification) => {
-      // Convert NotificationEvent to Notification format
-      const newNotification: Notification = {
-        _id: notification.id,
-        user: '', // Will be populated by backend
-        type: notification.type,
-        title: notification.title,
-        message: notification.message,
-        data: notification.data,
-        read: false,
-        createdAt: new Date(notification.createdAt)
-      } as Notification;
-      setNotifications(prev => [newNotification, ...prev]);
-      setUnreadCount(prev => prev + 1);
-    });
-
-    const unsubscribeNotificationUpdate = onNotificationUpdated((data) => {
-      setNotifications(prev =>
-        prev.map(notif =>
-          notif._id === data.id
-            ? { ...notif, read: data.read, readAt: data.read ? new Date() : undefined }
-            : notif
-        )
-      );
-      if (data.read) {
-        setUnreadCount(prev => Math.max(0, prev - 1));
-      }
-    });
-
-    return () => {
-      unsubscribeNewNotification();
-      unsubscribeNotificationUpdate();
-    };
-  }, [onNotificationReceived, onNotificationUpdated]);
+  }, [refreshSignal, refreshNotifications]);
 
   // Handle mark as read
   const handleMarkAsRead = async (notificationId: string) => {
-    try {
-      await apiClient.markNotificationAsRead(notificationId);
-      markNotificationAsRead(notificationId);
-    } catch (err) {
-      console.error('Failed to mark notification as read:', err);
-    }
+    await markAsRead(notificationId);
   };
 
   // Handle mark all as read
   const handleMarkAllAsRead = async () => {
-    try {
-      await apiClient.markAllNotificationsAsRead();
-      setNotifications(prev =>
-        prev.map(notif => ({ ...notif, read: true, readAt: new Date() }))
-      );
-      setUnreadCount(0);
-    } catch (err) {
-      console.error('Failed to mark all notifications as read:', err);
-    }
+    await markAllAsRead();
   };
 
   // Handle delete notification
   const handleDeleteNotification = async (notificationId: string) => {
-    try {
-      await apiClient.deleteNotification(notificationId);
-      setNotifications(prev => prev.filter(notif => notif._id !== notificationId));
-      
-      // Update unread count if deleted notification was unread
-      const deletedNotification = notifications.find(n => n._id === notificationId);
-      if (deletedNotification && !deletedNotification.read) {
-        setUnreadCount(prev => Math.max(0, prev - 1));
-      }
-    } catch (err) {
-      console.error('Failed to delete notification:', err);
-    }
-  };
-
-  // Handle load more
-  const handleLoadMore = () => {
-    if (hasMore && !loadingMore) {
-      loadNotifications(page + 1, effectiveFilter, false);
-    }
+    await deleteNotification(notificationId);
   };
 
   // Handle refresh
   const handleRefresh = () => {
-    loadNotifications(1, effectiveFilter, true);
-    loadUnreadCount();
+    refreshNotifications();
   };
 
   // Get notification icon based on type
@@ -257,7 +146,7 @@ export function NotificationCenter({
     return date.toLocaleDateString();
   };
 
-  if (loading && notifications.length === 0) {
+  if (isLoading && filteredNotifications.length === 0) {
     return (
       <Card className={`p-4 ${className}`}>
         {showHeader && (
@@ -288,9 +177,9 @@ export function NotificationCenter({
           <div className="flex items-center space-x-2">
             <Bell className="h-5 w-5" />
             <h3 className="text-lg font-semibold">Notifications</h3>
-            {unreadCount > 0 && (
+            {contextUnreadCount > 0 && (
               <Badge variant="destructive" className="text-xs">
-                {unreadCount}
+                {contextUnreadCount}
               </Badge>
             )}
           </div>
@@ -299,11 +188,11 @@ export function NotificationCenter({
               variant="ghost"
               size="sm"
               onClick={handleRefresh}
-              disabled={loading}
+              disabled={isLoading}
             >
-              {loading ? <CustomLoader size={16} color="#1FA9FF" /> : <RefreshCw className="h-4 w-4" />}
+              {isLoading ? <CustomLoader size={16} color="#1FA9FF" /> : <RefreshCw className="h-4 w-4" />}
             </Button>
-            {unreadCount > 0 && (
+            {contextUnreadCount > 0 && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -337,12 +226,6 @@ export function NotificationCenter({
           </div>
         )}
 
-        {/* Connection status */}
-        {!isConnected && (
-          <div className="mb-4 p-2 bg-yellow-50 border border-yellow-200 rounded-md text-sm text-yellow-800">
-            ⚠️ Real-time updates unavailable. Refresh to see latest notifications.
-          </div>
-        )}
 
         {/* Error state */}
         {error && (
@@ -356,13 +239,13 @@ export function NotificationCenter({
           className="space-y-3 overflow-y-auto scrollbar-thin"
           style={{ maxHeight }}
         >
-          {notifications.length === 0 ? (
+          {filteredNotifications.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               <Bell className="h-12 w-12 mx-auto mb-4 opacity-50" />
               <p>No notifications found</p>
             </div>
           ) : (
-            notifications.map((notification) => (
+            filteredNotifications.map((notification) => (
               <div
                 key={notification._id}
                 className={`p-3 rounded-lg border transition-colors ${
@@ -413,18 +296,6 @@ export function NotificationCenter({
             ))
           )}
 
-          {/* Load more button */}
-          {hasMore && (
-            <div className="text-center pt-4">
-              <Button
-                variant="outline"
-                onClick={handleLoadMore}
-                disabled={loadingMore}
-              >
-                {loadingMore ? 'Loading...' : 'Load More'}
-              </Button>
-            </div>
-          )}
         </div>
       </div>
     </Card>

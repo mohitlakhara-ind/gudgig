@@ -74,7 +74,7 @@ export function useNavigation() {
   const navigationItems = useMemo(() => getNavigationForRole(), [user, isAuthenticated]);
 
   // Enrich items with badge counts
-  const enrichNavigationWithBadges = (items: NavigationItem[], counts: NotificationCounts): NavigationItem[] => {
+  const enrichNavigationWithBadges = (items: NavigationItem[], counts: Record<string, number>): NavigationItem[] => {
     return items.map(item => {
       const key = item.badgeKey;
       if (!key) return item;

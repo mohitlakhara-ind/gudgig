@@ -79,7 +79,7 @@ export default function ImprovedDashboard() {
         }
         
         // Fallback to local storage
-        const userId = user?.id || 'demo_user';
+        const userId = user?._id || 'demo_user';
         const userBids = bidService.getBidsByUser(userId);
         const bidStats = bidService.getBidStats();
         

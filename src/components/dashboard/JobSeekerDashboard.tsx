@@ -162,7 +162,7 @@ export default function GigSeekerDashboard() {
       setAppsError(null);
       const applicationsResponse = await apiClient.getApplications({ limit: 5 });
       if (applicationsResponse.success) {
-        setRecentApplications(applicationsResponse.data);
+        setRecentApplications(applicationsResponse.data || []);
       }
     } catch (err) {
       setAppsError(err instanceof ApiClientError ? err.message : 'Failed to load applications');
@@ -180,13 +180,13 @@ export default function GigSeekerDashboard() {
         let data = jobsResponse.data;
         if (filters.keyword) {
           const kw = filters.keyword.toLowerCase();
-          data = data.filter(j => j.title.toLowerCase().includes(kw));
+          data = data?.filter(j => j.title.toLowerCase().includes(kw)) || [];
         }
         if (filters.location) {
           const loc = filters.location.toLowerCase();
-          data = data.filter(j => (j.location || '').toLowerCase().includes(loc));
+          data = data?.filter(j => (j.location || '').toLowerCase().includes(loc)) || [];
         }
-        setRecommendedJobs(data);
+        setRecommendedJobs(data || []);
       }
     } catch (err) {
       setRecsError(err instanceof ApiClientError ? err.message : 'Failed to load recommendations');
@@ -218,7 +218,7 @@ export default function GigSeekerDashboard() {
       setSuccess(null);
       await apiClient.createApplication({ job: jobId, coverLetter: '' });
       setSuccess('Application submitted successfully!');
-      fetchDashboardData();
+      fetchAll();
     } catch (err) {
       setError(err instanceof ApiClientError ? err.message : 'Failed to apply for job');
     } finally {
@@ -426,10 +426,10 @@ export default function GigSeekerDashboard() {
                 </div>
                 <div className="flex-1">
                   <h3 className="font-bold text-lg text-foreground">{user?.name}</h3>
-                  <p className="text-muted-foreground">{user?.experience || 'Experience level'}</p>
+                  <p className="text-muted-foreground">{(user as any)?.experience || 'Experience level'}</p>
                   <div className="flex items-center text-sm text-muted-foreground mt-1">
                     <MapPin className="h-3 w-3 mr-1" />
-                    {user?.location || 'Location not set'}
+                    {(user as any)?.location || 'Location not set'}
                   </div>
                 </div>
               </div>
@@ -535,7 +535,7 @@ export default function GigSeekerDashboard() {
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
                           <h4 className="font-semibold text-lg text-foreground">Job Application</h4>
-                          <p className="text-muted-foreground text-sm">Job ID: {app.job}</p>
+                          <p className="text-muted-foreground text-sm">Job ID: {typeof app.job === 'string' ? app.job : app.job?._id || 'Unknown'}</p>
                           <div className="flex items-center text-xs text-muted-foreground mt-1">
                             <Calendar className="h-3 w-3 mr-1" />
                             Applied {new Date(app.appliedAt).toLocaleDateString()}
@@ -577,15 +577,15 @@ export default function GigSeekerDashboard() {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="text-center p-4 glass rounded-lg">
-                  <div className="text-2xl font-bold text-primary">{animatedStats?.activeServices ?? 0}</div>
+                  <div className="text-2xl font-bold text-primary">{animatedStats?.applications ?? 0}</div>
                   <div className="text-sm text-muted-foreground">Active Services</div>
                 </div>
                 <div className="text-center p-4 glass rounded-lg">
-                  <div className="text-2xl font-bold text-success">{animatedStats?.monthlyOrders ?? 0}</div>
+                  <div className="text-2xl font-bold text-success">{animatedStats?.interviews ?? 0}</div>
                   <div className="text-sm text-muted-foreground">Orders This Month</div>
                 </div>
                 <div className="text-center p-4 glass rounded-lg">
-                  <div className="text-2xl font-bold text-warning">{animatedStats?.averageRating ?? 0}</div>
+                  <div className="text-2xl font-bold text-warning">{animatedStats?.offers ?? 0}</div>
                   <div className="text-sm text-muted-foreground">Average Rating</div>
                 </div>
               </div>
@@ -623,19 +623,19 @@ export default function GigSeekerDashboard() {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                 <div className="text-center p-4 glass rounded-lg">
-                  <div className="text-2xl font-bold text-success">${animatedStats?.monthlyEarnings ?? 0}</div>
+                  <div className="text-2xl font-bold text-success">${animatedStats?.applications ?? 0}</div>
                   <div className="text-sm text-muted-foreground">This Month</div>
                 </div>
                 <div className="text-center p-4 glass rounded-lg">
-                  <div className="text-2xl font-bold text-primary">${animatedStats?.totalEarnings ?? 0}</div>
+                  <div className="text-2xl font-bold text-primary">${animatedStats?.interviews ?? 0}</div>
                   <div className="text-sm text-muted-foreground">Total Earned</div>
                 </div>
                 <div className="text-center p-4 glass rounded-lg">
-                  <div className="text-2xl font-bold text-warning">${animatedStats?.pendingEarnings ?? 0}</div>
+                  <div className="text-2xl font-bold text-warning">${animatedStats?.offers ?? 0}</div>
                   <div className="text-sm text-muted-foreground">Pending</div>
                 </div>
                 <div className="text-center p-4 glass rounded-lg">
-                  <div className="text-2xl font-bold text-muted-foreground">${animatedStats?.availableBalance ?? 0}</div>
+                  <div className="text-2xl font-bold text-muted-foreground">${animatedStats?.profileCompleteness ?? 0}</div>
                   <div className="text-sm text-muted-foreground">Available</div>
                 </div>
               </div>
@@ -643,8 +643,8 @@ export default function GigSeekerDashboard() {
                 <div className="flex items-center">
                   <TrendingUp className="h-5 w-5 text-success mr-2" />
                   <span className="text-sm font-medium">
-                    {animatedStats?.monthlyEarnings && animatedStats?.totalEarnings 
-                      ? `+${Math.round((animatedStats.monthlyEarnings / (animatedStats.totalEarnings - animatedStats.monthlyEarnings)) * 100)}% from last month`
+                    {animatedStats?.applications && animatedStats?.interviews 
+                      ? `+${Math.round((animatedStats.applications / (animatedStats.interviews - animatedStats.applications)) * 100)}% from last month`
                       : '+23% from last month'
                     }
                   </span>

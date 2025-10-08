@@ -14,7 +14,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const { id: notificationId } = await params;
     
     // Proxy to the backend /api/notifications/:id/read endpoint
-    const backendUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000/api'}/notifications/${notificationId}/read`;
+    const backendUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/notifications/${notificationId}/read`;
     
     const response = await fetch(backendUrl, {
       method: 'PUT',

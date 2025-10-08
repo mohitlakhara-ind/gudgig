@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
     }
 
-    const rawBase = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000/api';
+    const rawBase = process.env.NEXT_PUBLIC_BACKEND_URL as string;
     const base = rawBase.replace(/\/$/, '').replace('/api', '');
 
     // Preserve query params

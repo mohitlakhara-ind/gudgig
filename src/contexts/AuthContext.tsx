@@ -112,7 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           
           // Cache user data - handle nested structure
           try { 
-            const actualUser = user?.data || user;
+            const actualUser = (user as any)?.data || user;
             localStorage.setItem('user', JSON.stringify(actualUser)); 
             const userRole = actualUser?.role;
             log.debug('auth_store_role', { role: userRole });
@@ -192,7 +192,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       // Cache user and role to localStorage for offline/refresh guard - handle nested structure
       try { 
-        const actualUser = response.user?.data || response.user;
+        const actualUser = (response.user as any)?.data || response.user;
         localStorage.setItem('user', JSON.stringify(actualUser)); 
         const userRole = actualUser?.role;
         log.debug('auth_login_role', { role: userRole });

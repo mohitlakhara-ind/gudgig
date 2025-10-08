@@ -119,7 +119,7 @@ export default function SecondaryNavigation() {
                         onClick={closeSidebar}
                         role="menuitem"
                         tabIndex={focusedIndex === globalIndex ? 0 : -1}
-                        ref={(el) => (navItemsRef.current[globalIndex] = el)}
+                        ref={(el) => { navItemsRef.current[globalIndex] = el; }}
                         aria-current={isActive ? 'page' : undefined}
                         aria-label={ariaLabel}
                         className={cn(
@@ -171,7 +171,7 @@ export default function SecondaryNavigation() {
         >
           <div className="relative">
             <Avatar className="h-10 w-10 shadow-medium rounded-2xl group-hover:scale-105 transition-transform">
-              <AvatarImage src={user?.avatar} alt={user?.name} />
+              <AvatarImage src={(user as any)?.avatar} alt={user?.name} />
               <AvatarFallback>
                 {user?.name?.charAt(0).toUpperCase() || 'U'}
               </AvatarFallback>

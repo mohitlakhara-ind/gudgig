@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useReducer, useCallback, useEffect } from 'react';
-import { Job, SearchJobsRequest } from '@/types/api';
+import { Job } from '@/types/api';
 import { useGigsManager } from '@/hooks/useGigsManager';
 import { useAuth } from './AuthContext';
 

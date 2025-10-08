@@ -61,6 +61,26 @@ export default function ForgotPasswordPage() {
     setShowOtpVerification(false);
   };
 
+  const handleResendEmail = async () => {
+    setIsLoading(true);
+    setErrorMessage(null);
+
+    try {
+      await apiClient.forgotPasswordOtp({
+        email: email,
+        channel: 'email'
+      });
+
+      toast.success('Password reset OTP resent to your email!');
+    } catch (err: any) {
+      const msg = err?.message || 'Failed to resend reset OTP';
+      setErrorMessage(msg);
+      toast.error(msg);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Show OTP verification if needed
   if (showOtpVerification) {
     return (
@@ -173,7 +193,7 @@ export default function ForgotPasswordPage() {
                     <Button 
                       onClick={() => {
                         setEmail('');
-                        setIsEmailSent(false);
+                        setShowOtpVerification(false);
                       }} 
                       variant="ghost" 
                       className="w-full"

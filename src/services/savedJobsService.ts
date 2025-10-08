@@ -3,6 +3,8 @@
  * Integrates with backend API for saved jobs functionality
  */
 
+import { getBackendUrl } from '@/lib/backend-url';
+
 export interface SavedJob {
   _id: string;
   title: string;
@@ -52,8 +54,8 @@ class SavedJobsService {
   private baseUrl: string;
 
   constructor() {
-    // Use standardized frontend backend URL (includes "/api") and default to port 5000
-    this.baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000/api';
+    // Use standardized frontend backend URL (includes "/api")
+    this.baseUrl = getBackendUrl(true);
   }
 
   // Get all saved jobs

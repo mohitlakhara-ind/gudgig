@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { io, Socket } from 'socket.io-client';
+// import { io, Socket } from 'socket.io-client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter, usePathname } from 'next/navigation';
 import Sidebar from './Sidebar';
@@ -22,11 +22,11 @@ export default function AppLayout({ children }: AppLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const { isMobile, isDesktop } = useResponsive();
-  const [socket, setSocket] = useState<Socket | null>(null);
+  const [socket, setSocket] = useState<any | null>(null);
 
   // Check if we're on admin pages
   const isAdminPage = pathname.startsWith('/admin');
-  const actualUser = user?.data || user;
+  const actualUser = (user as any)?.data || user;
   const userRole = actualUser?.role;
   const isAdmin = userRole === 'admin';
 
@@ -57,6 +57,8 @@ export default function AppLayout({ children }: AppLayoutProps) {
     pathname.startsWith('/help') ||
     pathname.startsWith('/support') ||
     pathname.startsWith('/chat') ||
+    pathname.startsWith('/gig-alerts') ||
+    pathname.startsWith('/services') ||
     pathname.startsWith('/admin');
 
   useEffect(() => {
@@ -69,11 +71,13 @@ export default function AppLayout({ children }: AppLayoutProps) {
   // Socket.io notifications client
   useEffect(() => {
     if (!isAuthenticated) return;
-    const base = (process as any)?.env?.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000/api';
-    const origin = base.replace(/\/$/, '').replace('/api', '');
-    const token = (typeof window !== 'undefined' ? localStorage.getItem('token') : null) || '';
-    const s = io(origin, { transports: ['websocket'], auth: { token } });
-    setSocket(s);
+    // const wsEnv = (process as any)?.env?.NEXT_PUBLIC_BACKEND_WS_URL;
+    // const httpEnv = (process as any)?.env?.NEXT_PUBLIC_BACKEND_URL;
+    // const base = wsEnv || httpEnv || (typeof window !== 'undefined' ? window.location.origin : '');
+    // const origin = String(base).replace(/\/$/, '').replace('/api', '');
+    // const token = (typeof window !== 'undefined' ? localStorage.getItem('token') : null) || '';
+    // const s = io(origin, { transports: ['websocket'], auth: { token } });
+    // setSocket(s);
     const onNew = (payload: any) => {
       // Bubble events for sidebar badge/notifications page
       window.dispatchEvent(new CustomEvent('notification:new', { detail: payload }));
@@ -88,21 +92,21 @@ export default function AppLayout({ children }: AppLayoutProps) {
     const onUpdated = (payload: any) => {
       window.dispatchEvent(new CustomEvent('notification:updated', { detail: payload }));
     };
-    s.on('notification:new', onNew);
-    s.on('notification:updated', onUpdated);
+    // s.on('notification:new', onNew);
+    // s.on('notification:updated', onUpdated);
     // Listen for bid selection typed events as notifications
-    s.on('bid:selected', (payload: any) => {
-      try {
-        const { default: toast } = require('react-hot-toast');
-        toast.success('Your bid was accepted!');
-      } catch {}
-      window.dispatchEvent(new CustomEvent('notification:new', { detail: payload }));
-    });
+    // s.on('bid:selected', (payload: any) => {
+    //   try {
+    //     const { default: toast } = require('react-hot-toast');
+    //     toast.success('Your bid was accepted!');
+    //   } catch {}
+    //   window.dispatchEvent(new CustomEvent('notification:new', { detail: payload }));
+    // });
     return () => {
-      s.off('notification:new', onNew);
-      s.off('notification:updated', onUpdated);
-      s.off('bid:selected');
-      s.close();
+      // s.off('notification:new', onNew);
+      // s.off('notification:updated', onUpdated);
+      // s.off('bid:selected');
+      // s.close();
     };
   }, [isAuthenticated]);
 

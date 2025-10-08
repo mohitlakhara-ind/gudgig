@@ -165,19 +165,19 @@ export default function Sidebar({ isOpen, onToggle, isMobile = false }: SidebarP
           ]
         },
         {
-          title: 'Quick Access',
+          title: 'Admin Tools',
           items: [
             {
-              name: 'User Dashboard',
-              href: '/dashboard',
-              icon: User,
-              description: 'Switch to user view'
+              name: 'Notifications',
+              href: '/admin/notifications',
+              icon: Bell,
+              description: 'Send notifications'
             },
             {
-              name: 'Browse Gigs',
-              href: '/gigs',
-              icon: Search,
-              description: 'View public gigs'
+              name: 'Payment Settings',
+              href: '/admin/payment-settings',
+              icon: CreditCard,
+              description: 'Configure payments'
             }
           ]
         }
@@ -210,7 +210,7 @@ export default function Sidebar({ isOpen, onToggle, isMobile = false }: SidebarP
         ]
       },
       {
-        title: 'Activity',
+        title: 'Work',
         items: [
           {
             name: 'My Bids',
@@ -218,6 +218,17 @@ export default function Sidebar({ isOpen, onToggle, isMobile = false }: SidebarP
             icon: Briefcase,
             description: 'Your applications'
           },
+          {
+            name: 'Gig Alerts',
+            href: '/gig-alerts',
+            icon: Bell,
+            description: 'Job notifications'
+          }
+        ]
+      },
+      {
+        title: 'Activity',
+        items: [
           {
             name: 'Payments',
             href: '/payments',
@@ -230,7 +241,6 @@ export default function Sidebar({ isOpen, onToggle, isMobile = false }: SidebarP
             icon: MessageSquare,
             description: 'Conversations'
           },
-          // Messages page not available; link hidden until implemented
           {
             name: 'Notifications',
             href: '/notifications',
@@ -276,12 +286,7 @@ export default function Sidebar({ isOpen, onToggle, isMobile = false }: SidebarP
           icon: Settings,
           description: 'Preferences'
         },
-        {
-          name: 'Help & Support',
-          href: '/help',
-          icon: HelpCircle,
-          description: 'Get help'
-        }
+          // Removed Help & Support as the route is nested under dashboard
       ]
     });
 
@@ -302,6 +307,11 @@ export default function Sidebar({ isOpen, onToggle, isMobile = false }: SidebarP
     if (href === '/help') return pathname === '/help' || pathname === '/support';
     if (href === '/bids') return pathname === '/bids' || pathname === '/dashboard/bids';
     if (href === '/payments') return pathname === '/payments' || pathname === '/dashboard/payments';
+    if (href === '/services') return pathname === '/services' || pathname === '/dashboard/services';
+    if (href === '/gig-alerts') return pathname === '/gig-alerts' || pathname === '/dashboard/gig-alerts';
+    if (href === '/saved-gigs') return pathname === '/saved-gigs' || pathname === '/dashboard/saved-gigs';
+    if (href === '/chat') return pathname === '/chat' || pathname === '/dashboard/chat';
+    if (href === '/profile') return pathname === '/profile' || pathname === '/dashboard/profile';
 
     // Admin subpages should match their own subtree, but not activate the admin root
     if (href.startsWith('/admin/')) return pathname.startsWith(href);

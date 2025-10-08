@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getBackendUrl } from '@/lib/backend-url';
 
 export async function GET(request: NextRequest) {
   try {
@@ -16,7 +17,7 @@ export async function GET(request: NextRequest) {
     
     for (const endpoint of possibleEndpoints) {
       try {
-        const base = (process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000/api');
+        const base = getBackendUrl(false);
         const backendUrl = new URL(endpoint, base);
         
         // Forward all query parameters to the backend

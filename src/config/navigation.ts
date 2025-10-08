@@ -20,6 +20,7 @@ import {
   MessageSquare,
   Plus,
   Package,
+  Search,
 } from 'lucide-react';
 
 export interface NavigationItem {
@@ -28,7 +29,7 @@ export interface NavigationItem {
   icon?: any;
   roles?: string[];
   // Visual hierarchy and UX metadata
-  section?: 'main' | 'work' | 'account' | 'manage' | 'grow' | 'overview' | 'system';
+  section?: 'main' | 'work' | 'account' | 'manage' | 'grow' | 'overview' | 'activity' | 'system';
   badgeKey?: 'notifications' | 'messages' | 'orders';
   badgeCount?: number;
   ariaLabel?: string;
@@ -64,45 +65,87 @@ export const freelancerNavigation: NavigationItem[] = [
     name: 'Dashboard',
     href: '/dashboard',
     icon: LayoutDashboard,
-    section: 'main',
+    section: 'overview',
     ariaLabel: 'Dashboard home',
     shortcut: 'Ctrl+D',
   },
   {
-    name: 'My Bids',
-    href: '/dashboard/bids',
-    icon: FileText,
-    section: 'work',
-    ariaLabel: 'View your submitted bids',
-  },
-  {
-    name: 'Payment History',
-    href: '/dashboard/payments',
-    icon: CreditCard,
-    section: 'work',
-    ariaLabel: 'View payment history',
+    name: 'Browse Gigs',
+    href: '/gigs',
+    icon: Search,
+    section: 'overview',
+    ariaLabel: 'Find opportunities',
   },
   {
     name: 'Saved Gigs',
     href: '/saved-gigs',
     icon: Heart,
-    section: 'work',
+    section: 'overview',
     ariaLabel: 'View saved gigs',
   },
   {
-    name: 'Messages',
-    href: '/messages',
-    icon: MessageSquare,
+    name: 'My Bids',
+    href: '/bids',
+    icon: FileText,
     section: 'work',
+    ariaLabel: 'View your submitted bids',
+  },
+  {
+    name: 'My Services',
+    href: '/services',
+    icon: Package,
+    section: 'work',
+    ariaLabel: 'Manage your services',
+  },
+  {
+    name: 'Gig Alerts',
+    href: '/gig-alerts',
+    icon: Bell,
+    section: 'work',
+    ariaLabel: 'Job notifications',
+  },
+  {
+    name: 'Payment History',
+    href: '/payments',
+    icon: CreditCard,
+    section: 'activity',
+    ariaLabel: 'View payment history',
+  },
+  {
+    name: 'Chat',
+    href: '/chat',
+    icon: MessageSquare,
+    section: 'activity',
     ariaLabel: 'Chat with clients',
   },
   {
     name: 'Notifications',
     href: '/notifications',
     icon: Bell,
-    section: 'account',
+    section: 'activity',
     ariaLabel: 'View notifications',
     badgeKey: 'notifications',
+  },
+  {
+    name: 'Profile',
+    href: '/profile',
+    icon: User,
+    section: 'account',
+    ariaLabel: 'Manage your profile',
+  },
+  {
+    name: 'Settings',
+    href: '/settings',
+    icon: Settings,
+    section: 'account',
+    ariaLabel: 'Preferences and settings',
+  },
+  {
+    name: 'Help & Support',
+    href: '/help',
+    icon: HelpCircle,
+    section: 'account',
+    ariaLabel: 'Get help and support',
   },
 ];
 
@@ -191,6 +234,7 @@ export const NAVIGATION_SECTIONS = {
   manage: 'Manage',
   grow: 'Grow',
   overview: 'Overview',
+  activity: 'Activity',
   system: 'System',
 } as const;
 

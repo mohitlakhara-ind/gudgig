@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Proxy to the backend /api/notifications/unread-count endpoint
-    const backendUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000/api'}/notifications/unread-count`;
+    const backendUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/notifications/unread-count`;
     
     const response = await fetch(backendUrl, {
       method: 'GET',

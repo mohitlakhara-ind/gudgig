@@ -9,11 +9,17 @@ export class ApiClientError extends Error {
   }
 }
 
-// Point frontend directly to backend service (default localhost:5000)
-// Prefer standardized public var for client-side usage, then sensible default
-const API_BASE_URL =
-  (typeof process !== 'undefined' && (process as any)?.env?.NEXT_PUBLIC_BACKEND_URL) ||
-  'http://localhost:5000/api';
+// Resolve API base URL via backend-url utility: compose BACKEND_URL + API_URL
+import { getBackendUrl } from '@/lib/backend-url';
+const API_BASE_URL = (() => {
+  // Prefer explicit env composition
+  const composed = getBackendUrl(true);
+  if (composed) return composed;
+  // Browser fallback to current origin + /api
+  if (typeof window !== 'undefined') return `${window.location.origin}/api`;
+  // SSR fallback to internal /api
+  return '/api';
+})();
 
 class ApiClient {
   private baseURL: string;

@@ -66,6 +66,22 @@ class BidService {
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('bidCreated', { detail: newBid }));
     }
+
+    // Fire automation (best-effort; ignore errors)
+    try {
+      fetch('/api/automations/bid-submitted', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: bidData.userId,
+          userEmail: (window as any)?.currentUser?.email,
+          userName: (window as any)?.currentUser?.name,
+          jobTitle: (window as any)?.currentJob?.title,
+          quotation: bidData.quotation,
+          bidFee: bidData.bidFeePaid,
+        })
+      }).catch(() => {});
+    } catch {}
     
     return newBid;
   }
@@ -96,6 +112,24 @@ class BidService {
     if (bid) {
       bid.status = status;
       this.saveBidsToStorage();
+
+      // Fire acceptance/rejection automations (best-effort)
+      try {
+        const endpoint = status === 'accepted' ? '/api/automations/bid-accepted' : (status === 'rejected' ? '/api/automations/bid-rejected' : null);
+        if (endpoint) {
+          fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              userId: bid.userId,
+              userEmail: (window as any)?.currentUser?.email,
+              userName: (window as any)?.currentUser?.name,
+              jobTitle: (window as any)?.currentJob?.title,
+              quotation: bid.quotation,
+            })
+          }).catch(() => {});
+        }
+      } catch {}
       return bid;
     }
     return null;

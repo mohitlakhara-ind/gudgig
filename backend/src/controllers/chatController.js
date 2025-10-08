@@ -1,5 +1,6 @@
 import Conversation from '../models/Conversation.js';
 import User from '../models/User.js';
+import chatNotificationService from '../services/chatNotificationService.js';
 
 // GET /api/conversations
 export const getConversations = async (req, res, next) => {
@@ -121,6 +122,26 @@ export const sendMessage = async (req, res, next) => {
       });
       // Also emit to a conversation-specific room for viewers (e.g., admins)
       io.to(`conversation:${conversation._id.toString()}`).emit('message:new', payload);
+    }
+
+    // Create chat notifications for recipients (excluding sender)
+    try {
+      const messageId = message._id ? message._id.toString() : Date.now().toString();
+      const metadata = {
+        messageType: attachments && attachments.length > 0 ? 'attachment' : 'text',
+        attachmentCount: attachments ? attachments.length : 0
+      };
+      
+      await chatNotificationService.createChatNotification(
+        conversation._id.toString(),
+        req.user._id.toString(),
+        messageId,
+        content,
+        metadata
+      );
+    } catch (notificationError) {
+      // Log error but don't fail the message sending
+      console.error('Error creating chat notification:', notificationError);
     }
 
     res.status(201).json({ success: true, data: message });
