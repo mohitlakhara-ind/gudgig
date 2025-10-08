@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 
 // Mock data for job alerts - in a real app, this would come from a database
 const mockJobAlerts = [
@@ -42,15 +40,6 @@ const mockJobAlerts = [
 // GET /api/app-api/job-alerts - Get user's job alerts
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { success: false, message: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
     // In a real app, you would fetch from database filtered by userId
     // For now, return mock data
     return NextResponse.json({
@@ -72,15 +61,6 @@ export async function GET(request: NextRequest) {
 // POST /api/app-api/job-alerts - Create a new job alert
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { success: false, message: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
     const body = await request.json();
     const { keyword, category, location } = body;
 

@@ -82,7 +82,7 @@ export default function TestNotificationsPage() {
               <div className="flex items-center gap-2">
                 <CheckCircle className="h-4 w-4 text-green-500" />
                 <span>Logged in as: {user.email}</span>
-                <Badge variant="default">User ID: {user.id}</Badge>
+                <Badge variant="default">User ID: {user._id}</Badge>
               </div>
             ) : (
               <div className="flex items-center gap-2">

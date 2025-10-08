@@ -412,7 +412,7 @@ export const COMPONENT_TOKENS = {
   input: {
     borderRadius: BORDER_RADIUS.lg,
     height: '40px', // Close to WCAG 44px guideline
-    shadow: SHADOWS.xs,
+    shadow: SHADOWS.sm,
     padding: { x: SPACING.md, y: SPACING.sm },
     fontSize: { base: TYPOGRAPHY.fontSize.base, md: TYPOGRAPHY.fontSize.sm },
     transitionDuration: '200ms',

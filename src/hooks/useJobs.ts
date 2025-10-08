@@ -37,12 +37,12 @@ export function useJobs(options: UseJobsOptions = {}) {
         ? await apiClient.getGigs(searchParams)
         : await apiClient.getJobs(searchParams);
       
-      setJobs(response.data);
+      setJobs((Array.isArray(response.data) ? response.data : response.data || []) as Job[]);
       setPagination({
-        page: response.pagination.page,
-        limit: response.pagination.limit,
-        total: response.total,
-        totalPages: response.pagination.totalPages
+        page: response.pagination?.page || 1,
+        limit: response.pagination?.limit || 10,
+        total: response.total ?? ((Array.isArray(response.data) ? response.data.length : 0) || 0),
+        totalPages: response.pagination?.totalPages || 1
       });
     } catch (err) {
       setError(err instanceof ApiClientError ? err.message : 'Failed to fetch jobs');
@@ -62,7 +62,8 @@ export function useJobs(options: UseJobsOptions = {}) {
         ? await apiClient.getGigs({ ...initialParams, page: nextPage })
         : await apiClient.getJobs({ ...initialParams, page: nextPage });
       
-      setJobs(prev => [...prev, ...response.data]);
+      const newItems = (Array.isArray(response.data) ? response.data : response.data || []) as Job[];
+      setJobs(prev => [...prev, ...newItems]);
       setPagination(prev => ({
         ...prev,
         page: nextPage
@@ -110,7 +111,7 @@ export function useJob(jobId: string) {
       setError(null);
       
       const response = await apiClient.getJob(jobId);
-      setJob(response.data);
+      setJob((response as any)?.data ?? null);
     } catch (err) {
       setError(err instanceof ApiClientError ? err.message : 'Failed to fetch job');
     } finally {
@@ -200,13 +201,14 @@ export const getCategoryColor = (category: string) => {
 };
 
 export const formatSalary = (job: Job) => {
-  const { salary } = job;
-  if (salary.min && salary.max) {
-    return `${salary.currency}${salary.min.toLocaleString()} - ${salary.currency}${salary.max.toLocaleString()}`;
-  } else if (salary.min) {
-    return `From ${salary.currency}${salary.min.toLocaleString()}`;
-  } else if (salary.max) {
-    return `Up to ${salary.currency}${salary.max.toLocaleString()}`;
+  const salary = job.salary;
+  const currency = salary?.currency || 'USD';
+  if (salary?.min && salary?.max) {
+    return `${currency}${salary.min.toLocaleString()} - ${currency}${salary.max.toLocaleString()}`;
+  } else if (salary?.min) {
+    return `From ${currency}${salary.min.toLocaleString()}`;
+  } else if (salary?.max) {
+    return `Up to ${currency}${salary.max.toLocaleString()}`;
   }
   return 'Salary not disclosed';
 };

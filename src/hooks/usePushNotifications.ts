@@ -159,13 +159,14 @@ export function usePushNotifications() {
         throw new Error('VAPID public key not received from server');
       }
 
-      // Convert VAPID key to Uint8Array
+      // Convert VAPID key to BufferSource (ArrayBuffer)
       const applicationServerKey = urlBase64ToUint8Array(publicKey);
+      const applicationServerKeyBuffer = new Uint8Array(applicationServerKey).buffer as ArrayBuffer;
 
       // Subscribe to push notifications
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: applicationServerKey,
+        applicationServerKey: applicationServerKeyBuffer,
       });
 
       console.log('Push subscription created:', subscription);
@@ -186,7 +187,7 @@ export function usePushNotifications() {
         },
         body: JSON.stringify({
           subscription: subscriptionData,
-          userId: user.id,
+          userId: user._id,
         }),
       });
 
@@ -239,7 +240,7 @@ export function usePushNotifications() {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              userId: user.id,
+          userId: user._id,
               endpoint: subscription.endpoint,
             }),
           });
@@ -280,7 +281,7 @@ export function usePushNotifications() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          userId: user?.id,
+          userId: user?._id,
         }),
       });
 

@@ -323,8 +323,8 @@ export const notifyAdminMessage = async (userId: string, userEmail: string, data
     'admin_message',
     {
       title: 'Message from Admin',
-      message: data.message,
-      ...data
+      ...data,
+      message: data.message
     }
   );
 };

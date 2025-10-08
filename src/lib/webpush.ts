@@ -7,7 +7,7 @@ const VAPID_SUBJECT = process.env.VAPID_SUBJECT || 'mailto:admin@yourdomain.com'
 
 // Validate VAPID keys
 const isValidVapidKey = (key: string): boolean => {
-  return key && key.length > 0 && !key.includes('...') && !key.includes('abc') && !key.includes('xyz');
+  return !!key && key.length > 0 && !key.includes('...') && !key.includes('abc') && !key.includes('xyz');
 };
 
 if (isValidVapidKey(VAPID_PUBLIC_KEY) && isValidVapidKey(VAPID_PRIVATE_KEY)) {

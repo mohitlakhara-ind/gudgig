@@ -1,9 +1,9 @@
-import { io, Socket } from 'socket.io-client';
+import io from 'socket.io-client';
 import { getBackendWsUrl } from './backend-url';
 
-let socket: Socket | null = null;
+let socket: ReturnType<typeof io> | null = null;
 
-export function getSocket(token?: string): Socket {
+export function getSocket(token?: string): ReturnType<typeof io> {
   if (socket) {
     if (!socket.connected) socket.connect();
     return socket;
@@ -21,7 +21,6 @@ export function getSocket(token?: string): Socket {
     reconnectionAttempts: 10,
     reconnectionDelay: 1000,
     auth: { token: authToken },
-    withCredentials: true,
   });
 
   return socket;

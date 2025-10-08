@@ -138,8 +138,8 @@ export async function refundPayment(
 
 // Get all payments
 export async function getAllPayments(options?: {
-  from?: string;
-  to?: string;
+  from?: number; // unix timestamp (seconds)
+  to?: number;   // unix timestamp (seconds)
   count?: number;
   skip?: number;
 }): Promise<{ items: PaymentResponse[]; count: number }> {

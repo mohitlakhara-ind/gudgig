@@ -69,6 +69,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/socket.io-client": "^1.4.36",
+    "@types/web-push": "^3.6.4",
     "cross-env": "^10.1.0",
     "eslint": "^9",
     "eslint-config-next": "15.5.3",

@@ -26,7 +26,11 @@ export interface Job {
   company?: { name: string; logo?: string } | string;
   location?: string;
   type?: string;
-  salary?: { min?: number; max?: number; currency?: string };
+  salary?: { min?: number; max?: number; currency?: string; period?: 'hourly' | 'project' };
+  /**
+   * Optional explicit salary disclosure block used by UI helpers
+   */
+  salaryDisclosure?: { min?: number; max?: number; currency?: string; period?: 'hourly' | 'project' };
   status?: 'active' | 'paused' | 'closed' | 'draft';
   views?: number;
   applicationsCount?: number;
@@ -280,6 +284,12 @@ export interface ApiResponse<T = any> {
 
 export interface JobsResponse extends ApiResponse<Job[]> {
   count: number;
+  total?: number;
+  pagination?: {
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
 }
 
 export interface JobResponse extends ApiResponse<Job> {}
@@ -289,6 +299,19 @@ export interface CreateJobRequest {
   description: string;
   category: Job['category'];
   requirements?: string[];
+}
+
+// Search/filter request parameters used by gigs hooks and API client
+export interface SearchJobsRequest {
+  page?: number;
+  limit?: number;
+  query?: string;
+  category?: Job['category'] | string;
+  location?: string;
+  type?: string;
+  minBudget?: number;
+  maxBudget?: number;
+  sortBy?: 'newest' | 'budget_high_to_low' | 'budget_low_to_high';
 }
 
 export interface CreateBidRequest {

@@ -156,6 +156,9 @@ importers:
       '@types/socket.io-client':
         specifier: ^1.4.36
         version: 1.4.36
+      '@types/web-push':
+        specifier: ^3.6.4
+        version: 3.6.4
       cross-env:
         specifier: ^10.1.0
         version: 10.1.0
@@ -1823,6 +1826,9 @@ packages:
 
   '@types/tedious@4.0.14':
     resolution: {integrity: sha512-KHPsfX/FoVbUGbyYvk1q9MMQHLPeRZhRJZdO45Q4YjvFkv4hMNghCWTvy7rdKessBsmtz4euWCWAB6/tVpI1Iw==}
+
+  '@types/web-push@3.6.4':
+    resolution: {integrity: sha512-GnJmSr40H3RAnj0s34FNTcJi1hmWFV5KXugE0mYWnYhgTAHLJ/dJKAwDmvPJYMke0RplY2XE9LnM4hqSqKIjhQ==}
 
   '@types/yargs-parser@21.0.3':
     resolution: {integrity: sha512-I4q9QU9MQv4oEOz4tAHJtNz1cwuLxn2F3xcc2iV5WdqLPpUnj30aUuxt1mAxYTG+oe8CZMV/+6rU4S4gRDzqtQ==}
@@ -6538,6 +6544,10 @@ snapshots:
   '@types/stack-utils@2.0.3': {}
 
   '@types/tedious@4.0.14':
+    dependencies:
+      '@types/node': 20.19.17
+
+  '@types/web-push@3.6.4':
     dependencies:
       '@types/node': 20.19.17
 

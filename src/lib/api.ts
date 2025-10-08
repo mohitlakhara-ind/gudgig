@@ -1,4 +1,4 @@
-import { LoginRequest, LoginResponse, RegisterRequest, RegisterResponse, JobsResponse, JobResponse, CreateJobRequest, ApiError, ApiResponse, User, Job, CreateBidRequest, BidResponse, BidsResponse, AdminSettings, AdminStatsResponse, ConversationsResponse, MessagesResponse, StartConversationRequest, SendMessageRequest, NotificationsResponse, UnreadCountResponse, JobSeekerStatsResponse, EmployerStatsResponse, ApplicationsResponse, ApplicationResponse, Service, Order, Review, FreelancerProfile, ServicesResponse, ServiceResponse, OrdersResponse, OrderResponse, ReviewsResponse, ReviewResponse, FreelancerProfileResponse } from '@/types/api';
+import { LoginRequest, LoginResponse, RegisterRequest, RegisterResponse, JobsResponse, JobResponse, CreateJobRequest, ApiError, ApiResponse, User, Job, CreateBidRequest, BidResponse, BidsResponse, AdminSettings, AdminStatsResponse, ConversationsResponse, MessagesResponse, StartConversationRequest, SendMessageRequest, NotificationsResponse, UnreadCountResponse, JobSeekerStatsResponse, EmployerStatsResponse, ApplicationsResponse, ApplicationResponse, Service, Order, Review, FreelancerProfile, ServicesResponse, ServiceResponse, OrdersResponse, OrderResponse, ReviewsResponse, ReviewResponse, FreelancerProfileResponse, SearchJobsRequest } from '@/types/api';
 import * as Sentry from '@sentry/nextjs';
 import { log } from './logger';
 
@@ -337,6 +337,26 @@ class ApiClient {
   }
 
   /**
+   * Backwards-compatible jobs listing API. Currently aliases to gigs list
+   * with basic parameter mapping until a dedicated /jobs endpoint exists.
+   */
+  async getJobs(params?: SearchJobsRequest): Promise<JobsResponse> {
+    const qs = new URLSearchParams();
+    if (params?.limit) qs.set('limit', String(params.limit));
+    if (params?.page) qs.set('page', String(params.page));
+    if (params?.category) qs.set('category', String(params.category));
+    if (params?.type) qs.set('type', String(params.type));
+    if (params?.location) qs.set('location', params.location);
+    if (params?.query) qs.set('search', params.query);
+    if (params?.minBudget) qs.set('minBudget', String(params.minBudget));
+    if (params?.maxBudget) qs.set('maxBudget', String(params.maxBudget));
+    if (params?.sortBy) qs.set('sort', params.sortBy);
+    const query = qs.toString();
+    // Alias to gigs endpoint for now
+    return this.request<JobsResponse>(`/gigs${query ? `?${query}` : ''}`);
+  }
+
+  /**
    * Saved jobs helpers
    */
   async getSavedJobs(params?: { 
@@ -483,10 +503,7 @@ class ApiClient {
     });
   }
 
-  // Admin: gig bids
-  async getGigBids(gigId: string): Promise<BidsResponse> {
-    return this.request<BidsResponse>(`/gigs/${gigId}/bids`);
-  }
+  // Admin: gig bids (removed duplicate)
 
   // Admin: all bids
   async getAllBids(params?: { page?: number; limit?: number; jobId?: string; status?: 'pending' | 'succeeded' | 'failed'; from?: string; to?: string; sort?: string }): Promise<BidsResponse> {

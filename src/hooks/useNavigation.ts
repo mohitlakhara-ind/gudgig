@@ -38,7 +38,7 @@ export function useNavigation() {
       return primaryNavigation;
     }
 
-    switch (user.role) {
+    switch (user.role as 'freelancer' | 'employer' | 'admin' | string) {
       case 'jobseeker':
       case 'freelancer':
         return freelancerNavigation;

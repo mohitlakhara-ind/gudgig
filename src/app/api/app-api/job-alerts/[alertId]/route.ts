@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 
 // Mock data - in a real app, this would come from a database
 // This should be the same data structure as in the main route
@@ -43,19 +41,10 @@ let mockJobAlerts = [
 // DELETE /api/app-api/job-alerts/[alertId] - Delete a job alert
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { alertId: string } }
+  { params }: { params: Promise<{ alertId: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { success: false, message: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    const { alertId } = params;
+    const { alertId } = await params;
 
     if (!alertId) {
       return NextResponse.json(
@@ -93,19 +82,10 @@ export async function DELETE(
 // PUT /api/app-api/job-alerts/[alertId] - Update a job alert
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { alertId: string } }
+  { params }: { params: Promise<{ alertId: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { success: false, message: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    const { alertId } = params;
+    const { alertId } = await params;
     const body = await request.json();
 
     if (!alertId) {
