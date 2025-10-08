@@ -15,7 +15,6 @@
     "test:frontend": "cross-env NODE_ENV=test jest --config jest.frontend.config.js",
     "test:backend": "cd backend && npm test",
     "test:e2e": "playwright test",
-    "prepare": "husky install",
     "sitemap": "next-sitemap"
   },
   "dependencies": {
@@ -70,10 +69,9 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/socket.io-client": "^1.4.36",
+    "cross-env": "^10.1.0",
     "eslint": "^9",
     "eslint-config-next": "15.5.3",
-    "husky": "^8.0.3",
-    "lint-staged": "^15.0.2",
     "prettier": "^3.1.0",
     "tailwindcss": "^4",
     "ts-jest": "^29.2.5",
