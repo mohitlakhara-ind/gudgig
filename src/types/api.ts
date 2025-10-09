@@ -149,6 +149,7 @@ export interface FreelancerProfile {
     level: 'beginner' | 'intermediate' | 'expert';
     yearsOfExperience?: number;
   }>;
+  primarySkills: string[];
   portfolio: Array<{
     title: string;
     description: string;
