@@ -31,6 +31,22 @@ const userSchema = new mongoose.Schema({
     enum: ['freelancer', 'employer', 'admin'],
     default: 'freelancer'
   },
+  // Optional profile fields used by admin UI and profiles
+  phone: {
+    type: String,
+    trim: true,
+    default: ''
+  },
+  location: {
+    type: String,
+    trim: true,
+    default: ''
+  },
+  avatar: {
+    type: String,
+    trim: true,
+    default: ''
+  },
   isEmailVerified: {
     type: Boolean,
     default: false

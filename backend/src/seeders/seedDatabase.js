@@ -43,31 +43,34 @@ const seedDatabase = async () => {
       email: 'admin@gigsmint.com',
       password: 'Admin123!',
       role: 'admin',
-      isEmailVerified: true
+      isEmailVerified: true,
+      phone: '+1-000-000-0000',
+      location: 'Remote',
+      avatar: ''
     });
     console.log('👤 Created admin user');
 
     // Create freelancers (use create to trigger pre-save hashing)
     const freelancers = await User.create([
-      { name: 'Alice Cooper', email: 'alice@gigsmint.com', password: 'Freelancer123!', role: 'freelancer', isEmailVerified: true },
-      { name: 'Bob Wilson', email: 'bob@gigsmint.com', password: 'Freelancer123!', role: 'freelancer', isEmailVerified: true },
-      { name: 'Carol Davis', email: 'carol@gigsmint.com', password: 'Freelancer123!', role: 'freelancer', isEmailVerified: true },
-      { name: 'Daniel Lee', email: 'daniel@gigsmint.com', password: 'Freelancer123!', role: 'freelancer', isEmailVerified: true },
-      { name: 'Emily Garcia', email: 'emily@gigsmint.com', password: 'Freelancer123!', role: 'freelancer', isEmailVerified: true },
-      { name: 'Frank Miller', email: 'frank@gigsmint.com', password: 'Freelancer123!', role: 'freelancer', isEmailVerified: true },
-      { name: 'Grace Hopper', email: 'grace@gigsmint.com', password: 'Freelancer123!', role: 'freelancer', isEmailVerified: true },
-      { name: 'Henry Ford', email: 'henry@gigsmint.com', password: 'Freelancer123!', role: 'freelancer', isEmailVerified: true },
-      { name: 'Ivy Nguyen', email: 'ivy@gigsmint.com', password: 'Freelancer123!', role: 'freelancer', isEmailVerified: true }
+      { name: 'Alice Cooper', email: 'alice@gigsmint.com', password: 'Freelancer123!', role: 'freelancer', isEmailVerified: true, phone: '+1-111-111-1111', location: 'San Francisco', avatar: '' },
+      { name: 'Bob Wilson', email: 'bob@gigsmint.com', password: 'Freelancer123!', role: 'freelancer', isEmailVerified: true, phone: '+1-222-222-2222', location: 'Los Angeles', avatar: '' },
+      { name: 'Carol Davis', email: 'carol@gigsmint.com', password: 'Freelancer123!', role: 'freelancer', isEmailVerified: true, phone: '+1-333-333-3333', location: 'New York', avatar: '' },
+      { name: 'Daniel Lee', email: 'daniel@gigsmint.com', password: 'Freelancer123!', role: 'freelancer', isEmailVerified: true, phone: '+1-444-444-4444', location: 'Austin', avatar: '' },
+      { name: 'Emily Garcia', email: 'emily@gigsmint.com', password: 'Freelancer123!', role: 'freelancer', isEmailVerified: true, phone: '+1-555-555-5555', location: 'Seattle', avatar: '' },
+      { name: 'Frank Miller', email: 'frank@gigsmint.com', password: 'Freelancer123!', role: 'freelancer', isEmailVerified: true, phone: '+1-666-666-6666', location: 'Chicago', avatar: '' },
+      { name: 'Grace Hopper', email: 'grace@gigsmint.com', password: 'Freelancer123!', role: 'freelancer', isEmailVerified: true, phone: '+1-777-777-7777', location: 'Boston', avatar: '' },
+      { name: 'Henry Ford', email: 'henry@gigsmint.com', password: 'Freelancer123!', role: 'freelancer', isEmailVerified: true, phone: '+1-888-888-8888', location: 'Miami', avatar: '' },
+      { name: 'Ivy Nguyen', email: 'ivy@gigsmint.com', password: 'Freelancer123!', role: 'freelancer', isEmailVerified: true, phone: '+1-999-999-9999', location: 'Denver', avatar: '' }
     ]);
     console.log(`👨‍💻 Created ${freelancers.length} freelancer users`);
 
     // Create employer users
     const employers = await User.create([
-      { name: 'John Smith', email: 'john@techcorp.com', password: 'Employer123!', role: 'employer', isEmailVerified: true },
-      { name: 'Sarah Johnson', email: 'sarah@designagency.com', password: 'Employer123!', role: 'employer', isEmailVerified: true },
-      { name: 'Michael Chen', email: 'michael@startup.com', password: 'Employer123!', role: 'employer', isEmailVerified: true },
-      { name: 'Nina Patel', email: 'nina@fintech.io', password: 'Employer123!', role: 'employer', isEmailVerified: true },
-      { name: 'Omar Ali', email: 'omar@gamehub.co', password: 'Employer123!', role: 'employer', isEmailVerified: true }
+      { name: 'John Smith', email: 'john@techcorp.com', password: 'Employer123!', role: 'employer', isEmailVerified: true, phone: '+1-310-000-0000', location: 'San Jose', avatar: '' },
+      { name: 'Sarah Johnson', email: 'sarah@designagency.com', password: 'Employer123!', role: 'employer', isEmailVerified: true, phone: '+1-415-000-0000', location: 'San Francisco', avatar: '' },
+      { name: 'Michael Chen', email: 'michael@startup.com', password: 'Employer123!', role: 'employer', isEmailVerified: true, phone: '+1-212-000-0000', location: 'New York', avatar: '' },
+      { name: 'Nina Patel', email: 'nina@fintech.io', password: 'Employer123!', role: 'employer', isEmailVerified: true, phone: '+1-617-000-0000', location: 'Boston', avatar: '' },
+      { name: 'Omar Ali', email: 'omar@gamehub.co', password: 'Employer123!', role: 'employer', isEmailVerified: true, phone: '+1-702-000-0000', location: 'Las Vegas', avatar: '' }
     ]);
     console.log(`👔 Created ${employers.length} employer users`);
 
@@ -133,7 +136,14 @@ const seedDatabase = async () => {
       { title: 'Level Design for Puzzle Game', description: 'Design 50 levels with increasing difficulty.', category: 'game development', requirements: ['Level design', 'Balancing'] }
     ];
     const jobs = await Job.insertMany(
-      [...sampleJobs, ...extraJobs].map(j => ({ ...j, createdBy: adminUser._id }))
+      [...sampleJobs, ...extraJobs].map(j => ({
+        ...j,
+        createdBy: adminUser._id,
+        budget: Math.floor(200 + Math.random() * 1500),
+        location: 'Remote',
+        experienceLevel: ['any', 'junior', 'mid', 'senior'][Math.floor(Math.random() * 4)],
+        skills: (j.requirements || []).map(r => r.toLowerCase())
+      }))
     );
     console.log(`💼 Created ${jobs.length} sample jobs`);
 
@@ -346,6 +356,7 @@ const seedDatabase = async () => {
         userId: freelancers[0]._id,
         quotation: 'I can deliver this project in 2 weeks for $800',
         proposal: 'I have extensive experience in e-commerce development and can create exactly what you need.',
+        attachments: [],
         bidFeePaid: 5,
         paymentStatus: 'succeeded',
         createdAt: lastMonth

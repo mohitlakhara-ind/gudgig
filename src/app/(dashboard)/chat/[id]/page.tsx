@@ -18,6 +18,7 @@ export default function ConversationPage() {
   const { user } = useAuth();
   const currentUserRole = ((user as any)?.data || (user as any))?.role;
   const [canSend, setCanSend] = useState(true);
+  const [opponent, setOpponent] = useState<any>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -27,7 +28,7 @@ export default function ConversationPage() {
         if (!mounted) return;
         setMessages(res.data || []);
         await apiClient.markConversationRead(conversationId);
-        // Determine if freelancer can send (must include an admin)
+        // Determine if freelancer can send (must include an admin) and set opponent
         try {
           const list = await api.getConversations();
           const conv = (list.data || []).find((c: any) => c._id === conversationId);
@@ -36,6 +37,11 @@ export default function ConversationPage() {
             setCanSend(!!hasAdmin);
           } else {
             setCanSend(true);
+          }
+          if (conv && Array.isArray(conv.participants)) {
+            const myId = ((user as any)?.data || (user as any))?._id;
+            const others = conv.participants.filter((p: any) => (p?._id || p) !== myId);
+            setOpponent(others[0] || null);
           }
         } catch {
           setCanSend(true);
@@ -121,8 +127,21 @@ export default function ConversationPage() {
     if (loading) return <div className="p-6">Loading…</div>;
     if (error) return <div className="p-6 text-red-600">{error}</div>;
     return (
-      <div className="flex flex-col h-full w-full
-      ">
+      <div className="flex flex-col h-full w-full">
+        {/* Topbar with opponent profile */}
+        <div className="border-b bg-card/60 backdrop-blur supports-[backdrop-filter]:bg-card/40">
+          <div className="flex items-center gap-3 px-4 py-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary font-semibold">
+              {String(opponent?.name || opponent?._id || '?').charAt(0).toUpperCase()}
+            </div>
+            <div className="min-w-0">
+              <div className="font-medium truncate">{opponent?.name || opponent?._id || 'Conversation'}</div>
+              {opponent?.role && (
+                <div className="text-xs text-muted-foreground truncate">{String(opponent.role).toUpperCase()}</div>
+              )}
+            </div>
+          </div>
+        </div>
         <div ref={listRef} className="flex-1 overflow-y-auto p-4 space-y-3 bg-background">
           {messages.map((m: any, i: number) => {
             const senderId = typeof m?.sender === 'object' ? (m?.sender?._id || m?.sender?.id) : m?.sender;

@@ -35,6 +35,24 @@ const JobSchema = new mongoose.Schema({
     type: [String],
     default: []
   },
+  budget: {
+    type: Number,
+    default: 0
+  },
+  location: {
+    type: String,
+    trim: true,
+    default: 'Remote'
+  },
+  experienceLevel: {
+    type: String,
+    enum: ['any', 'junior', 'mid', 'senior'],
+    default: 'any'
+  },
+  skills: {
+    type: [String],
+    default: []
+  },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',

@@ -42,6 +42,7 @@ import userRoutes from './routes/users.js';
 import savedJobsRoutes from './routes/saved-jobs.js';
 import userGigsRoutes from './routes/user-gigs.js';
 import supportRoutes from './routes/support.js';
+import uploadsRoutes from './routes/uploads.js';
 import requestId from './middleware/requestId.js';
 
 // Load environment variables
@@ -256,6 +257,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/saved-jobs', savedJobsRoutes);
 app.use('/api/user/gigs', userGigsRoutes);
 app.use('/api/support', supportRoutes);
+app.use('/api/uploads', uploadsRoutes);
 app.use('/app-api', appApiRoutes);
 
 // Cache debugging endpoints

@@ -170,6 +170,7 @@ export default function ProfilePage() {
     setFreelancerForm((prev: any) => ({ ...prev, [field]: value }));
   };
 
+
   const handleFreelancerNested = (group: 'hourlyRate' | 'location', field: string, value: any) => {
     setFreelancerForm((prev: any) => ({ ...prev, [group]: { ...(prev[group] || {}), [field]: value } }));
   };
@@ -274,10 +275,10 @@ export default function ProfilePage() {
     const s = primarySkillDraft.trim();
     if (!s) return;
     try {
-      const current = [...(freelancerProfile?.skills || [])];
-      if (current.some(skill => skill.name === s)) return;
+      const current = [...(freelancerProfile?.primarySkills || [])];
+      if (current.includes(s)) return;
       const resp = await apiClient.updateFreelancerProfile({ 
-        skills: [...current, { name: s, level: 'intermediate' }] 
+        primarySkills: [...current, s] 
       });
       if ((resp as any)?.success) {
         setFreelancerProfile((resp as any).data);
@@ -290,8 +291,8 @@ export default function ProfilePage() {
 
   const removePrimarySkill = async (skillToRemove: string) => {
     try {
-      const next = (freelancerProfile?.skills || []).filter((s: any) => s.name !== skillToRemove);
-      const resp = await apiClient.updateFreelancerProfile({ skills: next });
+      const next = (freelancerProfile?.primarySkills || []).filter((s: string) => s !== skillToRemove);
+      const resp = await apiClient.updateFreelancerProfile({ primarySkills: next });
       if ((resp as any)?.success) {
         setFreelancerProfile((resp as any).data);
       }
@@ -474,11 +475,9 @@ export default function ProfilePage() {
                     <div>
                       <div className="text-sm text-muted-foreground mb-2">Primary Skills</div>
                       <div className="flex flex-wrap gap-2">
-                        {(freelancerProfile.skills || []).length > 0 ? (
-                          (freelancerProfile.skills || []).map((s: any, i: number) => (
-                            <Badge key={i} variant="secondary" className="px-3 py-1">
-                              {typeof s === 'string' ? s : s?.name}
-                            </Badge>
+                        {(freelancerProfile.primarySkills || []).length > 0 ? (
+                          (freelancerProfile.primarySkills || []).map((s: string, i: number) => (
+                            <Badge key={i} variant="secondary" className="px-3 py-1">{s}</Badge>
                           ))
                         ) : (
                           <span className="text-sm text-muted-foreground">—</span>
@@ -578,10 +577,10 @@ export default function ProfilePage() {
                       <div className="mb-4">
                         <div className="text-sm font-medium mb-2">Primary Skills</div>
                         <div className="flex flex-wrap gap-2 mb-2">
-                          {(freelancerProfile?.skills || []).map((s: any, i: number) => (
+                          {(freelancerProfile?.primarySkills || []).map((s: string, i: number) => (
                             <Badge key={i} variant="secondary" className="px-3 py-1">
-                              {typeof s === 'string' ? s : s?.name}
-                              <button className="ml-2 hover:text-red-600" onClick={() => removePrimarySkill(typeof s === 'string' ? s : s?.name)}>
+                              {s}
+                              <button className="ml-2 hover:text-red-600" onClick={() => removePrimarySkill(s)}>
                                 <X className="h-3 w-3" />
                               </button>
                             </Badge>

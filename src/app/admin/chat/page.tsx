@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import apiClient from '@/lib/api';
 import { Conversation } from '@/types/api';
@@ -23,6 +23,7 @@ export default function AdminChatListPage() {
   const [userQuery, setUserQuery] = useState('');
   const [usersLoading, setUsersLoading] = useState(false);
   const [users, setUsers] = useState<any[]>([]);
+  const autoStartedRef = useRef(false);
 
   useEffect(() => {
     let mounted = true;
@@ -57,6 +58,31 @@ export default function AdminChatListPage() {
       sock.off('message:new');
     };
   }, [searchParams]);
+
+  // Auto-create/init chat when admin visits /admin/chat?userId=...
+  useEffect(() => {
+    const targetUserId = initialUserId.trim();
+    if (!targetUserId) return;
+    if (autoStartedRef.current) return;
+    autoStartedRef.current = true;
+
+    (async () => {
+      try {
+        setCreating(true);
+        const res = await apiClient.startConversation({ participantId: targetUserId });
+        const conversationId = (res as any)?.data?._id;
+        if (conversationId) {
+          router.replace(`/admin/chat/${conversationId}`);
+        }
+      } catch (e: any) {
+        setError(e?.message || 'Failed to start conversation');
+      } finally {
+        setCreating(false);
+      }
+    })();
+  // Only run once per mounting with a given initialUserId
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialUserId]);
 
   const onStartConversation = async () => {
     const pid = participantId.trim();
@@ -146,40 +172,48 @@ export default function AdminChatListPage() {
 
   return (
     <div className="max-w-4xl mx-auto w-full">
-      <h1 className="text-2xl font-semibold p-6 pb-2">Admin Chats</h1>
-      {/* User picker for easy chat start */}
-      <div className="px-6 pb-4">
-        <div className="flex gap-2">
-          <input
-            value={userQuery}
-            onChange={(e) => setUserQuery(e.target.value)}
-            placeholder="Search users by name or email"
-            className="flex-1 border rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/40"
-          />
-          <button onClick={searchUsers} className="px-4 py-2 rounded-full bg-primary text-primary-foreground hover:opacity-90">Search</button>
-        </div>
-        {usersLoading ? (
-          <div className="text-sm text-muted-foreground mt-2">Searching…</div>
-        ) : users.length > 0 ? (
-          <div className="mt-2 max-h-64 overflow-auto border rounded-xl divide-y bg-card">
-            {users.map((u) => (
-              <div key={u._id} className="flex items-center justify-between p-2 hover:bg-muted/40">
-                <div className="min-w-0">
-                  <div className="font-medium truncate">{u.name || u.email || u._id}</div>
-                  <div className="text-xs text-muted-foreground truncate">{u.email}</div>
-                </div>
-                <button
-                  className="px-2 py-1 rounded-full bg-primary text-primary-foreground text-xs"
-                  onClick={async () => {
-                    setParticipantId(u._id);
-                    await onStartConversation();
-                  }}
-                >Message</button>
-              </div>
-            ))}
-          </div>
-        ) : null}
+      <div className="p-6 pt-6 pb-3 flex items-center justify-between">
+        <h1 className="text-2xl font-semibold">Admin Chats</h1>
+        <button
+          className="px-3 py-1.5 rounded-full border text-sm hover:bg-muted"
+          onClick={() => setPickerOpen((v) => !v)}
+        >{pickerOpen ? 'Hide' : 'Start new chat'}</button>
       </div>
+      {/* User picker for easy chat start (collapsed by default) */}
+      {pickerOpen && (
+        <div className="px-6 pb-4">
+          <div className="flex gap-2">
+            <input
+              value={userQuery}
+              onChange={(e) => setUserQuery(e.target.value)}
+              placeholder="Search users by name or email"
+              className="flex-1 border rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/40"
+            />
+            <button onClick={searchUsers} className="px-4 py-2 rounded-full bg-primary text-primary-foreground hover:opacity-90">Search</button>
+          </div>
+          {usersLoading ? (
+            <div className="text-sm text-muted-foreground mt-2">Searching…</div>
+          ) : users.length > 0 ? (
+            <div className="mt-2 max-h-64 overflow-auto border rounded-xl divide-y bg-card">
+              {users.map((u) => (
+                <div key={u._id} className="flex items-center justify-between p-2 hover:bg-muted/40">
+                  <div className="min-w-0">
+                    <div className="font-medium truncate">{u.name || u.email || u._id}</div>
+                    <div className="text-xs text-muted-foreground truncate">{u.email}</div>
+                  </div>
+                  <button
+                    className="px-2 py-1 rounded-full bg-primary text-primary-foreground text-xs"
+                    onClick={async () => {
+                      setParticipantId(u._id);
+                      await onStartConversation();
+                    }}
+                  >Message</button>
+                </div>
+              ))}
+            </div>
+          ) : null}
+        </div>
+      )}
       {content}
     </div>
   );

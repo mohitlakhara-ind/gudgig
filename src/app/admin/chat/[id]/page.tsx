@@ -16,6 +16,7 @@ export default function AdminConversationPage() {
   const [error, setError] = useState<string | null>(null);
   const [text, setText] = useState('');
   const listRef = useRef<HTMLDivElement>(null);
+  const [opponent, setOpponent] = useState<any>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -25,6 +26,15 @@ export default function AdminConversationPage() {
         if (!mounted) return;
         setMessages(res.data || []);
         await apiClient.markConversationRead(conversationId);
+        // Fetch conversation meta to determine opponent profile
+        try {
+          const list = await apiClient.getConversations();
+          const conv = (list.data || []).find((c: any) => c._id === conversationId);
+          if (conv && Array.isArray(conv.participants)) {
+            const others = conv.participants.filter((p: any) => (p?._id || p) !== currentUserId);
+            setOpponent(others[0] || null);
+          }
+        } catch {}
       } catch (e: any) {
         setError(e?.message || 'Failed to load messages');
       } finally {
@@ -102,6 +112,20 @@ export default function AdminConversationPage() {
     if (error) return <div className="p-6 text-red-600">{error}</div>;
     return (
       <div className="flex flex-col h-full">
+        {/* Topbar with opponent profile */}
+        <div className="border-b bg-card/60 backdrop-blur supports-[backdrop-filter]:bg-card/40">
+          <div className="flex items-center gap-3 px-4 py-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary font-semibold">
+              {String(opponent?.name || opponent?._id || '?').charAt(0).toUpperCase()}
+            </div>
+            <div className="min-w-0">
+              <div className="font-medium truncate">{opponent?.name || opponent?._id || 'Conversation'}</div>
+              {opponent?.role && (
+                <div className="text-xs text-muted-foreground truncate">{String(opponent.role).toUpperCase()}</div>
+              )}
+            </div>
+          </div>
+        </div>
         <div ref={listRef} className="flex-1 overflow-y-auto p-4 space-y-3 bg-background">
           {messages.map((m: any, i: number) => {
             const senderId = typeof m?.sender === 'object' ? (m?.sender?._id || m?.sender?.id) : m?.sender;

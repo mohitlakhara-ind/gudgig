@@ -12,13 +12,16 @@ export class ApiClientError extends Error {
 // Resolve API base URL via backend-url utility: compose BACKEND_URL + API_URL
 import { getBackendUrl } from '@/lib/backend-url';
 const API_BASE_URL = (() => {
-  // Prefer explicit env composition
-  const composed = getBackendUrl(true);
+  // Compose BASE + API prefix from envs
+  const backend = (process.env.NEXT_PUBLIC_BACKEND_URL || '').trim().replace(/\/$/, '');
+  const apiPath = (process.env.NEXT_PUBLIC_API_URL || '/api').trim();
+  const apiPrefix = apiPath.startsWith('/') ? apiPath : `/${apiPath}`;
+  const composed = backend ? `${backend}${apiPrefix}` : '';
   if (composed) return composed;
-  // Browser fallback to current origin + /api
-  if (typeof window !== 'undefined') return `${window.location.origin}/api`;
-  // SSR fallback to internal /api
-  return '/api';
+  // Browser fallback to current origin + API prefix
+  if (typeof window !== 'undefined') return `${window.location.origin}${apiPrefix}`;
+  // SSR fallback to internal API proxy
+  return apiPrefix;
 })();
 
 class ApiClient {
@@ -91,7 +94,12 @@ class ApiClient {
     maxRetries = 3
   ): Promise<T> {
     const isInternalAppRoute = endpoint.startsWith('/app-api/') || endpoint.startsWith('/api/');
-    const url = isInternalAppRoute ? endpoint : `${this.baseURL}${endpoint}`;
+    // Always proxy external endpoints via Next.js internal /api to avoid browser CORS
+    const url = isInternalAppRoute
+      ? endpoint
+      : (typeof window !== 'undefined'
+          ? `/api${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}` // browser proxy via Next
+          : `${API_BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`); // server direct
     const method = options.method || 'GET';
     const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData;
     const headers: Record<string, string> = {
@@ -204,7 +212,11 @@ class ApiClient {
   }
 
   private async fetchCsrfToken(): Promise<string> {
-    const response = await fetch(`${this.baseURL}/auth/csrf-token`, { cache: 'no-store' });
+    // Use internal Next.js proxy in the browser to avoid CORS/misconfigured envs
+    const url = (typeof window !== 'undefined')
+      ? '/api/auth/csrf-token'
+      : `${this.baseURL}/auth/csrf-token`;
+    const response = await fetch(url, { cache: 'no-store' });
     if (!response.ok) {
       throw new Error('Failed to obtain CSRF token');
     }
@@ -445,6 +457,27 @@ class ApiClient {
     return this.getGigBids(jobId);
   }
 
+  /**
+   * Get bid count for a job (counts succeeded payments as valid bids)
+   */
+  async getJobBidCount(jobId: string): Promise<ApiResponse<{ count: number }>> {
+    return this.request<ApiResponse<{ count: number }>>(`/jobs/${jobId}/bids/count`);
+  }
+
+  // Upload image to backend (Cloudinary)
+  async uploadImage(file: File, options?: { folder?: string }): Promise<ApiResponse<{ url: string; publicId: string; width: number; height: number; format: string; bytes: number; mime: string }>> {
+    const form = new FormData();
+    form.append('file', file);
+    if (options?.folder) form.append('folder', options.folder);
+    // Use explicit internal API path so that in the browser it proxies to
+    // NEXT_PUBLIC_BACKEND_URL + NEXT_PUBLIC_API_URL + /uploads/image
+    // and aligns with server expectations.
+    return this.request<ApiResponse<{ url: string; publicId: string; width: number; height: number; format: string; bytes: number; mime: string }>>('/api/uploads/image', {
+      method: 'POST',
+      body: form
+    });
+  }
+
   // Admin: statistics
   async getAdminStats(): Promise<AdminStatsResponse> {
     return this.request<AdminStatsResponse>('/admin/stats');
@@ -517,6 +550,14 @@ class ApiClient {
     if (params?.sort) search.set('sort', params.sort);
     const qs = search.toString();
     return this.request<BidsResponse>(`/admin/bids${qs ? `?${qs}` : ''}`);
+  }
+
+  // Admin: update bid selection status
+  async updateAdminBidSelection(bidId: string, status: 'accepted' | 'rejected'): Promise<ApiResponse<{ bidId: string; status: string }>> {
+    return this.request<ApiResponse<{ bidId: string; status: string }>>(`/admin/bids/${bidId}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status })
+    });
   }
 
   // Admin Gigs

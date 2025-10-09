@@ -155,19 +155,7 @@ export default function AdminBidsPage() {
 
   const handleStatusChange = async (bidId: string, newStatus: 'accepted' | 'rejected') => {
     try {
-      const response = await fetch(`/api/admin/bids/${bidId}/status`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({ status: newStatus })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update bid status');
-      }
-
+      await apiClient.updateAdminBidSelection(bidId, newStatus);
       toast.success(newStatus === 'accepted' ? 'Freelancer selected' : 'Bid rejected');
       fetchBids();
     } catch (error: any) {

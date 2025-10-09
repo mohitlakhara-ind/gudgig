@@ -88,6 +88,23 @@ export const getMessages = async (req, res, next) => {
   }
 };
 
+// GET /api/chat/:id
+export const getConversationById = async (req, res, next) => {
+  try {
+    const conversation = await Conversation.findById(req.params.id)
+      .populate('participants', 'name role email');
+    if (!conversation) return res.status(404).json({ success: false, message: 'Conversation not found' });
+    const isParticipant = conversation.participants.some(p => p._id.toString() === req.user.id);
+    // Allow admins to view any conversation
+    if (!isParticipant && req.user?.role !== 'admin') {
+      return res.status(403).json({ success: false, message: 'Not authorized' });
+    }
+    res.status(200).json({ success: true, data: conversation });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // POST /api/conversations/:id/messages
 export const sendMessage = async (req, res, next) => {
   try {

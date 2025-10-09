@@ -23,6 +23,7 @@ export default function PlaceBidModal({ open, onClose, jobId, jobTitle }: Props)
   const [loading, setLoading] = useState(false);
   const [fetchingFees, setFetchingFees] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [bidCount, setBidCount] = useState<number | null>(null);
   const proposalMin = 40;
 
   const parsedQuotation = Number(quotation);
@@ -43,6 +44,18 @@ export default function PlaceBidModal({ open, onClose, jobId, jobTitle }: Props)
       }
     })();
   }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    (async () => {
+      try {
+        const res = await apiClient.getJobBidCount(jobId);
+        setBidCount(res?.data?.count ?? 0);
+      } catch {
+        setBidCount(null);
+      }
+    })();
+  }, [open, jobId]);
 
   const handleSelectFee = async (fee: number) => {
     try {
@@ -81,7 +94,10 @@ export default function PlaceBidModal({ open, onClose, jobId, jobTitle }: Props)
           <button className="text-sm" onClick={onClose}>Close</button>
         </div>
         <div className="p-5 space-y-5">
-          <div className="text-sm text-gray-700 font-medium">{jobTitle}</div>
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-gray-700 font-medium">{jobTitle}</div>
+            <div className="text-xs text-gray-500">{bidCount === null ? 'Bids: —' : `Bids: ${bidCount}`}</div>
+          </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>

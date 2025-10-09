@@ -5,6 +5,7 @@ const bidSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
   quotation: { type: String, trim: true, maxlength: 2000 },
   proposal: { type: String, trim: true, maxlength: 5000 },
+  attachments: { type: [String], default: [] },
   bidFeePaid: { type: Number, required: true, min: 0 },
   paymentStatus: { type: String, enum: ['pending', 'succeeded', 'failed'], default: 'pending' },
   // Selection workflow (by employer/admin)

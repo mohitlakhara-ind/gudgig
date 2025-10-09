@@ -96,7 +96,7 @@ export const listJobs = async (req, res, next) => {
     // Fetch bids count per job in one aggregation to avoid N+1
     const jobIds = jobs.map(j => j._id);
     const bidCountsAgg = await Bid.aggregate([
-      { $match: { jobId: { $in: jobIds } } },
+      { $match: { jobId: { $in: jobIds }, paymentStatus: 'succeeded' } },
       { $group: { _id: '$jobId', count: { $sum: 1 } } }
     ]);
     const jobIdToCount = new Map(bidCountsAgg.map(r => [String(r._id), r.count]));
@@ -271,6 +271,19 @@ export const getBidsForJob = async (req, res, next) => {
       freelancer: b.userId && typeof b.userId === 'object' ? { _id: b.userId._id, name: b.userId.name, email: b.userId.email } : undefined
     }));
     return res.status(200).json({ success: true, count: data.length, data });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Public/Admin: Get bid count for a job (counts succeeded payments as valid bids)
+export const getBidCountForJob = async (req, res, next) => {
+  try {
+    const { jobId } = req.params;
+    const job = await Job.findById(jobId).select('_id');
+    if (!job) return res.status(404).json({ success: false, message: 'Job not found' });
+    const count = await Bid.countDocuments({ jobId, paymentStatus: 'succeeded' });
+    return res.status(200).json({ success: true, data: { count } });
   } catch (err) {
     next(err);
   }

@@ -6,7 +6,8 @@ import {
   startConversation,
   getMessages,
   sendMessage,
-  markAsRead
+  markAsRead,
+  getConversationById
 } from '../controllers/chatController.js';
 
 const router = express.Router();
@@ -16,6 +17,7 @@ router.use(protect);
 // Aligned to frontend `/chat` usage and admin-freelancer conversations
 router.get('/', getConversations);
 router.post('/', [body('participantId').isString().notEmpty()], startConversation);
+router.get('/:id', getConversationById);
 router.get('/:id/messages', getMessages);
 router.post('/:id/messages', sendMessage);
 router.put('/:id/read', markAsRead);

@@ -1,13 +1,14 @@
 import express from 'express';
 import { body } from 'express-validator';
 import { protect, authorize } from '../middleware/auth.js';
-import { adminCreateJob, listJobs, getJobById, getBidsForJob, updateJob, deleteJob, getAdminStats } from '../controllers/gmController.js';
+import { adminCreateJob, listJobs, getJobById, getBidsForJob, updateJob, deleteJob, getAdminStats, getBidCountForJob } from '../controllers/gmController.js';
 
 const router = express.Router();
 
 // Public
 router.get('/', listJobs);
 router.get('/:jobId', getJobById);
+router.get('/:jobId/bids/count', getBidCountForJob);
 
 // Admin only
 router.post('/', protect, authorize('admin'), [

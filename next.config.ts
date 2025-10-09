@@ -35,14 +35,19 @@ const nextConfig: NextConfig = {
       // Proxy all other API routes to backend
       {
         source: '/api/:path*',
-        destination: `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000/api'}/:path*`,
+        destination: (() => {
+          const rawBackend = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+          const apiPath = process.env.NEXT_PUBLIC_API_URL || '/api';
+          const backendBase = rawBackend.replace(/\/$/, '');
+          const apiBase = apiPath.startsWith('/') ? apiPath : `/${apiPath}`;
+          return `${backendBase}${apiBase}/:path*`;
+        })(),
       },
     ];
   },
   async headers() {
     // Derive backend origin from envs (prefer public var), fallback to localhost:5000
-    const rawBackend = (process.env.NEXT_PUBLIC_BACKEND_URL
-      || 'http://localhost:5000/api');
+    const rawBackend = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
     const backendOrigin = rawBackend.replace(/\/$/, '').replace(/\/api$/, '');
     const securityHeaders = [
       { key: 'X-Content-Type-Options', value: 'nosniff' },
