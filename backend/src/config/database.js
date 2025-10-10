@@ -5,10 +5,8 @@ const connectDB = async () => {
     const conn = await mongoose.connect(process.env.MONGODB_URI, {
       // Connection-level timeouts to avoid long hangs on degraded networks
       serverSelectionTimeoutMS: 15000, // 15s to find a server
-      socketTimeoutMS: 45000, // 45s I/O inactivity timeout
-      // keepAlive and interval for long-lived connections
-      keepAlive: true,
-      keepAliveInitialDelay: 10000
+      socketTimeoutMS: 45000 // 45s I/O inactivity timeout
+      // Removed keepAlive and keepAliveInitialDelay (unsupported)
     });
 
     console.log(`✅ MongoDB Connected: ${conn.connection.host}`);

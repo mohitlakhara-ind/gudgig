@@ -8,6 +8,7 @@ import {
   Award,
   Shield
 } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 import EnhancedGigsListing from '@/components/gigs/EnhancedGigsListing';
 import { GigsProvider } from '@/contexts/GigsContext';
 import { dataService, type ServerStats } from '@/services/dataService';
@@ -26,35 +27,51 @@ export default function GigsPage() {
       try {
         setLoading(true);
         setError(null);
-        const [loading, setLoading] = useState(true); // Local loading state for skeletons
-        useEffect(() => {
-          // Simulate loading, replace with actual gigs fetch logic if needed
-          const timer = setTimeout(() => setLoading(false), 1200);
-          return () => clearTimeout(timer);
-        }, []);
-
-        if (loading) {
-          // Show skeleton loaders for gigs
-          return (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 p-4">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <Skeleton key={i} className="h-64 w-full rounded-xl" />
-              ))}
-            </div>
-          );
-        }
+        const serverStats = await dataService.getStats();
         setStats(serverStats);
       } catch (error: unknown) {
         console.error('Failed to fetch stats:', error);
         setError(error instanceof Error ? error.message : 'Failed to load statistics');
         setIsOffline(!navigator.onLine);
       } finally {
-      setLoading(false);
+        setLoading(false);
       }
     };
-
     fetchStats();
   }, []);
+  // Show skeleton loaders for gigs before loaded
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <section className="bg-muted py-16">
+          <div className="container mx-auto px-4">
+            <div className="max-w-4xl mx-auto">
+              <div className="text-center mb-12">
+                <h1 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">
+                  Discover Amazing Gigs
+                </h1>
+                <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
+                  Find the perfect freelance opportunities that match your skills. From quick tasks to long-term projects, 
+                  start your freelancing journey today.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section className="py-12">
+          <div className="container mx-auto px-4">
+            <div className="max-w-7xl mx-auto">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 p-4">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <Skeleton key={i} className="h-64 w-full rounded-xl" />
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    );
+  }
 
   const retryFetch = () => {
     setError(null);
