@@ -21,8 +21,8 @@ export default function Card({
     lg: 'p-8'
   };
 
-  const baseClasses = `bg-white rounded-xl shadow-sm transition-all duration-300 ${
-    hover ? 'hover:shadow-lg hover:-translate-y-1' : ''
+  const baseClasses = `bg-white bg-gradient-to-br from-gray-50 via-white to-gray-100 border border-gray-200 rounded-2xl shadow-md transition-all duration-300 ${
+    hover ? 'hover:shadow-xl hover:-translate-y-1 hover:border-primary/40 hover:bg-gradient-to-tr hover:from-primary/5' : ''
   } ${paddingClasses[padding]} ${className}`;
 
   return (
