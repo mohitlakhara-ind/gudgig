@@ -3,9 +3,12 @@ import mongoose from 'mongoose';
 const connectDB = async () => {
   try {
     const conn = await mongoose.connect(process.env.MONGODB_URI, {
-      // Modern Mongoose doesn't need these options, but keeping for compatibility
-      // useNewUrlParser: true,
-      // useUnifiedTopology: true,
+      // Connection-level timeouts to avoid long hangs on degraded networks
+      serverSelectionTimeoutMS: 15000, // 15s to find a server
+      socketTimeoutMS: 45000, // 45s I/O inactivity timeout
+      // keepAlive and interval for long-lived connections
+      keepAlive: true,
+      keepAliveInitialDelay: 10000
     });
 
     console.log(`✅ MongoDB Connected: ${conn.connection.host}`);

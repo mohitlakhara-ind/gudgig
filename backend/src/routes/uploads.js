@@ -8,6 +8,8 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 *
 
 // POST /api/uploads/image
 router.post('/image', protect, upload.single('file'), async (req, res) => {
+  // Guard against extremely slow clients to prevent hanging sockets
+  req.setTimeout(60000); // 60s per upload request
   try {
     if (!req.file) {
       return res.status(400).json({ success: false, message: 'No file provided' });
@@ -32,6 +34,7 @@ router.post('/image', protect, upload.single('file'), async (req, res) => {
 });
 
 export default router;
+
 
 
 

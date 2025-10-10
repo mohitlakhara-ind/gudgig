@@ -26,7 +26,23 @@ export default function GigsPage() {
       try {
         setLoading(true);
         setError(null);
-        const serverStats = await dataService.getStats();
+        const [loading, setLoading] = useState(true); // Local loading state for skeletons
+        useEffect(() => {
+          // Simulate loading, replace with actual gigs fetch logic if needed
+          const timer = setTimeout(() => setLoading(false), 1200);
+          return () => clearTimeout(timer);
+        }, []);
+
+        if (loading) {
+          // Show skeleton loaders for gigs
+          return (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 p-4">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <Skeleton key={i} className="h-64 w-full rounded-xl" />
+              ))}
+            </div>
+          );
+        }
         setStats(serverStats);
       } catch (error: unknown) {
         console.error('Failed to fetch stats:', error);

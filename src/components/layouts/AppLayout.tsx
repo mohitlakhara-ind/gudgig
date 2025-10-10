@@ -44,7 +44,8 @@ export default function AppLayout({ children }: AppLayoutProps) {
     pathname.startsWith('/login') ||
     pathname.startsWith('/register') ||
     pathname.startsWith('/forgot-password') ||
-    pathname.startsWith('/reset-password');
+    pathname.startsWith('/reset-password') ||
+    pathname.startsWith('/categories');
 
   // Check if we're on dashboard pages that have their own layout
   const isDashboardPage = pathname.startsWith('/dashboard') || 

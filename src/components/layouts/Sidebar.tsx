@@ -495,7 +495,7 @@ export default function Sidebar({ isOpen, onToggle, isMobile = false }: SidebarP
         {/* Mobile Sidebar */}
         <div
           className={cn(
-            "fixed left-0 top-0 z-50 h-full w-72 max-w-[85vw] bg-background border-r shadow-2xl transform transition-transform duration-300 ease-in-out lg:hidden overflow-hidden",
+            "fixed left-0 top-0 z-50 h-full w-72 max-w-[85vw] bg-white dark:bg-neutral-950 border-r shadow-2xl transform transition-transform duration-300 ease-in-out lg:hidden overflow-hidden",
             isOpen ? "translate-x-0" : "-translate-x-full"
           )}
         >

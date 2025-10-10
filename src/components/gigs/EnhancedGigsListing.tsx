@@ -309,7 +309,7 @@ export default function EnhancedGigsListing() {
                 {gigsManager.gigs.map((gig) => (
                   <Card key={gig._id} className="professional-card hover-professional-primary group">
                 <CardHeader className="pb-4">
-                  <div className="flex items-start justify-between">
+                  <div className="flex items-start justify-between max-w-full">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-3">
                         <Badge variant="secondary" className="text-xs flex items-center gap-1">
@@ -360,89 +360,88 @@ export default function EnhancedGigsListing() {
                 </CardHeader>
 
                 <CardContent className="space-y-4">
-                  {/* Skills */}
-                  {gig.requirements && gig.requirements.length > 0 && (
-                    <div>
-                      <h4 className="font-semibold text-sm mb-2 flex items-center gap-1">
-                        <Award className="h-4 w-4" />
-                        Skills Required:
-                      </h4>
-                      <div className="flex flex-wrap gap-1">
-                        {gig.requirements.slice(0, 4).map((skill, index) => (
-                          <Badge key={index} variant="outline" className="text-xs">
-                            {skill}
-                          </Badge>
-                        ))}
-                        {gig.requirements.length > 4 && (
-                          <Badge variant="outline" className="text-xs">
-                            +{gig.requirements.length - 4} more
-                          </Badge>
+                        {/* Skills */}
+                        {gig.requirements && gig.requirements.length > 0 && (
+                          <div>
+                            <h4 className="font-semibold text-sm mb-2 flex items-center gap-1">
+                              <Award className="h-4 w-4" />
+                              Skills Required:
+                            </h4>
+                            <div className="flex flex-wrap gap-1">
+                              {gig.requirements.slice(0, 4).map((skill, index) => (
+                                <Badge key={index} variant="outline" className="text-xs">
+                                  {skill}
+                                </Badge>
+                              ))}
+                              {gig.requirements.length > 4 && (
+                                <Badge variant="outline" className="text-xs">
+                                  +{gig.requirements.length - 4} more
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
                         )}
-                      </div>
-                    </div>
-                  )}
 
                   {/* Gig Details */}
                   <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div className="flex items-center gap-2">
-                      <DollarSign className="h-4 w-4 text-green-600" />
-                      <span className="font-semibold text-green-600">
-                        {formatGigBudget(gig)}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-muted-foreground">
-                        {getDaysAgo(gig.createdAt)}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Users className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-muted-foreground">
-                        {gig.applicationsCount || 0} applications
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Eye className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-muted-foreground">
-                        {gig.views || 0} views
-                      </span>
-                    </div>
-                  </div>
-
-                      {/* Action Buttons */}
-                      <div className="flex gap-3 pt-2">
-                        {user ? (
+                          <div className="flex items-center gap-2 min-w-0">
+                            <DollarSign className="h-4 w-4 text-green-600" />
+                            <span className="font-semibold text-green-600 truncate max-w-[60px] sm:max-w-[80px] md:max-w-[100px]">
+                              {formatGigBudget(gig)}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 min-w-0">
+                            <Calendar className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-muted-foreground truncate max-w-[60px] sm:max-w-[80px] md:max-w-[100px]">
+                              {getDaysAgo(gig.createdAt)}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 min-w-0">
+                            <Users className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-muted-foreground truncate max-w-[80px]">
+                              {gig.applicationsCount || 0} applications
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 min-w-0">
+                            <Eye className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-muted-foreground truncate max-w-[80px]">
+                              {gig.views || 0} views
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex flex-wrap gap-3 pt-2 w-full">
+                          {user ? (
+                            <Button 
+                              className="flex-1 min-w-[100px] max-w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
+                              onClick={() => handlePlaceBid(gig._id)}
+                            >
+                              <MessageCircle className="h-4 w-4 mr-2" />
+                              <span className="truncate">Place Bid</span>
+                              <ArrowRight className="h-4 w-4 ml-2" />
+                            </Button>
+                          ) : (
+                            <Button 
+                              className="flex-1 min-w-[100px] max-w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
+                              onClick={handleGuestBidPrompt}
+                            >
+                              <MessageCircle className="h-4 w-4 mr-2" />
+                              <span className="truncate">Login to Bid</span>
+                              <ArrowRight className="h-4 w-4 ml-2" />
+                            </Button>
+                          )}
                           <Button 
-                            className="flex-1 group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
-                            onClick={() => handlePlaceBid(gig._id)}
+                            variant="outline" 
+                            size="icon"
+                            onClick={() => handleViewGig(gig._id)}
+                            className="min-w-[40px]"
                           >
-                            <MessageCircle className="h-4 w-4 mr-2" />
-                            Place Bid
-                            <ArrowRight className="h-4 w-4 ml-2" />
+                            <Eye className="h-4 w-4" />
                           </Button>
-                        ) : (
-                          <Button 
-                            className="flex-1 group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
-                            onClick={handleGuestBidPrompt}
-                          >
-                            <MessageCircle className="h-4 w-4 mr-2" />
-                            Login to Bid
-                            <ArrowRight className="h-4 w-4 ml-2" />
-                          </Button>
-                        )}
-                        <Button 
-                          variant="outline" 
-                          size="icon"
-                          onClick={() => handleViewGig(gig._id)}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
 
           {/* Load More */}
           {gigsManager.hasMore && (

@@ -76,6 +76,11 @@ if (process.env.SENTRY_DSN) {
 
 const app = express();
 const server = createServer(app);
+// Configure Node.js HTTP server timeouts to prevent premature disconnects
+// KeepAlive must be lower than headers timeout; requestTimeout controls overall request duration
+server.keepAliveTimeout = 61000; // 61s
+server.headersTimeout = 65000; // 65s
+server.requestTimeout = 120000; // 120s overall per request
 // Harden Express defaults
 app.disable('x-powered-by');
 app.enable('trust proxy');
@@ -121,7 +126,10 @@ const io = new Server(server, {
     origin: allowedOrigins,
     methods: ["GET", "POST"],
     credentials: true
-  }
+  },
+  // Increase ping timeouts to reduce false disconnects on slow networks
+  pingInterval: 20000, // 20s
+  pingTimeout: 25000 // 25s
 });
 
 // Connect to MongoDB (skip in tests)
