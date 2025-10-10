@@ -46,8 +46,8 @@ export default function PrivacyPage() {
             <CardContent className="prose prose-gray max-w-none">
               <div className="space-y-8">
                 {/* Introduction */}
-                      <CustomLoader size={60} color="#1FA9FF" />
-                      <p className="text-muted-foreground">Loading...</p>
+                <section>
+                  <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
                     <Eye className="h-6 w-6 text-primary" />
                     1. Information We Collect
                   </h2>
