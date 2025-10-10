@@ -1,23 +1,22 @@
-import { Card, CardContent } from '@/components/ui/card';
+import CustomLoader from "@/components/CustomLoader"
 
 export default function JobAlertsLoading() {
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="h-8 bg-muted rounded w-48 mb-2"></div>
-          <div className="h-4 bg-muted rounded w-32"></div>
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="flex flex-col items-center space-y-4">
+        <CustomLoader size={80} color="#1FA9FF" />
+        <div className="text-center space-y-2">
+          <h2 className="text-xl font-semibold text-foreground">
+            Loading Job Alerts...
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Please wait while we prepare your job alerts
+          </p>
         </div>
-        <div className="h-10 bg-muted rounded w-32"></div>
       </div>
-
-      <div className="grid gap-4">
-        {[1, 2, 3].map((i) => (
-          <Card key={i} className="animate-pulse">
-            <CardContent className="p-6">
-              <div className="flex justify-between items-start">
-                <div className="flex-1 space-y-3">
-                  <div className="flex items-center gap-2">
+    </div>
+  )
+}
                     <div className="h-6 bg-muted rounded w-48"></div>
                     <div className="h-6 bg-muted rounded w-16"></div>
                   </div>

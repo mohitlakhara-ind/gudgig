@@ -302,192 +302,147 @@ export default function EnhancedGigsListing() {
               {/* Professional Gigs Grid/List */}
           {gigsManager.gigs.length > 0 && (
             <>
-              {gigsManager.loading && gigsManager.gigs.length === 0 ? (
-                <div className={state.viewMode === 'grid' 
-                  ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-8" 
-                  : "space-y-6"
-                }>
-                  {Array.from({ length: state.viewMode === 'grid' ? 8 : 4 }).map((_, i) => (
-                    <Card key={i} className="group border-2 border-transparent shadow-lg animate-pulse">
-                      <CardHeader className="pb-4">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-3">
-                              <div className="h-5 w-20 bg-muted rounded-full" />
-                              <div className="h-5 w-16 bg-muted rounded-full" />
-                            </div>
-                            <div className="h-6 w-3/4 bg-muted rounded" />
-                          </div>
-                          <div className="flex gap-1">
-                            <div className="h-8 w-8 bg-muted rounded-full" />
-                            <div className="h-8 w-8 bg-muted rounded-full" />
-                          </div>
-                        </div>
-                        <div className="h-4 w-full bg-muted rounded mt-2" />
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="h-4 w-1/2 bg-muted rounded" />
-                        <div className="flex flex-wrap gap-1">
-                          <div className="h-4 w-16 bg-muted rounded-full" />
-                          <div className="h-4 w-12 bg-muted rounded-full" />
-                        </div>
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                          <div className="h-4 w-20 bg-muted rounded" />
-                          <div className="h-4 w-20 bg-muted rounded" />
-                          <div className="h-4 w-20 bg-muted rounded" />
-                          <div className="h-4 w-20 bg-muted rounded" />
-                        </div>
-                        <div className="flex gap-3 pt-2">
-                          <div className="h-9 w-24 bg-muted rounded" />
-                          <div className="h-9 w-9 bg-muted rounded-full" />
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              ) : (
-                <div className={state.viewMode === 'grid' 
-                  ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8" 
-                  : "space-y-6"
-                }>
-                  {gigsManager.gigs.map((gig) => (
-                    <Card key={gig._id} className="group border-2 border-transparent hover:border-primary/30 shadow-lg hover:shadow-primary/20 transition-all">
-                      <CardHeader className="pb-4">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-3">
-                              <Badge variant="secondary" className="text-xs flex items-center gap-1 rounded-full px-2 py-1">
-                                <span>{getCategoryIcon(gig.category)}</span>
-                                {getCategoryLabel(gig.category)}
-                              </Badge>
-                              <Badge 
-                                variant="outline" 
-                                className={`text-xs rounded-full px-2 py-1 ${getGigStatusColor(gig.status || 'active')}`}
-                              >
-                                <Zap className="h-3 w-3 mr-1" />
-                                {gig.status || 'Active'}
-                              </Badge>
-                            </div>
-                            <CardTitle className="text-xl font-bold mb-3 group-hover:text-primary transition-colors cursor-pointer" 
-                                       onClick={() => handleViewGig(gig._id)}>
-                              {gig.title}
-                            </CardTitle>
-                          </div>
-                          <div className="flex gap-1">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleSaveGig(gig._id)}
-                              className="shrink-0 h-8 w-8"
-                            >
-                              <Heart 
-                                className={`h-4 w-4 ${
-                                  state.savedGigs.includes(gig._id) 
-                                    ? 'fill-red-500 text-red-500 drop-shadow' 
-                                    : 'text-muted-foreground hover:text-red-500'
-                                }`} 
-                              />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleViewGig(gig._id)}
-                              className="shrink-0 h-8 w-8"
-                            >
-                              <Eye className="h-4 w-4 text-muted-foreground hover:text-primary" />
-                            </Button>
-                          </div>
-                        </div>
-                        <p className="text-muted-foreground text-sm leading-relaxed line-clamp-3 mt-2">
-                          {gig.description}
-                        </p>
-                      </CardHeader>
+              <div className={state.viewMode === 'grid' 
+                ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6" 
+                : "space-y-4"
+              }>
+                {gigsManager.gigs.map((gig) => (
+                  <Card key={gig._id} className="professional-card hover-professional-primary group">
+                <CardHeader className="pb-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Badge variant="secondary" className="text-xs flex items-center gap-1">
+                          <span>{getCategoryIcon(gig.category)}</span>
+                          {getCategoryLabel(gig.category)}
+                        </Badge>
+                        <Badge 
+                          variant="outline" 
+                          className={`text-xs ${getGigStatusColor(gig.status || 'active')}`}
+                        >
+                          <Zap className="h-3 w-3 mr-1" />
+                          {gig.status || 'Active'}
+                        </Badge>
+                      </div>
+                      <CardTitle className="text-xl mb-3 group-hover:text-primary transition-colors cursor-pointer" 
+                                 onClick={() => handleViewGig(gig._id)}>
+                        {gig.title}
+                      </CardTitle>
+                    </div>
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleSaveGig(gig._id)}
+                        className="shrink-0 h-8 w-8"
+                      >
+                        <Heart 
+                          className={`h-4 w-4 ${
+                            state.savedGigs.includes(gig._id) 
+                              ? 'fill-red-500 text-red-500' 
+                              : 'text-muted-foreground hover:text-red-500'
+                          }`} 
+                        />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleViewGig(gig._id)}
+                        className="shrink-0 h-8 w-8"
+                      >
+                        <Eye className="h-4 w-4 text-muted-foreground hover:text-primary" />
+                      </Button>
+                    </div>
+                  </div>
+                  <p className="text-muted-foreground text-sm leading-relaxed line-clamp-3">
+                    {gig.description}
+                  </p>
+                </CardHeader>
 
-                      <CardContent className="space-y-4">
-                        {/* Skills */}
-                        {gig.requirements && gig.requirements.length > 0 && (
-                          <div>
-                            <h4 className="font-semibold text-sm mb-2 flex items-center gap-1">
-                              <Award className="h-4 w-4 text-primary" />
-                              Skills Required:
-                            </h4>
-                            <div className="flex flex-wrap gap-1">
-                              {gig.requirements.slice(0, 4).map((skill, index) => (
-                                <Badge key={index} variant="outline" className="text-xs rounded-full px-2 py-1">
-                                  {skill}
-                                </Badge>
-                              ))}
-                              {gig.requirements.length > 4 && (
-                                <Badge variant="outline" className="text-xs rounded-full px-2 py-1">
-                                  +{gig.requirements.length - 4} more
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
+                <CardContent className="space-y-4">
+                  {/* Skills */}
+                  {gig.requirements && gig.requirements.length > 0 && (
+                    <div>
+                      <h4 className="font-semibold text-sm mb-2 flex items-center gap-1">
+                        <Award className="h-4 w-4" />
+                        Skills Required:
+                      </h4>
+                      <div className="flex flex-wrap gap-1">
+                        {gig.requirements.slice(0, 4).map((skill, index) => (
+                          <Badge key={index} variant="outline" className="text-xs">
+                            {skill}
+                          </Badge>
+                        ))}
+                        {gig.requirements.length > 4 && (
+                          <Badge variant="outline" className="text-xs">
+                            +{gig.requirements.length - 4} more
+                          </Badge>
                         )}
+                      </div>
+                    </div>
+                  )}
 
-                        {/* Gig Details */}
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                          <div className="flex items-center gap-2">
-                            <DollarSign className="h-4 w-4 text-green-600" />
-                            <span className="font-semibold text-green-600">
-                              {formatGigBudget(gig)}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-muted-foreground">
-                              {getDaysAgo(gig.createdAt)}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Users className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-muted-foreground">
-                              {gig.applicationsCount || 0} applications
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Eye className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-muted-foreground">
-                              {gig.views || 0} views
-                            </span>
-                          </div>
-                        </div>
+                  {/* Gig Details */}
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div className="flex items-center gap-2">
+                      <DollarSign className="h-4 w-4 text-green-600" />
+                      <span className="font-semibold text-green-600">
+                        {formatGigBudget(gig)}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-muted-foreground">
+                        {getDaysAgo(gig.createdAt)}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Users className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-muted-foreground">
+                        {gig.applicationsCount || 0} applications
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Eye className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-muted-foreground">
+                        {gig.views || 0} views
+                      </span>
+                    </div>
+                  </div>
 
-                        {/* Action Buttons */}
-                        <div className="flex gap-3 pt-2">
-                          {user ? (
-                            <Button 
-                              className="flex-1 group-hover:bg-primary group-hover:text-primary-foreground transition-colors font-semibold shadow-md"
-                              onClick={() => handlePlaceBid(gig._id)}
-                            >
-                              <MessageCircle className="h-4 w-4 mr-2" />
-                              Place Bid
-                              <ArrowRight className="h-4 w-4 ml-2" />
-                            </Button>
-                          ) : (
-                            <Button 
-                              className="flex-1 group-hover:bg-primary group-hover:text-primary-foreground transition-colors font-semibold shadow-md"
-                              onClick={handleGuestBidPrompt}
-                            >
-                              <MessageCircle className="h-4 w-4 mr-2" />
-                              Login to Bid
-                              <ArrowRight className="h-4 w-4 ml-2" />
-                            </Button>
-                          )}
+                      {/* Action Buttons */}
+                      <div className="flex gap-3 pt-2">
+                        {user ? (
                           <Button 
-                            variant="outline" 
-                            size="icon"
-                            onClick={() => handleViewGig(gig._id)}
+                            className="flex-1 group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
+                            onClick={() => handlePlaceBid(gig._id)}
                           >
-                            <Eye className="h-4 w-4" />
+                            <MessageCircle className="h-4 w-4 mr-2" />
+                            Place Bid
+                            <ArrowRight className="h-4 w-4 ml-2" />
                           </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
+                        ) : (
+                          <Button 
+                            className="flex-1 group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
+                            onClick={handleGuestBidPrompt}
+                          >
+                            <MessageCircle className="h-4 w-4 mr-2" />
+                            Login to Bid
+                            <ArrowRight className="h-4 w-4 ml-2" />
+                          </Button>
+                        )}
+                        <Button 
+                          variant="outline" 
+                          size="icon"
+                          onClick={() => handleViewGig(gig._id)}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
 
           {/* Load More */}
           {gigsManager.hasMore && (
