@@ -304,7 +304,7 @@ export default function EnhancedGigsListing() {
             <>
               {gigsManager.loading && gigsManager.gigs.length === 0 ? (
                 <div className={state.viewMode === 'grid' 
-                  ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8" 
+                  ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-8" 
                   : "space-y-6"
                 }>
                   {Array.from({ length: state.viewMode === 'grid' ? 8 : 4 }).map((_, i) => (
