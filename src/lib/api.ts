@@ -323,12 +323,6 @@ class ApiClient {
     }
   }
 
-  async updateProfile(data: Partial<User>): Promise<ApiResponse<User>> {
-    return this.request<ApiResponse<User>>('/app-api/profile', {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  }
 
   // Gigs
   async getGig(id: string): Promise<JobResponse> {

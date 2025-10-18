@@ -65,12 +65,12 @@ export default function RecentActivity({ className, limit = 8 }: RecentActivityP
 
         // Process recent bids
         if (bidsResponse.success && bidsResponse.data) {
-          const recentBids = bidsResponse.data.slice(0, 5).map((bid: any) => ({
+          const recentBids: ActivityItem[] = bidsResponse.data.slice(0, 5).map((bid: any) => ({
             _id: bid._id,
-            type: 'bid' as const,
+            type: 'bid',
             title: 'Bid Submitted',
             description: `Applied for ${bid.job?.title || 'a job'}`,
-            status: bid.paymentStatus === 'succeeded' ? 'success' : 'pending' as const,
+            status: (bid.paymentStatus === 'succeeded' ? 'success' : 'pending') as ActivityItem['status'],
             amount: bid.bidFeePaid,
             createdAt: bid.createdAt,
             metadata: {
@@ -83,14 +83,14 @@ export default function RecentActivity({ className, limit = 8 }: RecentActivityP
 
         // Process recent activity from stats
         if (statsResponse.success && statsResponse.data?.recentActivity) {
-          const recentActivity = statsResponse.data.recentActivity.slice(0, 3).map((activity: any) => ({
+          const recentActivity: ActivityItem[] = statsResponse.data.recentActivity.slice(0, 3).map((activity: any) => ({
             _id: activity._id,
             type: activity.type === 'order_completed' ? 'order' : 
                   activity.type === 'message_received' ? 'message' :
-                  activity.type === 'review_received' ? 'review' : 'info' as const,
+                  activity.type === 'review_received' ? 'review' : 'message',
             title: activity.title,
             description: activity.description,
-            status: activity.type === 'order_completed' ? 'success' : 'info' as const,
+            status: (activity.type === 'order_completed' ? 'success' : 'info') as ActivityItem['status'],
             amount: activity.description?.includes('$') ? 
                    parseInt(activity.description.match(/\$(\d+)/)?.[1] || '0') : undefined,
             createdAt: activity.createdAt,
@@ -345,3 +345,6 @@ export default function RecentActivity({ className, limit = 8 }: RecentActivityP
     </Card>
   );
 }
+
+
+

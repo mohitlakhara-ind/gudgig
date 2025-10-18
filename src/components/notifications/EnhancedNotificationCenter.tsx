@@ -207,8 +207,8 @@ export function NotificationCenter({
   };
 
   // Check if notification has long content
-  const hasLongContent = (notification: Notification) => {
-    return notification.message && notification.message.length > 100;
+  const hasLongContent = (notification: Partial<Notification>) => {
+    return !!(notification?.message && notification.message.length > 100);
   };
 
   if (isLoading && filteredNotifications.length === 0) {
@@ -423,4 +423,7 @@ export function NotificationCenter({
     </Card>
   );
 }
+
+
+
 

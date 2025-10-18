@@ -106,3 +106,6 @@ const JobAlert = mongoose.models.JobAlert || mongoose.model('JobAlert', jobAlert
 
 export default JobAlert;
 
+
+
+

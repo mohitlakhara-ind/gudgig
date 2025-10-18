@@ -66,7 +66,7 @@ export default function DemoPaymentsPage() {
   const fetchPayments = async () => {
     try {
       setLoading(true);
-      const response = await apiClient.getFakePayments();
+      const response = await apiClient.getPayments({ limit: 50 });
       if (response.success && response.data) {
         setPayments(response.data);
       }
@@ -80,7 +80,7 @@ export default function DemoPaymentsPage() {
 
   const fetchStats = async () => {
     try {
-      const response = await apiClient.getFakePaymentStats();
+      const response = await apiClient.getPaymentStats();
       if (response.success && response.data) {
         setStats(response.data);
       }
@@ -142,62 +142,18 @@ export default function DemoPaymentsPage() {
   });
 
   const handleCreateTestPayment = async () => {
-    try {
-      const testPayment = {
-        amount: Math.floor(Math.random() * 2000) + 500,
-        currency: 'INR',
-        status: 'pending',
-        paymentId: `pay_test_${Date.now()}`,
-        orderId: `order_test_${Date.now()}`,
-        method: ['card', 'upi', 'netbanking', 'wallet'][Math.floor(Math.random() * 4)],
-        description: `Test payment for: ${['Website Design', 'Mobile App', 'Logo Design', 'Content Writing'][Math.floor(Math.random() * 4)]}`,
-        bid: {
-          _id: `bid_test_${Date.now()}`,
-          job: {
-            _id: `job_test_${Date.now()}`,
-            title: 'Test Project'
-          }
-        }
-      };
-
-      const response = await apiClient.createFakePayment(testPayment);
-      if (response.success) {
-        toast.success('Test payment created successfully');
-        fetchPayments();
-        fetchStats();
-      }
-    } catch (error) {
-      console.error('Error creating test payment:', error);
-      toast.error('Failed to create test payment');
-    }
+    // Creating test payments is not supported against the real backend.
+    toast('Creating test payments is not supported when connected to real backend', { icon: 'ℹ️' });
   };
 
   const handleDeletePayment = async (id: string) => {
-    try {
-      const response = await apiClient.deleteFakePayment(id);
-      if (response.success) {
-        toast.success('Payment deleted successfully');
-        fetchPayments();
-        fetchStats();
-      }
-    } catch (error) {
-      console.error('Error deleting payment:', error);
-      toast.error('Failed to delete payment');
-    }
+    // Deleting payments is not supported via the public payments API.
+    toast('Deleting payments is not supported when connected to real backend', { icon: 'ℹ️' });
   };
 
   const handleUpdateStatus = async (id: string, status: string) => {
-    try {
-      const response = await apiClient.updateFakePaymentStatus(id, status);
-      if (response.success) {
-        toast.success('Payment status updated successfully');
-        fetchPayments();
-        fetchStats();
-      }
-    } catch (error) {
-      console.error('Error updating payment status:', error);
-      toast.error('Failed to update payment status');
-    }
+    // Updating payment status is not supported via the public payments API.
+    toast('Updating payment status is not supported when connected to real backend', { icon: 'ℹ️' });
   };
 
   if (loading) {

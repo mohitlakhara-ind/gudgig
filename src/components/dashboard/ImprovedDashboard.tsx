@@ -5,12 +5,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { 
-  TrendingUp, 
-  Users, 
-  Briefcase, 
-  DollarSign, 
-  Clock, 
+import {
+  TrendingUp,
+  Users,
+  Briefcase,
+  DollarSign,
+  Clock,
   CheckCircle,
   AlertCircle,
   ArrowUpRight,
@@ -49,25 +49,25 @@ export default function ImprovedDashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       if (!isAuthenticated) return;
-      
+
       try {
         setLoading(true);
         setError(null);
-        
+
         // Try to get stats from API first
         try {
           const [freelancerStats, myGigsStats] = await Promise.all([
             apiClient.getFreelancerStats(),
             apiClient.getMyGigsStats()
           ]);
-          
+
           console.log('📊 Freelancer stats:', freelancerStats);
           console.log('📊 My gigs stats:', myGigsStats);
-          
+
           if (freelancerStats.success && freelancerStats.data) {
             const data = freelancerStats.data as any;
             const gigs = (myGigsStats as any)?.data || {};
-            
+
             // Map the real API data to our stats structure
             setStats({
               totalBids: gigs.totalBids ?? data.applications ?? 0,
@@ -77,22 +77,22 @@ export default function ImprovedDashboard() {
               profileViews: data.profileViews ?? 0,
               responseRate: data.responseRate ?? 85
             });
-            
+
             setProfileCompleteness(data.profileCompleteness || 0);
-            
-            
+
+
             console.log('✅ Stats loaded successfully from API');
             return;
           }
         } catch (apiError) {
           console.warn('API stats failed, using local storage:', apiError);
         }
-        
+
         // Fallback to local storage
         const userId = user?._id || 'demo_user';
         const userBids = bidService.getBidsByUser(userId);
         const bidStats = bidService.getBidStats();
-        
+
         setStats({
           totalBids: userBids.length,
           activeBids: userBids.filter(bid => bid.status === 'pending').length,
@@ -101,9 +101,9 @@ export default function ImprovedDashboard() {
           profileViews: 0,
           responseRate: 85
         });
-        
+
         setProfileCompleteness(75); // Demo value
-        
+
       } catch (err) {
         console.error('Error fetching dashboard stats:', err);
         setError('Failed to load stats');
@@ -113,14 +113,14 @@ export default function ImprovedDashboard() {
     };
 
     fetchStats();
-    
+
     // Listen for new bid events to update stats
     const handleBidCreated = () => {
       fetchStats();
     };
-    
+
     window.addEventListener('bidCreated', handleBidCreated);
-    
+
     return () => {
       window.removeEventListener('bidCreated', handleBidCreated);
     };
@@ -148,7 +148,7 @@ export default function ImprovedDashboard() {
       description: 'Client conversations',
       icon: MessageSquare,
       // Messages page not implemented
-      // href: '/dashboard/messages',
+      href: '/chat',
       color: 'bg-purple-500'
     },
     {
@@ -183,110 +183,19 @@ export default function ImprovedDashboard() {
       </div>
 
       {/* Stats Grid */}
-      <div className="space-y-4">
-        {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            {[1, 2, 3, 4].map((i) => (
-              <Card key={i} className="animate-pulse">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <div className="h-4 bg-muted rounded w-20"></div>
-                  <div className="h-4 w-4 bg-muted rounded"></div>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-8 bg-muted rounded w-16 mb-2"></div>
-                  <div className="h-3 bg-muted rounded w-24"></div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : error ? (
-          <Card className="p-6 text-center">
-            <AlertCircle className="h-8 w-8 text-destructive mx-auto mb-2" />
-            <p className="text-sm text-muted-foreground">{error}</p>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="mt-2"
-              onClick={() => window.location.reload()}
-            >
-              Try Again
-            </Button>
-          </Card>
-        ) : (
-          /* Mobile: Show first 2 stats, then expandable */
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            {/* First two stats - always visible */}
-            <Card className="hover:shadow-md transition-shadow">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-xs sm:text-sm font-medium">Total Bids</CardTitle>
-                <Briefcase className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-xl sm:text-2xl font-bold">{stats.totalBids}</div>
-                <p className="text-xs text-muted-foreground">
-                  <span className="text-green-600">+2</span> from last month
-                </p>
-              </CardContent>
-            </Card>
 
-          <Card className="hover:shadow-md transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs sm:text-sm font-medium">Active Bids</CardTitle>
-              <Clock className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-xl sm:text-2xl font-bold">{stats.activeBids}</div>
-              <p className="text-xs text-muted-foreground">
-                Currently pending
-              </p>
-            </CardContent>
-          </Card>
 
-          {/* Additional stats - hidden on mobile unless expanded */}
-          <div className={`${showAllStats ? 'block' : 'hidden sm:block'} sm:block`}>
-            <Card className="hover:shadow-md transition-shadow">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs sm:text-sm font-medium">Bid Spend</CardTitle>
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-xl sm:text-2xl font-bold">${stats.earnings.toLocaleString()}</div>
-                <p className="text-xs text-muted-foreground">
-                  <span className="text-green-600">+12%</span> from last month
-                </p>
-              </CardContent>
-            </Card>
-          </div>
 
-          <div className={`${showAllStats ? 'block' : 'hidden sm:block'} sm:block`}>
-            <Card className="hover:shadow-md transition-shadow">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-xs sm:text-sm font-medium">Profile Views</CardTitle>
-                <Eye className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-xl sm:text-2xl font-bold">{stats.profileViews}</div>
-                <p className="text-xs text-muted-foreground">
-                  This month
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-
-            {/* Mobile expand/collapse button */}
-            <div className="sm:hidden text-center">
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => setShowAllStats(!showAllStats)}
-                className="text-xs"
-              >
-                {showAllStats ? 'Show Less' : 'Show More Stats'}
-              </Button>
-            </div>
-          </div>
-        )}
-      </div>
+      {/* Enhanced Analytics Dashboard */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg sm:text-xl">Analytics & Insights</CardTitle>
+          <CardDescription className="text-sm sm:text-base">Comprehensive analytics and performance metrics</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <AnalyticsDashboard />
+        </CardContent>
+      </Card>
 
       {/* Quick Actions */}
       <Card>
@@ -326,18 +235,6 @@ export default function ImprovedDashboard() {
           </div>
         </CardContent>
       </Card>
-
-      {/* Enhanced Analytics Dashboard */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg sm:text-xl">Analytics & Insights</CardTitle>
-          <CardDescription className="text-sm sm:text-base">Comprehensive analytics and performance metrics</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <AnalyticsDashboard />
-        </CardContent>
-      </Card>
-
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Enhanced Recent Activity */}
         <RecentActivity />

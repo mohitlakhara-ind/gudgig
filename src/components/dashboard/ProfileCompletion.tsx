@@ -395,3 +395,6 @@ export default function ProfileCompletion({ className }: ProfileCompletionProps)
     </Card>
   );
 }
+
+
+

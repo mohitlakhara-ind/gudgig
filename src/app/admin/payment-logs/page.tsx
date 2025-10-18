@@ -75,7 +75,7 @@ export default function PaymentLogsPage() {
       if (methodFilter !== 'all') params.method = methodFilter;
       // dateFilter could be mapped to dateFrom/dateTo if needed
 
-      const response = await apiClient.getFakePayments(params);
+  const response = await apiClient.getPayments(params);
       const list = Array.isArray(response?.data) ? response.data : [];
 
       const normalized: PaymentLog[] = list.map((p: any) => ({

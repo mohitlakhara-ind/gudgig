@@ -5,20 +5,20 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     
-    // Try multiple backend endpoints for gigs/jobs
+    // Prefer canonical backend API endpoints first (backend may expose /api/*)
     const possibleEndpoints = [
-      '/jobs',
-      '/gigs', 
       '/api/jobs',
-      '/api/gigs'
+      '/api/gigs',
+      '/jobs',
+      '/gigs'
     ];
     
     let lastError: Error | null = null;
     
     for (const endpoint of possibleEndpoints) {
       try {
-        const base = getBackendUrl(false);
-        const backendUrl = new URL(endpoint, base);
+  const base = getBackendUrl(false);
+  const backendUrl = new URL(endpoint, base);
         
         // Forward all query parameters to the backend
         searchParams.forEach((value, key) => {
@@ -29,7 +29,8 @@ export async function GET(request: NextRequest) {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
-        try {
+          try {
+          console.debug(`Attempting backend fetch: ${backendUrl.toString()}`);
           const response = await fetch(backendUrl.toString(), {
             method: 'GET',
             headers: {
@@ -69,14 +70,16 @@ export async function GET(request: NextRequest) {
             lastError = new Error(`Backend error: ${response.status}`);
             continue; // Try next endpoint
           }
-        } catch (fetchError) {
+          } catch (fetchError) {
           clearTimeout(timeoutId);
           if (fetchError instanceof Error && fetchError.name === 'AbortError') {
             console.warn(`⏰ Timeout for ${endpoint}, trying next...`);
             lastError = new Error(`Timeout for ${endpoint}`);
             continue;
           }
-          throw fetchError;
+          console.warn(`❌ Fetch failed for ${backendUrl.toString()}:`, fetchError);
+          lastError = fetchError as Error;
+          continue;
         }
       } catch (endpointError) {
         console.warn(`❌ Failed to fetch from ${endpoint}:`, endpointError);

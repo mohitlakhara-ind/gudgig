@@ -17,3 +17,6 @@ router.get('/earnings', getEarningsAnalytics);
 router.get('/performance', getPerformanceAnalytics);
 
 export default router;
+
+
+
