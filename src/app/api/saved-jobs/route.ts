@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
 
     // Try to fetch from backend first
     try {
-      const backendUrl = new URL('/saved-jobs', process.env.NEXT_PUBLIC_BACKEND_URL as string);
+      const backendUrl = new URL('/api/saved-jobs', process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000');
       
       // Forward all query parameters to the backend
       searchParams.forEach((value, key) => {
@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
 
     // Try to save to backend first
     try {
-      const backendUrl = new URL('/saved-jobs', process.env.NEXT_PUBLIC_BACKEND_URL as string);
+      const backendUrl = new URL('/api/saved-jobs', process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000');
       
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000);

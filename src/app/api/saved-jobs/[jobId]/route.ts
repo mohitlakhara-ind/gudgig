@@ -11,7 +11,7 @@ export async function GET(
 
     // Try to fetch from backend first
     try {
-      const backendUrl = new URL(`/saved-jobs/${jobId}`, process.env.NEXT_PUBLIC_BACKEND_URL as string);
+      const backendUrl = new URL(`/api/saved-jobs/${jobId}`, process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000');
       
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000);
@@ -95,7 +95,7 @@ export async function DELETE(
 
     // Try to delete from backend first
     try {
-      const backendUrl = new URL(`/saved-jobs/${jobId}`, process.env.NEXT_PUBLIC_BACKEND_URL as string);
+      const backendUrl = new URL(`/api/saved-jobs/${jobId}`, process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000');
       
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000);

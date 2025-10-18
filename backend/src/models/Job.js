@@ -37,12 +37,15 @@ const JobSchema = new mongoose.Schema({
   },
   budget: {
     type: Number,
-    default: 0
+    default: 0,
+    min: 0,
+    index: true
   },
   location: {
     type: String,
     trim: true,
-    default: 'Remote'
+    default: 'Remote',
+    index: true
   },
   experienceLevel: {
     type: String,
@@ -56,7 +59,8 @@ const JobSchema = new mongoose.Schema({
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true
+    required: true,
+    index: true
   },
   // Track selected freelancer (if any) as part of post-selection flow
   selectedFreelancerId: {
@@ -67,13 +71,66 @@ const JobSchema = new mongoose.Schema({
     status: { type: String, enum: ['none', 'in_progress', 'selected', 'completed'], default: 'none', index: true },
     selectedBidId: { type: mongoose.Schema.Types.ObjectId, ref: 'Bid' },
     selectedAt: { type: Date }
+  },
+  // Additional fields for better gig management
+  status: {
+    type: String,
+    enum: ['active', 'paused', 'completed', 'cancelled'],
+    default: 'active',
+    index: true
+  },
+  deadline: {
+    type: Date,
+    index: true
+  },
+  applicationsCount: {
+    type: Number,
+    default: 0
+  },
+  views: {
+    type: Number,
+    default: 0
+  },
+  tags: {
+    type: [String],
+    default: []
   }
-}, { timestamps: true });
+}, { 
+  timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
+});
 
 // Indexes for frequent queries
 JobSchema.index({ category: 1 });
 JobSchema.index({ createdBy: 1 });
 JobSchema.index({ createdAt: -1 });
+JobSchema.index({ budget: 1 });
+JobSchema.index({ status: 1 });
+JobSchema.index({ location: 1 });
+
+// Text index for search functionality
+JobSchema.index({ 
+  title: 'text', 
+  description: 'text', 
+  skills: 'text',
+  tags: 'text'
+});
+
+// Virtual for formatted budget
+JobSchema.virtual('formattedBudget').get(function() {
+  if (this.budget === 0) return 'Not specified';
+  return `₹${this.budget.toLocaleString()}`;
+});
+
+// Virtual for days since posted
+JobSchema.virtual('daysAgo').get(function() {
+  const now = new Date();
+  const posted = new Date(this.createdAt);
+  const diffTime = Math.abs(now - posted);
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return diffDays;
+});
 
 export default mongoose.models.Job || mongoose.model('Job', JobSchema);
 

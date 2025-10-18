@@ -40,9 +40,12 @@ import applicationRoutes from './routes/applications.js';
 import appApiRoutes from './routes/app-api.js';
 import userRoutes from './routes/users.js';
 import savedJobsRoutes from './routes/saved-jobs.js';
+import jobAlertsRoutes from './routes/job-alerts.js';
+import paymentsRoutes from './routes/payments.js';
 import userGigsRoutes from './routes/user-gigs.js';
 import supportRoutes from './routes/support.js';
 import uploadsRoutes from './routes/uploads.js';
+import analyticsRoutes from './routes/analytics.js';
 import requestId from './middleware/requestId.js';
 
 // Load environment variables
@@ -263,9 +266,12 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/applications', applicationRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/saved-jobs', savedJobsRoutes);
+app.use('/api/job-alerts', jobAlertsRoutes);
+app.use('/api/payments', paymentsRoutes);
 app.use('/api/user/gigs', userGigsRoutes);
 app.use('/api/support', supportRoutes);
 app.use('/api/uploads', uploadsRoutes);
+app.use('/api/analytics', analyticsRoutes);
 app.use('/app-api', appApiRoutes);
 
 // Cache debugging endpoints

@@ -59,18 +59,19 @@ export default function GigAlertsPage() {
             id: alert._id,
             name: alert.name || `${alert.keyword || 'Job'} Alert`,
             keywords: alert.keyword || '',
-            location: alert.location || 'Any',
-            gigType: 'all' as GigAlert['gigType'], // Default to all since API doesn't specify
-            salaryMin: '',
-            salaryMax: '',
-            frequency: 'daily' as GigAlert['frequency'], // Default frequency
-            isActive: alert.isActive !== false, // Default to active
-            createdDate: alert.createdAt || new Date().toISOString().split('T')[0],
+            location: alert.location || '',
+            gigType: alert.gigType || 'all',
+            salaryMin: alert.salaryMin ? alert.salaryMin.toString() : '',
+            salaryMax: alert.salaryMax ? alert.salaryMax.toString() : '',
+            frequency: alert.frequency || 'daily',
+            isActive: alert.isActive !== false,
+            createdDate: alert.createdAt || new Date().toISOString(),
             lastTriggered: alert.lastTriggered,
             matchCount: alert.matchCount || 0
           }));
           setAlerts(gigAlerts);
         } else {
+          console.log('No alerts found or error:', response);
           setAlerts([]);
         }
       } catch (error) {
@@ -103,16 +104,22 @@ export default function GigAlertsPage() {
   const handleCreateAlert = async () => {
     try {
       const response = await apiClient.createJobAlert({
+        name: formData.name,
         keyword: formData.keywords,
         category: formData.gigType !== 'all' ? formData.gigType : undefined,
-        location: formData.location || undefined
+        location: formData.location || undefined,
+        gigType: formData.gigType,
+        salaryMin: formData.salaryMin ? parseInt(formData.salaryMin) : undefined,
+        salaryMax: formData.salaryMax ? parseInt(formData.salaryMax) : undefined,
+        frequency: formData.frequency,
+        isActive: formData.isActive
       });
       
       if (response.success) {
         const newAlert: GigAlert = {
           id: response.data?._id || Date.now().toString(),
           ...formData,
-          createdDate: new Date().toISOString().split('T')[0],
+          createdDate: new Date().toISOString(),
           matchCount: 0,
         };
         

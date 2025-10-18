@@ -35,6 +35,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { apiClient } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { formatGigBudget, getDaysAgo, getGigStatusColor } from '@/hooks/useGigsManager';
+import GigsSkeletonLoader from './GigsSkeletonLoader';
 
 // Enhanced categories with better organization
 const categories = [
@@ -105,6 +106,7 @@ export default function EnhancedGigsListing() {
         toast.success('Gig saved successfully');
       }
     } catch (error) {
+      console.error('Error saving gig:', error);
       toast.error('Failed to save gig');
     }
   };
@@ -273,6 +275,11 @@ export default function EnhancedGigsListing() {
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {/* Loading State */}
+      {gigsManager.loading && gigsManager.gigs.length === 0 && (
+        <GigsSkeletonLoader viewMode={state.viewMode} count={6} />
       )}
 
       {/* Empty State */}
@@ -465,6 +472,13 @@ export default function EnhancedGigsListing() {
                   </>
                 )}
               </Button>
+            </div>
+          )}
+
+          {/* Loading More Skeleton */}
+          {gigsManager.loading && gigsManager.gigs.length > 0 && (
+            <div className="mt-6">
+              <GigsSkeletonLoader viewMode={state.viewMode} count={3} />
             </div>
           )}
         </>

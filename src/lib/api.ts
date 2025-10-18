@@ -407,15 +407,25 @@ class ApiClient {
    * Job alerts helpers
    */
   async getJobAlerts(): Promise<ApiResponse<{ alerts: Array<{ _id: string; keyword?: string; category?: string; location?: string }> }>> {
-    return this.request(`/app-api/job-alerts`);
+    return this.request(`/api/job-alerts`);
   }
 
-  async createJobAlert(criteria: { keyword?: string; category?: string; location?: string }): Promise<ApiResponse> {
-    return this.request<ApiResponse>('/app-api/job-alerts', { method: 'POST', body: JSON.stringify(criteria) });
+  async createJobAlert(criteria: { 
+    name?: string;
+    keyword?: string; 
+    category?: string; 
+    location?: string;
+    gigType?: string;
+    salaryMin?: number;
+    salaryMax?: number;
+    frequency?: string;
+    isActive?: boolean;
+  }): Promise<ApiResponse> {
+    return this.request<ApiResponse>('/api/job-alerts', { method: 'POST', body: JSON.stringify(criteria) });
   }
 
   async deleteJobAlert(alertId: string): Promise<ApiResponse> {
-    return this.request<ApiResponse>(`/app-api/job-alerts/${alertId}`, { method: 'DELETE' });
+    return this.request<ApiResponse>(`/api/job-alerts/${alertId}`, { method: 'DELETE' });
   }
 
   // Backwards-compatible alias to gigs
@@ -945,6 +955,19 @@ class ApiClient {
     return this.request<JobSeekerStatsResponse>('/app-api/stats/freelancer');
   }
 
+  // Analytics endpoints
+  async getDashboardAnalytics(): Promise<ApiResponse<any>> {
+    return this.request<ApiResponse<any>>('/api/analytics/dashboard');
+  }
+
+  async getEarningsAnalytics(period: string = '12'): Promise<ApiResponse<any>> {
+    return this.request<ApiResponse<any>>(`/api/analytics/earnings?period=${period}`);
+  }
+
+  async getPerformanceAnalytics(): Promise<ApiResponse<any>> {
+    return this.request<ApiResponse<any>>('/api/analytics/performance');
+  }
+
   // My gigs/bids stats
   async getMyGigsStats(): Promise<ApiResponse<{ totalBids: number; wonBids: number; pendingBids: number; failedBids?: number; recent: Array<{ jobId: string; createdAt: string; job?: { _id: string; title: string; category?: string } }> }>> {
     return this.request('/app-api/stats/my-gigs');
@@ -974,6 +997,23 @@ class ApiClient {
   }
 
   // User Profile API (single canonical endpoint)
+  async getMyProfile(): Promise<ApiResponse<User>> {
+    return this.request<ApiResponse<User>>('/api/auth/me');
+  }
+
+  async updateProfile(profileData: Partial<User>): Promise<ApiResponse<User>> {
+    return this.request<ApiResponse<User>>('/api/users/profile', { 
+      method: 'PUT', 
+      body: JSON.stringify(profileData) 
+    });
+  }
+
+  async changePassword(passwordData: { currentPassword: string; newPassword: string }): Promise<ApiResponse> {
+    return this.request<ApiResponse>('/api/users/change-password', { 
+      method: 'PUT', 
+      body: JSON.stringify(passwordData) 
+    });
+  }
 
   // Get user's services (for public profile viewing)
   async getUserServices(userId: string): Promise<ServicesResponse> {
@@ -997,8 +1037,8 @@ class ApiClient {
     return this.request<ApiResponse<{ count: number }>>('/api/saved-jobs/count');
   }
 
-  // Fake Payments Service Methods (keeping for payments page)
-  async getFakePayments(params?: { 
+  // Real Payments Service Methods
+  async getPayments(params?: { 
     status?: string; 
     method?: string; 
     dateFrom?: string; 
@@ -1008,24 +1048,21 @@ class ApiClient {
   }): Promise<ApiResponse<any[]>> {
     const qs = new URLSearchParams();
     if (params?.status) qs.set('status', params.status);
-    if (params?.dateFrom) qs.set('from', params.dateFrom);
-    if (params?.dateTo) qs.set('to', params.dateTo);
+    if (params?.dateFrom) qs.set('dateFrom', params.dateFrom);
+    if (params?.dateTo) qs.set('dateTo', params.dateTo);
     if (params?.limit) qs.set('limit', String(params.limit));
     if (params?.method) qs.set('method', params.method);
     if (params?.page) qs.set('page', String(params.page));
     const query = qs.toString();
-    // Use internal Next.js routes for fake payments
-    return this.request<ApiResponse<any[]>>(`/api/fake-payments${query ? `?${query}` : ''}`);
+    return this.request<ApiResponse<any[]>>(`/api/payments${query ? `?${query}` : ''}`);
   }
 
-  async getFakePaymentStats(): Promise<ApiResponse<any>> {
-    const res = await this.request<any>('/api/fake-payments/stats');
-    // Normalize to ApiResponse shape with stats in data
-    return { success: !!res?.success, data: res?.stats } as any;
+  async getPaymentStats(): Promise<ApiResponse<any>> {
+    return this.request<any>('/api/payments/stats');
   }
 
-  async getFakePaymentById(id: string): Promise<ApiResponse<any>> {
-    return this.request<ApiResponse<any>>(`/api/fake-payments/${id}`);
+  async getPaymentById(id: string): Promise<ApiResponse<any>> {
+    return this.request<ApiResponse<any>>(`/api/payments/${id}`);
   }
 
   async updateFakePaymentStatus(id: string, status: string): Promise<ApiResponse<any>> {

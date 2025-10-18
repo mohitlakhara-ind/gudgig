@@ -22,6 +22,9 @@ import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { apiClient } from '@/lib/api';
 import { bidService } from '@/services/bidService';
+import AnalyticsDashboard from './AnalyticsDashboard';
+import RecentActivity from './RecentActivity';
+import ProfileCompletion from './ProfileCompletion';
 
 export default function ImprovedDashboard() {
   const { user, isAuthenticated } = useAuth();
@@ -58,20 +61,27 @@ export default function ImprovedDashboard() {
             apiClient.getMyGigsStats()
           ]);
           
+          console.log('📊 Freelancer stats:', freelancerStats);
+          console.log('📊 My gigs stats:', myGigsStats);
+          
           if (freelancerStats.success && freelancerStats.data) {
             const data = freelancerStats.data as any;
             const gigs = (myGigsStats as any)?.data || {};
+            
+            // Map the real API data to our stats structure
             setStats({
-              // Use real bids from my-gigs for visible cards
-              totalBids: gigs.totalBids ?? 0,
-              activeBids: gigs.pendingBids ?? 0,
-              completedBids: gigs.wonBids ?? 0,
-              earnings: gigs.totalSpent ?? 0,
-              profileViews: 0,
-              responseRate: 85
+              totalBids: gigs.totalBids ?? data.applications ?? 0,
+              activeBids: gigs.pendingBids ?? data.activeOrders ?? 0,
+              completedBids: gigs.wonBids ?? data.completedOrders ?? 0,
+              earnings: gigs.totalSpent ?? data.totalEarnings ?? 0,
+              profileViews: data.profileViews ?? 0,
+              responseRate: data.responseRate ?? 85
             });
+            
             setProfileCompleteness(data.profileCompleteness || 0);
-            // Optionally, we can log or use extra stats (bidsThisMonth, spentThisMonth, averageBidFee)
+            
+            
+            console.log('✅ Stats loaded successfully from API');
             return;
           }
         } catch (apiError) {
@@ -116,42 +126,7 @@ export default function ImprovedDashboard() {
     };
   }, [isAuthenticated, user]);
 
-  const [recentActivity, setRecentActivity] = useState<any[]>([]);
   const [profileCompleteness, setProfileCompleteness] = useState(0);
-
-  // Fetch recent activity from API
-  useEffect(() => {
-    const fetchRecentActivity = async () => {
-      if (!isAuthenticated) return;
-      
-      try {
-        const statsResponse = await apiClient.getFreelancerStats();
-        
-        if (statsResponse.success && statsResponse.data?.recentActivity) {
-          const activities = statsResponse.data.recentActivity.slice(0, 4).map((activity: any) => ({
-            id: activity._id,
-            type: activity.type === 'order_completed' || activity.type === 'order_received' ? 'bid' : 
-                  activity.type === 'message_received' ? 'message' : 'profile',
-            title: activity.title,
-            status: activity.type === 'order_completed' ? 'accepted' : 
-                   activity.type === 'order_received' ? 'pending' : 'viewed',
-            amount: activity.description?.includes('$') ? 
-                   parseInt(activity.description.match(/\$(\d+)/)?.[1] || '0') : undefined,
-            time: activity.description?.replace(/.*- /, '') || 'Recently'
-          }));
-          setRecentActivity(activities);
-        } else {
-          // Fallback to empty array if no activity data
-          setRecentActivity([]);
-        }
-      } catch (err) {
-        console.error('Error fetching recent activity:', err);
-        setRecentActivity([]);
-      }
-    };
-
-    fetchRecentActivity();
-  }, [isAuthenticated]);
 
   const quickActions = [
     {
@@ -185,33 +160,6 @@ export default function ImprovedDashboard() {
     }
   ];
 
-  const getActivityIcon = (type: string) => {
-    switch (type) {
-      case 'bid':
-        return Briefcase;
-      case 'message':
-        return MessageSquare;
-      case 'profile':
-        return Eye;
-      default:
-        return Clock;
-    }
-  };
-
-  const getActivityColor = (status: string) => {
-    switch (status) {
-      case 'accepted':
-        return 'text-green-600 bg-green-100';
-      case 'pending':
-        return 'text-yellow-600 bg-yellow-100';
-      case 'unread':
-        return 'text-blue-600 bg-blue-100';
-      case 'viewed':
-        return 'text-gray-600 bg-gray-100';
-      default:
-        return 'text-gray-600 bg-gray-100';
-    }
-  };
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -379,113 +327,23 @@ export default function ImprovedDashboard() {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-        {/* Recent Activity */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg sm:text-xl">Recent Activity</CardTitle>
-            <CardDescription className="text-sm sm:text-base">Your latest updates and notifications</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3 sm:space-y-4">
-              {loading ? (
-                <div className="space-y-3">
-                  {[1, 2, 3, 4].map((i) => (
-                    <div key={i} className="flex items-center gap-2 sm:gap-3 animate-pulse">
-                      <div className="w-6 h-6 sm:w-8 sm:h-8 bg-muted rounded-full"></div>
-                      <div className="flex-1 min-w-0">
-                        <div className="h-4 bg-muted rounded w-3/4 mb-1"></div>
-                        <div className="h-3 bg-muted rounded w-1/2"></div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : recentActivity.length > 0 ? (
-                recentActivity.map((activity) => {
-                  const Icon = getActivityIcon(activity.type);
-                  return (
-                    <div key={activity.id} className="flex items-center gap-2 sm:gap-3">
-                      <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center flex-shrink-0 ${getActivityColor(activity.status)}`}>
-                        <Icon className="h-3 w-3 sm:h-4 sm:w-4" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs sm:text-sm font-medium truncate">{activity.title}</p>
-                        <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
-                          <p className="text-xs text-muted-foreground">{activity.time}</p>
-                          {activity.amount && (
-                            <Badge variant="secondary" className="text-xs px-1 py-0">
-                              ${activity.amount}
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                      <ArrowUpRight className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
-                    </div>
-                  );
-                })
-              ) : (
-                <div className="text-center py-4">
-                  <Clock className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                  <p className="text-sm text-muted-foreground">No recent activity</p>
-                </div>
-              )}
-            </div>
-            <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t">
-              {/* Activity page not implemented */}
-              {/* <Link href="/dashboard/activity"> */}
-                <Button variant="outline" className="w-full text-xs sm:text-sm">
-                  View All Activity
-                </Button>
-              {/* </Link> */}
-            </div>
-          </CardContent>
-        </Card>
+      {/* Enhanced Analytics Dashboard */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg sm:text-xl">Analytics & Insights</CardTitle>
+          <CardDescription className="text-sm sm:text-base">Comprehensive analytics and performance metrics</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <AnalyticsDashboard />
+        </CardContent>
+      </Card>
 
-        {/* Profile Completion */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg sm:text-xl">Profile Completion</CardTitle>
-            <CardDescription className="text-sm sm:text-base">Complete your profile to get more opportunities</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3 sm:space-y-4">
-              <div>
-                <div className="flex justify-between text-xs sm:text-sm mb-2">
-                  <span>Profile Strength</span>
-                  <span>{profileCompleteness}%</span>
-                </div>
-                <Progress value={profileCompleteness} className="h-2" />
-              </div>
-              
-              <div className="space-y-2 sm:space-y-3">
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-green-500 flex-shrink-0" />
-                  <span className="text-xs sm:text-sm">Basic information added</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-green-500 flex-shrink-0" />
-                  <span className="text-xs sm:text-sm">Skills listed</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <AlertCircle className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-500 flex-shrink-0" />
-                  <span className="text-xs sm:text-sm">Add portfolio samples</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <AlertCircle className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-500 flex-shrink-0" />
-                  <span className="text-xs sm:text-sm">Complete work experience</span>
-                </div>
-              </div>
-              
-              <div className="pt-3 sm:pt-4">
-                <Link href="/profile">
-                  <Button className="w-full text-xs sm:text-sm">
-                    Complete Profile
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        {/* Enhanced Recent Activity */}
+        <RecentActivity />
+
+        {/* Enhanced Profile Completion */}
+        <ProfileCompletion />
       </div>
     </div>
   );

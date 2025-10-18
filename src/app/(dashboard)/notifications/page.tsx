@@ -22,7 +22,7 @@ import { apiClient } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
-import { NotificationCenter } from '@/components/notifications/NotificationCenter';
+import { NotificationCenter } from '@/components/notifications/EnhancedNotificationCenter';
 
 interface Notification {
   _id: string;

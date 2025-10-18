@@ -4,6 +4,7 @@ import React, { createContext, useContext, useReducer, useCallback, useEffect } 
 import { Job } from '@/types/api';
 import { useGigsManager } from '@/hooks/useGigsManager';
 import { useAuth } from './AuthContext';
+import { apiClient } from '@/lib/api';
 
 interface GigsState {
   savedGigs: string[];
@@ -144,6 +145,28 @@ export function GigsProvider({ children }: { children: React.ReactNode }) {
     autoFetch: true,
     enableCache: true
   });
+
+  // Load saved gigs from backend when user is authenticated
+  useEffect(() => {
+    const loadSavedGigs = async () => {
+      if (user) {
+        try {
+          const response = await apiClient.getSavedJobs();
+          if (response.success && response.data) {
+            const savedGigIds = response.data.map((savedJob: any) => {
+              const jobObj = (savedJob?.jobId && typeof savedJob.jobId === 'object') ? savedJob.jobId : null;
+              return jobObj?._id || savedJob?.jobId || savedJob?._id;
+            }).filter(Boolean);
+            dispatch({ type: 'SET_SAVED_GIGS', payload: savedGigIds });
+          }
+        } catch (error) {
+          console.error('Error loading saved gigs:', error);
+        }
+      }
+    };
+
+    loadSavedGigs();
+  }, [user]);
 
   // Load state from localStorage on mount
   useEffect(() => {

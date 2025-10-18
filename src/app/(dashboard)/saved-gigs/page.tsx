@@ -51,22 +51,41 @@ export default function SavedGigsPage() {
         });
         
         if (response.success && response.data) {
+          console.log('Raw saved jobs response:', response.data); // Debug log
+          
           // Transform saved jobs data to saved gigs format
           const savedGigs = response.data.map((savedJob: any) => {
-            const jobObj = (savedJob?.jobId && typeof savedJob.jobId === 'object') ? savedJob.jobId : (savedJob?.job || null);
-            const gigId = (typeof savedJob?.jobId === 'string')
-              ? savedJob.jobId
-              : (jobObj?._id || savedJob?.job?._id || savedJob?._id);
-            const title = jobObj?.title || jobObj?.name || 'Unknown Job';
-            const company = jobObj?.company || jobObj?.companyName || jobObj?.employer?.name || 'Unknown Company';
-            const location = jobObj?.location || (jobObj?.remote ? 'Remote' : 'On-site') || 'Remote';
-            const type = jobObj?.type || jobObj?.jobType || 'contract';
-            const salary = (jobObj?.salary ?? (jobObj?.budget ? `₹${jobObj.budget}` : undefined)) || 'Not specified';
-            const postedDate = jobObj?.createdAt || jobObj?.postedAt || jobObj?.postedDate || savedJob?.createdAt || new Date().toISOString();
+            console.log('Processing saved job:', savedJob); // Debug log
+            
+            // Handle different response structures
+            let jobObj = null;
+            let gigId = '';
+            
+            if (savedJob.jobId && typeof savedJob.jobId === 'object') {
+              // jobId is populated
+              jobObj = savedJob.jobId;
+              gigId = jobObj._id;
+            } else if (typeof savedJob.jobId === 'string') {
+              // jobId is just a string ID
+              gigId = savedJob.jobId;
+            } else {
+              // Fallback
+              gigId = savedJob._id;
+            }
+            
+            const title = jobObj?.title || 'Unknown Gig';
+            const company = 'Gigs Mint'; // Default company name
+            const location = jobObj?.location || 'Remote';
+            const type = jobObj?.category || 'contract';
+            const salary = jobObj?.budget ? `₹${jobObj.budget}` : 'Not specified';
+            const postedDate = jobObj?.createdAt || savedJob?.createdAt || new Date().toISOString();
             const savedDate = savedJob?.savedAt || savedJob?.createdAt || new Date().toISOString();
             const description = jobObj?.description || '';
-            const tags = jobObj?.skills || jobObj?.tags || [];
-            const urgent = !!jobObj?.urgent;
+            const tags = jobObj?.requirements || jobObj?.skills || [];
+            const urgent = false; // We don't have urgent field in Job model
+            
+            console.log('Transformed gig:', { title, company, location, type, salary }); // Debug log
+            
             return {
               id: savedJob._id,
               gigId,
@@ -84,6 +103,7 @@ export default function SavedGigsPage() {
           });
           setSavedGigs(savedGigs);
         } else {
+          console.log('No saved jobs found or error:', response); // Debug log
           setSavedGigs([]);
         }
       } catch (error) {

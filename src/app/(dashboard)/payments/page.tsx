@@ -71,7 +71,7 @@ export default function PaymentsPage() {
   const fetchPayments = async () => {
     try {
       setLoading(true);
-      const response = await apiClient.getFakePayments({
+      const response = await apiClient.getPayments({
         status: statusFilter !== 'all' ? statusFilter : undefined,
         limit: 50
       });
@@ -92,7 +92,7 @@ export default function PaymentsPage() {
 
   const fetchStats = async () => {
     try {
-      const response = await apiClient.getFakePaymentStats();
+      const response = await apiClient.getPaymentStats();
       if (response.success && response.data) {
         setStats(response.data);
       }
