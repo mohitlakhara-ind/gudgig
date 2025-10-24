@@ -1,0 +1,51 @@
+services:
+  - type: web
+    name: job-portal-backend
+    env: node
+    plan: free
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && npm start
+    healthCheckPath: /render-health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: MONGODB_URI
+        fromDatabase:
+          name: job-portal-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: REFRESH_TOKEN_SECRET
+        generateValue: true
+      - key: CLIENT_URL
+        value: https://your-frontend-url.onrender.com
+      - key: RENDER_EXTERNAL_URL
+        fromService:
+          type: web
+          name: job-portal-backend
+          property: host
+      - key: SMTP_HOST
+        value: smtp.gmail.com
+      - key: SMTP_PORT
+        value: 587
+      - key: SMTP_SECURE
+        value: false
+      - key: FROM_EMAIL
+        value: noreply@microjobs.com
+      - key: RATE_LIMIT_WINDOW_MS
+        value: 900000
+      - key: RATE_LIMIT_MAX_REQUESTS
+        value: 100
+      - key: LOG_LEVEL
+        value: info
+
+databases:
+  - name: job-portal-db
+    plan: free
+    databaseName: jobportal
+    user: jobportal_user
+
+
+

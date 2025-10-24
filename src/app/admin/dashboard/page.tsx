@@ -29,16 +29,18 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold">Admin Dashboard</h1>
-          <p className="text-muted-foreground">Manage your Gigs Mint platform</p>
+     {/* Header */}
+      <div className="bg-gradient-subtle-primary rounded-lg p-4 sm:p-6 border border-primary/20">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">Admin Dashboard</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">Manage your Gigs Mint platform</p>
+          </div>
+          <Badge variant="outline" className="flex items-center gap-1 border-primary/40">
+            <Crown className="h-3 w-3 text-primary" />
+            Administrator
+          </Badge>
         </div>
-        <Badge variant="outline" className="flex items-center gap-1">
-          <Crown className="h-3 w-3" />
-          Administrator
-        </Badge>
       </div>
 
       {/* Stats Overview */}
@@ -46,7 +48,7 @@ export default function AdminDashboardPage() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <Users className="h-4 w-4 text-blue-500" />
+              <Users className="h-4 w-4 text-primary" />
               <div>
                 <div className="text-2xl font-bold">{stats.totalUsers.toLocaleString()}</div>
                 <div className="text-xs text-muted-foreground">Total Users</div>
@@ -58,7 +60,7 @@ export default function AdminDashboardPage() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <User className="h-4 w-4 text-green-500" />
+              <User className="h-4 w-4 text-primary" />
               <div>
                 <div className="text-2xl font-bold">{stats.activeUsers.toLocaleString()}</div>
                 <div className="text-xs text-muted-foreground">Active Users</div>
@@ -70,7 +72,7 @@ export default function AdminDashboardPage() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <Crown className="h-4 w-4 text-yellow-500" />
+              <Crown className="h-4 w-4 text-primary" />
               <div>
                 <div className="text-2xl font-bold">{stats.totalAdmins}</div>
                 <div className="text-xs text-muted-foreground">Admins</div>
@@ -82,7 +84,7 @@ export default function AdminDashboardPage() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <Bell className="h-4 w-4 text-purple-500" />
+              <Bell className="h-4 w-4 text-primary" />
               <div>
                 <div className="text-2xl font-bold">{stats.notificationsSent.toLocaleString()}</div>
                 <div className="text-xs text-muted-foreground">Notifications</div>
@@ -94,7 +96,7 @@ export default function AdminDashboardPage() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-emerald-500" />
+              <TrendingUp className="h-4 w-4 text-primary" />
               <div>
                 <div className="text-2xl font-bold">₹{stats.totalRevenue.toLocaleString()}</div>
                 <div className="text-xs text-muted-foreground">Revenue</div>
@@ -106,7 +108,7 @@ export default function AdminDashboardPage() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <BarChart3 className="h-4 w-4 text-orange-500" />
+              <BarChart3 className="h-4 w-4 text-primary" />
               <div>
                 <div className="text-2xl font-bold">{stats.activeGigs}</div>
                 <div className="text-xs text-muted-foreground">Active Gigs</div>
@@ -124,11 +126,11 @@ export default function AdminDashboardPage() {
         {/* Admin Actions */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
               <Settings className="h-5 w-5" />
               Quick Actions
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-sm sm:text-base">
               Common administrative tasks
             </CardDescription>
           </CardHeader>
@@ -167,42 +169,42 @@ export default function AdminDashboardPage() {
       {/* Recent Activity */}
       <Card>
         <CardHeader>
-          <CardTitle>Recent Activity</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-lg sm:text-xl">Recent Activity</CardTitle>
+          <CardDescription className="text-sm sm:text-base">
             Latest platform activities and notifications
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+            <div className="flex items-center gap-3 p-3 bg-primary/5 rounded-lg border border-primary/10">
+              <div className="w-2 h-2 bg-primary rounded-full"></div>
               <div className="flex-1">
                 <div className="text-sm font-medium">Welcome message sent to all users</div>
                 <div className="text-xs text-muted-foreground">2 minutes ago</div>
               </div>
-              <Badge variant="outline" className="text-green-600">
+              <Badge variant="outline" className="text-primary border-primary/40">
                 Success
               </Badge>
             </div>
 
-            <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
-              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+            <div className="flex items-center gap-3 p-3 bg-primary/5 rounded-lg border border-primary/10">
+              <div className="w-2 h-2 bg-primary rounded-full"></div>
               <div className="flex-1">
                 <div className="text-sm font-medium">New user registration: Alice Cooper</div>
                 <div className="text-xs text-muted-foreground">15 minutes ago</div>
               </div>
-              <Badge variant="outline" className="text-blue-600">
+              <Badge variant="outline" className="text-primary border-primary/40">
                 User
               </Badge>
             </div>
 
-            <div className="flex items-center gap-3 p-3 bg-purple-50 rounded-lg">
-              <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+            <div className="flex items-center gap-3 p-3 bg-primary/5 rounded-lg border border-primary/10">
+              <div className="w-2 h-2 bg-primary rounded-full"></div>
               <div className="flex-1">
                 <div className="text-sm font-medium">New gig posted: Frontend Developer</div>
                 <div className="text-xs text-muted-foreground">1 hour ago</div>
               </div>
-              <Badge variant="outline" className="text-purple-600">
+              <Badge variant="outline" className="text-primary border-primary/40">
                 Gig
               </Badge>
             </div>

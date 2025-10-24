@@ -30,8 +30,8 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-semibold" style={{ color: '#0966C2' }}>Dashboard</h1>
-      {error && <div className="text-sm text-red-600">{error}</div>}
+      <h1 className="text-xl font-semibold text-primary">Dashboard</h1>
+      {error && <div className="text-sm text-destructive">{error}</div>}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
@@ -40,53 +40,53 @@ export default function AdminDashboardPage() {
           { label: 'Revenue Generated', value: stats ? `₹${stats.totalRevenue}` : '₹0' },
           { label: 'Active Freelancers', value: stats?.activeFreelancers ?? 0 },
         ].map((c) => (
-          <div key={c.label} className="rounded-xl bg-white shadow-sm ring-1 ring-gray-100 p-4">
-            <div className="text-sm text-gray-500">{c.label}</div>
-            <div className="mt-1 text-2xl font-semibold">{loading ? '—' : c.value}</div>
+          <div key={c.label} className="rounded-xl bg-card shadow-sm ring-1 ring-border p-4">
+            <div className="text-sm text-muted-foreground">{c.label}</div>
+            <div className="mt-1 text-2xl font-semibold text-foreground">{loading ? '—' : c.value}</div>
           </div>
         ))}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="rounded-xl bg-white shadow-sm ring-1 ring-gray-100 p-4">
+        <div className="rounded-xl bg-card shadow-sm ring-1 ring-border p-4">
           <div className="flex items-center justify-between">
-            <h2 className="font-medium">Recent Jobs</h2>
-            <a href="/admin/gigs" className="text-sm" style={{ color: '#0966C2' }}>Manage Gigs</a>
+            <h2 className="font-medium text-foreground">Recent Jobs</h2>
+            <a href="/admin/gigs" className="text-sm text-primary hover:text-primary/80 transition-colors">Manage Gigs</a>
           </div>
-          <div className="mt-3 divide-y">
-            {loading && <div className="py-6 text-sm text-gray-500">Loading...</div>}
+          <div className="mt-3 divide-y divide-border">
+            {loading && <div className="py-6 text-sm text-muted-foreground">Loading...</div>}
             {!loading && (stats?.recentJobs?.length ? stats.recentJobs.map(j => (
               <div key={j._id} className="py-3 text-sm flex items-center justify-between">
                 <div>
-                  <div className="font-medium text-gray-900">{j.title}</div>
-                  <div className="text-gray-500">{new Date(j.createdAt).toLocaleString()}</div>
+                  <div className="font-medium text-foreground">{j.title}</div>
+                  <div className="text-muted-foreground">{new Date(j.createdAt).toLocaleString()}</div>
                 </div>
-                <a href={`/admin/gigs/${j._id}/bids`} className="text-sm" style={{ color: '#0966C2' }}>View bids</a>
+                <a href={`/admin/gigs/${j._id}/bids`} className="text-sm text-primary hover:text-primary/80 transition-colors">View bids</a>
               </div>
-            )) : <div className="py-6 text-sm text-gray-500">No recent jobs</div>)}
+            )) : <div className="py-6 text-sm text-muted-foreground">No recent jobs</div>)}
           </div>
         </div>
 
-        <div className="rounded-xl bg-white shadow-sm ring-1 ring-gray-100 p-4">
+        <div className="rounded-xl bg-card shadow-sm ring-1 ring-border p-4">
           <div className="flex items-center justify-between">
-            <h2 className="font-medium">Recent Bids</h2>
-            <a href="/admin/bids" className="text-sm" style={{ color: '#0966C2' }}>View All</a>
+            <h2 className="font-medium text-foreground">Recent Bids</h2>
+            <a href="/admin/bids" className="text-sm text-primary hover:text-primary/80 transition-colors">View All</a>
           </div>
-          <div className="mt-3 divide-y">
-            {loading && <div className="py-6 text-sm text-gray-500">Loading...</div>}
+          <div className="mt-3 divide-y divide-border">
+            {loading && <div className="py-6 text-sm text-muted-foreground">Loading...</div>}
             {!loading && (stats?.recentBids?.length ? stats.recentBids.map(b => (
               <div key={b._id} className="py-3 text-sm">
-                <div className="font-medium text-gray-900">{b.user?.name || 'Freelancer'} placed a bid</div>
-                <div className="text-gray-500">{b.job?.title || 'Job'} • {new Date(b.createdAt).toLocaleString()}</div>
+                <div className="font-medium text-foreground">{b.user?.name || 'Freelancer'} placed a bid</div>
+                <div className="text-muted-foreground">{b.job?.title || 'Job'} • {new Date(b.createdAt).toLocaleString()}</div>
               </div>
-            )) : <div className="py-6 text-sm text-gray-500">No recent bids</div>)}
+            )) : <div className="py-6 text-sm text-muted-foreground">No recent bids</div>)}
           </div>
         </div>
       </div>
 
       <div className="flex flex-wrap gap-3">
-        <a href="/admin/gigs" className="px-4 py-2 rounded-lg text-white" style={{ backgroundColor: '#0966C2' }}>Post New Gig</a>
-        <a href="/admin/bids" className="px-4 py-2 rounded-lg border" style={{ borderColor: '#0966C2', color: '#0966C2' }}>View All Bids</a>
+        <a href="/admin/gigs" className="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">Post New Gig</a>
+        <a href="/admin/bids" className="px-4 py-2 rounded-lg border border-primary text-primary hover:bg-primary/5 transition-colors">View All Bids</a>
       </div>
     </div>
   );
