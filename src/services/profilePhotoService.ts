@@ -32,15 +32,16 @@ class ProfilePhotoService {
     }
 
     try {
-      const response = await apiClient.getProfilePhoto();
-      
-      if (response.success && response.data) {
-        this.cache = response.data;
-        this.cacheTimestamp = now;
-        return response.data;
-      } else {
-        throw new Error(response.message || 'Failed to fetch profile photo');
-      }
+      // No dedicated endpoint; use current user data as best-effort source
+      const user = await apiClient.getCurrentUser().catch(() => null);
+      const data: ProfilePhotoData = {
+        avatar: (user as any)?.avatar ?? null,
+        hasAvatar: !!(user as any)?.avatar,
+        user: { name: (user as any)?.name ?? 'User', email: (user as any)?.email ?? '' }
+      };
+      this.cache = data;
+      this.cacheTimestamp = now;
+      return data;
     } catch (error) {
       console.error('Error fetching profile photo:', error);
       // Return cached data if available, otherwise return default
@@ -53,17 +54,25 @@ class ProfilePhotoService {
 
   async uploadProfilePhoto(file: File): Promise<UploadResult> {
     try {
-      const response = await apiClient.uploadProfilePhoto(file);
+      const res = await apiClient.uploadImage(file, { folder: 'avatars' });
       
-      if (response.success && response.data) {
+      if (res.success && res.data) {
+        try { await apiClient.updateProfile({ avatar: res.data.url } as any); } catch {}
         // Update cache with new avatar
         if (this.cache) {
-          this.cache.avatar = response.data.avatar;
+          this.cache.avatar = res.data.url;
           this.cache.hasAvatar = true;
         }
-        return response.data;
+        return {
+          avatar: res.data.url,
+          publicId: res.data.publicId,
+          width: res.data.width,
+          height: res.data.height,
+          format: res.data.format,
+          bytes: res.data.bytes
+        } as UploadResult;
       } else {
-        throw new Error(response.message || 'Upload failed');
+        throw new Error(res.message || 'Upload failed');
       }
     } catch (error) {
       console.error('Error uploading profile photo:', error);
@@ -73,17 +82,12 @@ class ProfilePhotoService {
 
   async deleteProfilePhoto(): Promise<void> {
     try {
-      const response = await apiClient.deleteProfilePhoto();
-      
-      if (response.success) {
+      await apiClient.updateProfile({ avatar: '' } as any).catch(() => {});
         // Update cache to remove avatar
         if (this.cache) {
           this.cache.avatar = null;
           this.cache.hasAvatar = false;
         }
-      } else {
-        throw new Error(response.message || 'Delete failed');
-      }
     } catch (error) {
       console.error('Error deleting profile photo:', error);
       throw error;

@@ -47,8 +47,8 @@ export const ContactDetailsProvider: React.FC<ContactDetailsProviderProps> = ({ 
     try {
       setLoading(true);
       setError(null);
-      const response = await apiClient.request<{ success: boolean; data: ContactDetails[] }>('/contact-details');
-      if (response.success) {
+      const response = await apiClient.getContactDetails();
+      if (response.success && response.data) {
         setContactDetails(response.data || []);
       } else {
         setError('Failed to fetch contact details');
@@ -65,10 +65,7 @@ export const ContactDetailsProvider: React.FC<ContactDetailsProviderProps> = ({ 
     try {
       setLoading(true);
       setError(null);
-      const response = await apiClient.request<{ success: boolean; data: ContactDetails; message: string }>('/contact-details', {
-        method: 'POST',
-        body: JSON.stringify(data)
-      });
+      const response = await apiClient.createContactDetails(data as any);
       
       if (response.success) {
         setContactDetails(prev => [...prev, response.data]);
@@ -94,10 +91,7 @@ export const ContactDetailsProvider: React.FC<ContactDetailsProviderProps> = ({ 
     try {
       setLoading(true);
       setError(null);
-      const response = await apiClient.request<{ success: boolean; data: ContactDetails; message: string }>(`/contact-details/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify(data)
-      });
+      const response = await apiClient.updateContactDetails(id, data as any);
       
       if (response.success) {
         setContactDetails(prev => prev.map(contact => 
@@ -125,9 +119,7 @@ export const ContactDetailsProvider: React.FC<ContactDetailsProviderProps> = ({ 
     try {
       setLoading(true);
       setError(null);
-      const response = await apiClient.request<{ success: boolean; message: string }>(`/contact-details/${id}`, {
-        method: 'DELETE'
-      });
+      const response = await apiClient.deleteContactDetails(id);
       
       if (response.success) {
         setContactDetails(prev => prev.filter(contact => contact._id !== id));
@@ -153,9 +145,7 @@ export const ContactDetailsProvider: React.FC<ContactDetailsProviderProps> = ({ 
     try {
       setLoading(true);
       setError(null);
-      const response = await apiClient.request<{ success: boolean; data: ContactDetails; message: string }>(`/contact-details/${id}/default`, {
-        method: 'PATCH'
-      });
+      const response = await apiClient.setDefaultContactDetails(id);
       
       if (response.success) {
         setContactDetails(prev => prev.map(contact => ({

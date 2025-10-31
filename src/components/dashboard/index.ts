@@ -1,6 +1,5 @@
 export { default as ImprovedDashboard } from './ImprovedDashboard';
 export { default as JobSeekerDashboard } from './JobSeekerDashboard';
-export { default as FreelancerDashboard } from './FreelancerDashboard';
 export { default as AnalyticsDashboard } from './AnalyticsDashboard';
 export { default as RecentActivity } from './RecentActivity';
 export { default as ProfileCompletion } from './ProfileCompletion';

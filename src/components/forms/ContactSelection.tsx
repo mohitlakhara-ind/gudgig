@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+// Replaced missing RadioGroup with native radio inputs
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { PhoneNumberInput } from '@/components/ui/PhoneNumberInput';
@@ -96,11 +96,15 @@ const ContactSelection: React.FC<ContactSelectionProps> = ({
     if (phone) {
       try {
         const parsed = parsePhoneNumber(phone);
-        setFormData(prev => ({
-          ...prev,
-          phone: parsed.number,
-          countryCode: parsed.country || 'US'
-        }));
+        if (parsed) {
+          setFormData(prev => ({
+            ...prev,
+            phone: parsed.number,
+            countryCode: parsed.country || 'US'
+          }));
+        } else {
+          setFormData(prev => ({ ...prev, phone }));
+        }
       } catch (error) {
         setFormData(prev => ({ ...prev, phone }));
       }
@@ -141,7 +145,7 @@ const ContactSelection: React.FC<ContactSelectionProps> = ({
           company: formData.company,
           position: formData.position,
           notes: formData.notes,
-          isDefault: formData.isDefault,
+          isDefault: !!formData.isDefault,
           isActive: true
         });
 
@@ -168,16 +172,17 @@ const ContactSelection: React.FC<ContactSelectionProps> = ({
         )}
       </CardHeader>
       <CardContent className="space-y-6">
-        <RadioGroup
-          value={selectedOption}
-          onValueChange={(value: 'saved' | 'new') => setSelectedOption(value)}
-          className="space-y-4"
-        >
+        <div className="space-y-4">
           {/* Saved Contacts Option */}
           {contactDetails.length > 0 && (
             <div className="space-y-3">
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="saved" id="saved" />
+                <input
+                  type="radio"
+                  id="saved"
+                  checked={selectedOption === 'saved'}
+                  onChange={() => setSelectedOption('saved')}
+                />
                 <Label htmlFor="saved" className="font-medium">
                   Use Saved Contact Details
                 </Label>
@@ -197,8 +202,8 @@ const ContactSelection: React.FC<ContactSelectionProps> = ({
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <RadioGroupItem 
-                            value={contact._id} 
+                          <input
+                            type="radio"
                             id={contact._id}
                             checked={selectedContactId === contact._id}
                             onChange={() => setSelectedContactId(contact._id)}
@@ -245,7 +250,12 @@ const ContactSelection: React.FC<ContactSelectionProps> = ({
           {/* New Contact Option */}
           <div className="space-y-3">
             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="new" id="new" />
+              <input
+                type="radio"
+                id="new"
+                checked={selectedOption === 'new'}
+                onChange={() => setSelectedOption('new')}
+              />
               <Label htmlFor="new" className="font-medium">
                 Enter New Contact Details
               </Label>
@@ -357,7 +367,7 @@ const ContactSelection: React.FC<ContactSelectionProps> = ({
               </div>
             )}
           </div>
-        </RadioGroup>
+        </div>
 
         {/* Submit Button */}
         <div className="flex justify-end">

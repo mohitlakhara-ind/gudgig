@@ -105,7 +105,13 @@ export default function AdminGigsPage() {
         description: j.description || '',
         category: j.category,
         requirements: Array.isArray(j.requirements) && j.requirements.length > 0 ? j.requirements : [''],
-        maxBids: (j as any).maxBids || 10
+        maxBids: Number((j as any).maxBids ?? 10),
+        contactDetails: {
+          email: (j as any)?.contactDetails?.bidderContact?.email || (j as any)?.contactDetails?.email || '',
+          phone: (j as any)?.contactDetails?.bidderContact?.phone || (j as any)?.contactDetails?.phone || '',
+          name: (j as any)?.contactDetails?.bidderContact?.name || (j as any)?.contactDetails?.name || '',
+          alternateContact: (j as any)?.contactDetails?.posterContact?.alternateContact || ''
+        }
       });
     } catch (e) {
       // Fall back to minimal fields if fetch fails
@@ -147,11 +153,6 @@ export default function AdminGigsPage() {
       toast.error('Please fill all required fields');
       return;
     }
-    if (!form.contactDetails.email || !form.contactDetails.phone || !form.contactDetails.name) {
-      setError('Please fill all contact details');
-      toast.error('Please fill all contact details (email, phone, name)');
-      return;
-    }
     setIsLoading(true);
     setError(null);
     try {
@@ -160,8 +161,7 @@ export default function AdminGigsPage() {
         description: form.description.trim(), 
         category: form.category, 
         requirements: form.requirements.filter(Boolean), 
-        maxBids: form.maxBids,
-        contactDetails: form.contactDetails
+        maxBids: form.maxBids
       });
       setCreating(false);
       toast.success('Gig created');

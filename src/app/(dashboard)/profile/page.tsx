@@ -106,6 +106,7 @@ export default function ProfilePage() {
           name: (currentUser as any).name || '',
           email: (currentUser as any).email || '',
           phone: (currentUser as any).phone || '',
+          countryCode: (currentUser as any).countryCode || '',
           location: (currentUser as any).location || '',
           bio: (currentUser as any).bio || '',
           skills: ((currentUser as any).skills as any[]) || [],

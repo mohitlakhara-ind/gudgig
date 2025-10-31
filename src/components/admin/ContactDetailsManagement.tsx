@@ -13,7 +13,7 @@ import { PhoneNumberInput } from '@/components/ui/PhoneNumberInput';
 import { apiClient } from '@/lib/api';
 import { ContactDetails, User } from '@/types/api';
 import { Plus, Edit, Trash2, Search, Users, Mail, Phone, Building } from 'lucide-react';
-import { toast } from 'sonner';
+import toast from 'react-hot-toast';
 
 interface ContactDetailsManagementProps {
   className?: string;
@@ -65,9 +65,6 @@ export default function ContactDetailsManagement({ className }: ContactDetailsMa
 
       if (response.success && response.data) {
         setContactDetails(response.data);
-        if (response.pagination) {
-          setPagination(response.pagination);
-        }
       }
     } catch (error) {
       console.error('Error fetching contact details:', error);
@@ -79,9 +76,9 @@ export default function ContactDetailsManagement({ className }: ContactDetailsMa
 
   const fetchUsers = async () => {
     try {
-      const response = await apiClient.getUsers();
+      const response = await apiClient.getAllUsers({ page: 1, limit: 50 });
       if (response.success && response.data) {
-        setUsers(response.data);
+        setUsers(response.data.users);
       }
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -184,7 +181,7 @@ export default function ContactDetailsManagement({ className }: ContactDetailsMa
     setIsEditDialogOpen(true);
   };
 
-  const handlePhoneChange = (phone: string) => {
+  const handlePhoneChange = (phone: string | undefined) => {
     if (phone) {
       try {
         const { parsePhoneNumber } = require('react-phone-number-input');
@@ -406,7 +403,7 @@ export default function ContactDetailsManagement({ className }: ContactDetailsMa
 
                           <div className="mt-2 text-xs text-gray-500">
                             User: {contact.userId && typeof contact.userId === 'object' 
-                              ? `${contact.userId.name} (${contact.userId.email})` 
+                              ? `${(contact as any).userId?.name ?? 'Unknown'} (${(contact as any).userId?.email ?? 'unknown@example.com'})` 
                               : 'Unknown User'}
                           </div>
                         </div>

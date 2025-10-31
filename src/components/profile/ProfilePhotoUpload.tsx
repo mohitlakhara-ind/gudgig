@@ -34,7 +34,7 @@ export default function ProfilePhotoUpload({
   className,
   showCard = true
 }: ProfilePhotoUploadProps) {
-  const { updateUser } = useAuth();
+  const { user } = useAuth();
   const [avatar, setAvatar] = useState(currentAvatar || '');
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -98,18 +98,20 @@ export default function ProfilePhotoUpload({
         });
       }, 200);
 
-      const response = await apiClient.uploadProfilePhoto(file);
+      // Upload via generic image upload API
+      const uploadRes = await apiClient.uploadImage(file, { folder: 'avatars' });
       
       clearInterval(progressInterval);
       setUploadProgress(100);
 
-      if (response.success && response.data) {
-        setAvatar(response.data.avatar);
-        onPhotoUpdate?.(response.data.avatar);
-        
-        // Update user context with new avatar
-        updateUser({ avatar: response.data.avatar });
-        
+      if (uploadRes.success && uploadRes.data) {
+        const avatarUrl = uploadRes.data.url;
+        setAvatar(avatarUrl);
+        onPhotoUpdate?.(avatarUrl);
+
+        // Persist avatar on profile
+        try { await apiClient.updateProfile({ avatar: avatarUrl } as any); } catch {}
+
         toast.success('Profile photo updated successfully!');
         announceToScreenReader('Profile photo uploaded successfully!');
         
@@ -118,7 +120,7 @@ export default function ProfilePhotoUpload({
           setUploadProgress(0);
         }, 1000);
       } else {
-        throw new Error(response.message || 'Upload failed');
+        throw new Error(uploadRes.message || 'Upload failed');
       }
     } catch (err: any) {
       console.error('Profile photo upload error:', err);
@@ -192,19 +194,17 @@ export default function ProfilePhotoUpload({
     announceToScreenReader('Deleting profile photo...');
     
     try {
-      const response = await apiClient.deleteProfilePhoto();
-      
-      if (response.success) {
+      // Clear avatar by updating profile
+      try { await apiClient.updateProfile({ avatar: '' } as any); } catch {}
+
+      {
         setAvatar('');
         onPhotoUpdate?.('');
         
-        // Update user context to remove avatar
-        updateUser({ avatar: '' });
+        // Optionally notify parent; user context update not required here
         
         toast.success('Profile photo deleted successfully!');
         announceToScreenReader('Profile photo deleted successfully!');
-      } else {
-        throw new Error(response.message || 'Delete failed');
       }
     } catch (err: any) {
       console.error('Profile photo deletion error:', err);

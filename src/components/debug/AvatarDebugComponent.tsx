@@ -22,13 +22,8 @@ export default function AvatarDebugComponent() {
       // Test 1: Get current user data
       const currentUser = await apiClient.getCurrentUser();
       
-      // Test 2: Get profile photo data
-      let photoData = null;
-      try {
-        photoData = await apiClient.getProfilePhoto();
-      } catch (error) {
-        console.warn('Profile photo API not available:', error);
-      }
+      // Test 2: Get profile photo data (not available in ApiClient)
+      const photoData = null;
 
       setDebugData({
         currentUser,
@@ -41,7 +36,7 @@ export default function AvatarDebugComponent() {
       }
     } catch (error) {
       console.error('Error fetching debug data:', error);
-      setDebugData({ error: error.message });
+      setDebugData({ error: (error as any)?.message || 'Unknown error' });
     } finally {
       setLoading(false);
     }

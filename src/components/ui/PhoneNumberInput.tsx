@@ -20,7 +20,7 @@ interface PhoneNumberInputProps {
   name?: string;
 }
 
-const PhoneNumberInput = forwardRef<HTMLInputElement, PhoneNumberInputProps>(
+const PhoneNumberInput = forwardRef<any, PhoneNumberInputProps>(
   ({ 
     value, 
     onChange, 
@@ -45,9 +45,8 @@ const PhoneNumberInput = forwardRef<HTMLInputElement, PhoneNumberInputProps>(
         <div className="relative">
           <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
           <PhoneInput
-            ref={ref}
-            value={value}
-            onChange={onChange}
+            value={value as any}
+            onChange={(v) => onChange && onChange(v as any)}
             placeholder={placeholder}
             disabled={disabled}
             id={id}

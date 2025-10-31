@@ -3,10 +3,10 @@ import { bidService } from '@/services/bidService';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: gigId } = params;
+    const { id: gigId } = await params;
     const body = await request.json();
 
     // Require auth - accept header or cookie token

@@ -1109,19 +1109,19 @@ class ApiClient {
   }
 
   // Contact Details API
-  async getContactDetails(): Promise<ApiResponse<ContactDetails[]>> {
-    return this.request<ApiResponse<ContactDetails[]>>('/contact-details');
+  async getContactDetails(): Promise<ApiResponse<any[]>> {
+    return this.request<ApiResponse<any[]>>('/contact-details');
   }
 
-  async createContactDetails(data: Partial<ContactDetails>): Promise<ApiResponse<ContactDetails>> {
-    return this.request<ApiResponse<ContactDetails>>('/contact-details', {
+  async createContactDetails(data: Partial<any>): Promise<ApiResponse<any>> {
+    return this.request<ApiResponse<any>>('/contact-details', {
       method: 'POST',
       body: JSON.stringify(data)
     });
   }
 
-  async updateContactDetails(id: string, data: Partial<ContactDetails>): Promise<ApiResponse<ContactDetails>> {
-    return this.request<ApiResponse<ContactDetails>>(`/contact-details/${id}`, {
+  async updateContactDetails(id: string, data: Partial<any>): Promise<ApiResponse<any>> {
+    return this.request<ApiResponse<any>>(`/contact-details/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data)
     });
@@ -1131,8 +1131,8 @@ class ApiClient {
     return this.request<ApiResponse>(`/contact-details/${id}`, { method: 'DELETE' });
   }
 
-  async setDefaultContactDetails(id: string): Promise<ApiResponse<ContactDetails>> {
-    return this.request<ApiResponse<ContactDetails>>(`/contact-details/${id}/default`, {
+  async setDefaultContactDetails(id: string): Promise<ApiResponse<any>> {
+    return this.request<ApiResponse<any>>(`/contact-details/${id}/default`, {
       method: 'PATCH'
     });
   }
@@ -1143,7 +1143,7 @@ class ApiClient {
     limit?: number;
     userId?: string;
     search?: string;
-  }): Promise<ApiResponse<ContactDetails[]>> {
+  }): Promise<ApiResponse<any[]>> {
     const searchParams = new URLSearchParams();
     if (params?.page) searchParams.append('page', params.page.toString());
     if (params?.limit) searchParams.append('limit', params.limit.toString());
@@ -1153,18 +1153,18 @@ class ApiClient {
     const queryString = searchParams.toString();
     const url = `/contact-details/admin/all${queryString ? `?${queryString}` : ''}`;
     
-    return this.request<ApiResponse<ContactDetails[]>>(url);
+    return this.request<ApiResponse<any[]>>(url);
   }
 
-  async adminCreateContactDetails(data: Partial<ContactDetails> & { userId: string }): Promise<ApiResponse<ContactDetails>> {
-    return this.request<ApiResponse<ContactDetails>>('/contact-details/admin', {
+  async adminCreateContactDetails(data: Partial<any> & { userId: string }): Promise<ApiResponse<any>> {
+    return this.request<ApiResponse<any>>('/contact-details/admin', {
       method: 'POST',
       body: JSON.stringify(data)
     });
   }
 
-  async adminUpdateContactDetails(id: string, data: Partial<ContactDetails>): Promise<ApiResponse<ContactDetails>> {
-    return this.request<ApiResponse<ContactDetails>>(`/contact-details/admin/${id}`, {
+  async adminUpdateContactDetails(id: string, data: Partial<any>): Promise<ApiResponse<any>> {
+    return this.request<ApiResponse<any>>(`/contact-details/admin/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data)
     });
