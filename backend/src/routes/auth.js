@@ -37,7 +37,22 @@ const registerValidation = [
   body('role')
     .optional()
     .isIn(['freelancer'])
-    .withMessage('Role must be freelancer')
+    .withMessage('Role must be freelancer'),
+  body('phone')
+    .optional()
+    .custom((value) => {
+      if (!value) return true; // Optional field
+      // Basic phone validation - allow international formats
+      const phoneRegex = /^\+?[1-9]\d{1,14}$/;
+      if (!phoneRegex.test(value.replace(/\s/g, ''))) {
+        throw new Error('Please provide a valid phone number');
+      }
+      return true;
+    }),
+  body('countryCode')
+    .optional()
+    .isLength({ min: 1, max: 3 })
+    .withMessage('Country code must be between 1 and 3 characters')
 ];
 
 const loginValidation = [
@@ -58,8 +73,19 @@ const updateDetailsValidation = [
     .withMessage('Name must be between 2 and 50 characters'),
   body('phone')
     .optional()
-    .isMobilePhone()
-    .withMessage('Please provide a valid phone number'),
+    .custom((value) => {
+      if (!value) return true; // Optional field
+      // Basic phone validation - allow international formats
+      const phoneRegex = /^\+?[1-9]\d{1,14}$/;
+      if (!phoneRegex.test(value.replace(/\s/g, ''))) {
+        throw new Error('Please provide a valid phone number');
+      }
+      return true;
+    }),
+  body('countryCode')
+    .optional()
+    .isLength({ min: 1, max: 3 })
+    .withMessage('Country code must be between 1 and 3 characters'),
   body('location')
     .optional()
     .trim()

@@ -37,6 +37,12 @@ const userSchema = new mongoose.Schema({
     trim: true,
     default: ''
   },
+  countryCode: {
+    type: String,
+    trim: true,
+    default: 'US',
+    maxlength: [3, 'Country code cannot be more than 3 characters']
+  },
   location: {
     type: String,
     trim: true,

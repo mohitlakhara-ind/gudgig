@@ -36,7 +36,24 @@ const createOrderValidation = [
   body('paymentMethod')
     .optional()
     .isIn(['stripe', 'paypal', 'razorpay'])
-    .withMessage('Invalid payment method')
+    .withMessage('Invalid payment method'),
+  // Optional contact details included at order time
+  body('contactDetails').optional().isObject(),
+  body('contactDetails.bidderContact').optional().isObject(),
+  body('contactDetails.bidderContact.name').optional().isString().isLength({ min: 2, max: 100 }),
+  body('contactDetails.bidderContact.email').optional().isEmail(),
+  body('contactDetails.bidderContact.phone').optional().isString(),
+  body('contactDetails.bidderContact.countryCode').optional().isString().isLength({ min: 1, max: 4 }),
+  body('contactDetails.bidderContact.company').optional().isString().isLength({ max: 100 }),
+  body('contactDetails.bidderContact.position').optional().isString().isLength({ max: 100 }),
+  body('contactDetails.posterContact').optional().isObject(),
+  body('contactDetails.posterContact.name').optional().isString().isLength({ min: 2, max: 100 }),
+  body('contactDetails.posterContact.email').optional().isEmail(),
+  body('contactDetails.posterContact.phone').optional().isString(),
+  body('contactDetails.posterContact.countryCode').optional().isString().isLength({ min: 1, max: 4 }),
+  body('contactDetails.posterContact.company').optional().isString().isLength({ max: 100 }),
+  body('contactDetails.posterContact.position').optional().isString().isLength({ max: 100 }),
+  body('contactDetails.posterContact.alternateContact').optional().isString().isLength({ max: 100 })
 ];
 
 const deliverOrderValidation = [

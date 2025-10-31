@@ -11,6 +11,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import EnhancedGigsListing from '@/components/gigs/EnhancedGigsListing';
 import { GigsProvider } from '@/contexts/GigsContext';
+import { ContactDetailsProvider } from '@/contexts/ContactDetailsContext';
 import { dataService, type ServerStats } from '@/services/dataService';
 import { LoadingState } from '@/components/ui/loading-states';
 
@@ -94,6 +95,7 @@ export default function GigsPage() {
 
   return (
     <GigsProvider>
+      <ContactDetailsProvider>
       <div className="min-h-screen bg-background">
       {/* Professional Header */}
       <section className="bg-muted py-16">
@@ -154,6 +156,7 @@ export default function GigsPage() {
       </div>
     </section>
   </div>
+      </ContactDetailsProvider>
       </GigsProvider>
     );
 }

@@ -250,6 +250,27 @@ const OrderSchema = new mongoose.Schema({
     escrowReleaseDate: Date
   },
   
+  // Contact details exchanged between buyer and seller (unlocked after payment)
+  contactDetails: {
+    bidderContact: {
+      name: String,
+      email: String,
+      phone: String,
+      countryCode: String,
+      company: String,
+      position: String
+    },
+    posterContact: {
+      name: String,
+      email: String,
+      phone: String,
+      countryCode: String,
+      company: String,
+      position: String,
+      alternateContact: String
+    }
+  },
+  
   // Quality and feedback
   rating: {
     buyerRating: {

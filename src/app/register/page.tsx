@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { PhoneNumberInput } from '@/components/ui/PhoneNumberInput';
 import { 
   User, 
   Mail, 
@@ -38,6 +39,7 @@ export default function RegisterPage() {
     password: '',
     confirmPassword: '',
     phone: '',
+    countryCode: 'US',
     userType: 'freelancer',
     skills: [] as string[],
     agreeToTerms: false
@@ -91,7 +93,9 @@ export default function RegisterPage() {
         name: formData.name,
         email: formData.email,
         password: formData.password,
-        role: formData.userType as 'freelancer' | 'admin'
+        role: formData.userType as 'freelancer' | 'admin',
+        phone: formData.phone,
+        countryCode: formData.countryCode
       });
 
       if (response.success) {
@@ -121,7 +125,7 @@ export default function RegisterPage() {
       });
       
       toast.success('Account verified successfully!');
-      router.push('/dashboard');
+      router.push('/orders');
     } catch (error: any) {
       toast.error('Login failed after verification');
     }
@@ -212,21 +216,27 @@ export default function RegisterPage() {
               </div>
 
               {/* Phone */}
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number (Optional)</Label>
-                <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="phone"
-                    type="tel"
-                    placeholder="Enter your phone number"
-                    value={formData.phone}
-                    onChange={(e) => handleInputChange('phone', e.target.value)}
-                    className="pl-10"
-                    disabled={loading}
-                  />
-                </div>
-              </div>
+              <PhoneNumberInput
+                label="Phone Number (Optional)"
+                value={formData.phone}
+                onChange={(phone) => {
+                  if (phone) {
+                    try {
+                      const { parsePhoneNumber } = require('react-phone-number-input');
+                      const parsed = parsePhoneNumber(phone);
+                      handleInputChange('phone', parsed.number);
+                      handleInputChange('countryCode', parsed.country || 'US');
+                    } catch (error) {
+                      handleInputChange('phone', phone);
+                    }
+                  } else {
+                    handleInputChange('phone', '');
+                    handleInputChange('countryCode', 'US');
+                  }
+                }}
+                placeholder="Enter your phone number"
+                disabled={loading}
+              />
 
               {/* User Type */}
               <div className="space-y-2">

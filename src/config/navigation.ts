@@ -1,26 +1,18 @@
 import {
-  Home,
   Briefcase,
   DollarSign,
   HelpCircle,
-  Phone,
   LayoutDashboard,
   FileText,
   User,
   Bell,
   CreditCard,
-  Building,
   Users,
-  Settings,
   BarChart3,
   Heart,
-  AlertCircle,
-  Calendar,
-  Award,
-  MessageSquare,
-  Plus,
   Package,
   Search,
+  Settings,
 } from 'lucide-react';
 
 export interface NavigationItem {
@@ -98,25 +90,11 @@ export const freelancerNavigation: NavigationItem[] = [
     ariaLabel: 'Manage your services',
   },
   {
-    name: 'Gig Alerts',
-    href: '/gig-alerts',
-    icon: Bell,
-    section: 'work',
-    ariaLabel: 'Job notifications',
-  },
-  {
     name: 'Payment History',
     href: '/payments',
     icon: CreditCard,
     section: 'activity',
     ariaLabel: 'View payment history',
-  },
-  {
-    name: 'Chat',
-    href: '/chat',
-    icon: MessageSquare,
-    section: 'activity',
-    ariaLabel: 'Chat with clients',
   },
   {
     name: 'Notifications',
@@ -132,13 +110,6 @@ export const freelancerNavigation: NavigationItem[] = [
     icon: User,
     section: 'account',
     ariaLabel: 'Manage your profile',
-  },
-  {
-    name: 'Settings',
-    href: '/settings',
-    icon: Settings,
-    section: 'account',
-    ariaLabel: 'Preferences and settings',
   },
   {
     name: 'Help & Support',
@@ -215,14 +186,6 @@ export const adminNavigation: NavigationItem[] = [
     icon: FileText,
     section: 'system',
     ariaLabel: 'View payment logs and transactions',
-  },
-  {
-    name: 'Chat',
-    href: '/admin/chat',
-    icon: MessageSquare,
-    section: 'system',
-    ariaLabel: 'Chat with users',
-    dividerAfter: true,
   },
 ];
 

@@ -18,7 +18,7 @@ export const register = async (req, res, next) => {
       });
     }
 
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, phone, countryCode } = req.body;
 
     // Check if user exists
     const existingUser = await User.findOne({ email });
@@ -35,7 +35,9 @@ export const register = async (req, res, next) => {
       name,
       email,
       password,
-      role: allowedRoles.includes(role) ? role : 'freelancer'
+      role: allowedRoles.includes(role) ? role : 'freelancer',
+      phone: phone || '',
+      countryCode: countryCode || 'US'
     });
 
     // Generate verification token
@@ -160,6 +162,7 @@ export const updateDetails = async (req, res, next) => {
     const fieldsToUpdate = {
       name: req.body.name,
       phone: req.body.phone,
+      countryCode: req.body.countryCode,
       location: req.body.location,
       bio: req.body.bio,
       skills: req.body.skills,

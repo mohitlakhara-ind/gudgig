@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const JobSchema = new mongoose.Schema({
+const GigSchema = new mongoose.Schema({
   title: {
     type: String,
     required: true,
@@ -94,6 +94,41 @@ const JobSchema = new mongoose.Schema({
   tags: {
     type: [String],
     default: []
+  },
+  maxBids: {
+    type: Number,
+    default: null,
+    min: 1
+  },
+  isHidden: {
+    type: Boolean,
+    default: false,
+    index: true
+  },
+  // Contact details (shown only after bid submission)
+  contactDetails: {
+    email: {
+      type: String,
+      trim: true,
+      lowercase: true,
+      match: [
+        /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
+        'Please add a valid email'
+      ]
+    },
+    phone: {
+      type: String,
+      trim: true,
+      match: [
+        /^[\+]?[1-9][\d]{0,15}$/,
+        'Please add a valid phone number'
+      ]
+    },
+    alternateContact: {
+      type: String,
+      trim: true,
+      maxlength: 200
+    }
   }
 }, { 
   timestamps: true,
@@ -102,15 +137,15 @@ const JobSchema = new mongoose.Schema({
 });
 
 // Indexes for frequent queries
-JobSchema.index({ category: 1 });
-JobSchema.index({ createdBy: 1 });
-JobSchema.index({ createdAt: -1 });
-JobSchema.index({ budget: 1 });
-JobSchema.index({ status: 1 });
-JobSchema.index({ location: 1 });
+GigSchema.index({ category: 1 });
+GigSchema.index({ createdBy: 1 });
+GigSchema.index({ createdAt: -1 });
+GigSchema.index({ budget: 1 });
+GigSchema.index({ status: 1 });
+GigSchema.index({ location: 1 });
 
 // Text index for search functionality
-JobSchema.index({ 
+GigSchema.index({ 
   title: 'text', 
   description: 'text', 
   skills: 'text',
@@ -118,13 +153,13 @@ JobSchema.index({
 });
 
 // Virtual for formatted budget
-JobSchema.virtual('formattedBudget').get(function() {
+GigSchema.virtual('formattedBudget').get(function() {
   if (this.budget === 0) return 'Not specified';
   return `₹${this.budget.toLocaleString()}`;
 });
 
 // Virtual for days since posted
-JobSchema.virtual('daysAgo').get(function() {
+GigSchema.virtual('daysAgo').get(function() {
   const now = new Date();
   const posted = new Date(this.createdAt);
   const diffTime = Math.abs(now - posted);
@@ -132,6 +167,6 @@ JobSchema.virtual('daysAgo').get(function() {
   return diffDays;
 });
 
-export default mongoose.models.Job || mongoose.model('Job', JobSchema);
+export default mongoose.models.Gig || mongoose.model('Gig', GigSchema);
 
 

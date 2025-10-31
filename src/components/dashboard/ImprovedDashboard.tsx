@@ -56,9 +56,10 @@ export default function ImprovedDashboard() {
 
         // Try to get stats from API first
         try {
-          const [freelancerStats, myGigsStats] = await Promise.all([
+          const [freelancerStats, myGigsStats, myBids] = await Promise.all([
             apiClient.getFreelancerStats(),
-            apiClient.getMyGigsStats()
+            apiClient.getMyGigsStats(),
+            apiClient.getMyBids().catch(() => null)
           ]);
 
           console.log('📊 Freelancer stats:', freelancerStats);
@@ -67,12 +68,20 @@ export default function ImprovedDashboard() {
           if (freelancerStats.success && freelancerStats.data) {
             const data = freelancerStats.data as any;
             const gigs = (myGigsStats as any)?.data || {};
+            const bidsArray = (myBids as any)?.data || [];
 
             // Map the real API data to our stats structure
+            const normalizedBids = Array.isArray(bidsArray) ? bidsArray : [];
+            const derived = {
+              totalBids: normalizedBids.length,
+              activeBids: normalizedBids.filter((b: any) => (b.selectionStatus && b.selectionStatus !== 'pending') ? b.selectionStatus === 'accepted' : b.paymentStatus === 'succeeded').length,
+              completedBids: normalizedBids.filter((b: any) => b.selectionStatus === 'accepted').length,
+            };
+
             setStats({
-              totalBids: gigs.totalBids ?? data.applications ?? 0,
-              activeBids: gigs.pendingBids ?? data.activeOrders ?? 0,
-              completedBids: gigs.wonBids ?? data.completedOrders ?? 0,
+              totalBids: gigs.totalBids ?? derived.totalBids ?? data.applications ?? 0,
+              activeBids: gigs.pendingBids ?? derived.activeBids ?? data.activeOrders ?? 0,
+              completedBids: gigs.wonBids ?? derived.completedBids ?? data.completedOrders ?? 0,
               earnings: gigs.totalSpent ?? data.totalEarnings ?? 0,
               profileViews: data.profileViews ?? 0,
               responseRate: data.responseRate ?? 85
@@ -137,10 +146,10 @@ export default function ImprovedDashboard() {
       color: 'bg-blue-500'
     },
     {
-      title: 'My Bids',
-      description: 'Track your applications',
+      title: 'My Orders',
+      description: 'Track your purchases/orders',
       icon: Clock,
-      href: '/dashboard/bids',
+      href: '/dashboard/orders',
       color: 'bg-green-500'
     },
     {

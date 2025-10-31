@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -17,25 +17,34 @@ import {
   Clock,
   Award,
   CreditCard,
-  Zap
+  Zap,
+  Shield,
+  Mail,
+  Phone
 } from 'lucide-react';
 import CustomLoader from '@/components/CustomLoader';
+import { ContactDetailsCard } from '@/components/gigs';
 import { apiClient } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Job } from '@/types/api';
 import FakeGigPayment from '@/components/payment/FakeGigPayment';
+import ContactDetailsContext from '@/contexts/ContactDetailsContext';
 
 export default function GigDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { user } = useAuth();
+  const contactCtx = useContext(ContactDetailsContext);
   const gigId = params.id as string;
   
   const [gig, setGig] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [savedGigs, setSavedGigs] = useState<string[]>([]);
+  const [userBids, setUserBids] = useState<any[]>([]);
+  const [contactDetails, setContactDetails] = useState<any>(null);
+  const [contactLoading, setContactLoading] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
 
@@ -65,6 +74,52 @@ export default function GigDetailPage() {
     }
   }, []);
 
+  // Fetch user bids and contact details if user is logged in
+  useEffect(() => {
+    const fetchUserBidsAndContacts = async () => {
+      if (!user || !gigId) return;
+
+      try {
+        // Fetch user's bids
+        const bidsResponse = await apiClient.getMyBids();
+        const userBidsList = bidsResponse.data || [];
+        
+        // Filter bids for this specific gig
+        const gigBids = userBidsList.filter((bid: any) => {
+          const byGigNested = bid.gig && (bid.gig._id === gigId);
+          const byGigId = bid.gigId === gigId;
+          const byJobLegacy = bid.jobId && (bid.jobId._id === gigId || bid.jobId === gigId);
+          return byGigNested || byGigId || byJobLegacy;
+        });
+        
+        setUserBids(gigBids);
+
+        // If user has bids for this gig, fetch contact details
+        if (gigBids.length > 0) {
+          const bid = gigBids[0]; // Get the first bid
+          setContactLoading(true);
+          
+          try {
+            const contactResponse = await apiClient.getGigBidContacts(gigId, bid._id);
+            if (contactResponse.success && contactResponse.data) {
+              setContactDetails(contactResponse.data);
+            }
+          } catch (contactErr) {
+            console.error('Failed to fetch contact details:', contactErr);
+            // Don't show error to user as this is secondary information
+          } finally {
+            setContactLoading(false);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch user bids:', err);
+        // Don't show error to user as this is secondary information
+      }
+    };
+
+    fetchUserBidsAndContacts();
+  }, [user, gigId]);
+
   const handleSaveGig = () => {
     if (!gig) return;
     
@@ -87,7 +142,7 @@ export default function GigDetailPage() {
       toast.error('Please login to place a bid');
       return;
     }
-    router.push(`/gigs/${gigId}/bid`);
+    setShowPayment(true);
   };
 
   const handleGuestBidPrompt = () => {
@@ -99,32 +154,107 @@ export default function GigDetailPage() {
     try {
       setPaymentLoading(true);
       
-      // Call the fake payment API to record the payment
-      const response = await fetch('/api/fake-payments/gig', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          gigId,
-          gigTitle: gig?.title || 'Unknown Gig',
-          amount: (gig as any)?.budget || 0,
-          currency: 'INR',
-          description: `Payment for gig: ${gig?.title}`
-        }),
-      });
+      // Prepare bidder contact details (required by backend)
+      const defaultContact = contactCtx && typeof contactCtx.getDefaultContactDetails === 'function' 
+        ? contactCtx.getDefaultContactDetails() 
+        : null;
+      const bidderContact = defaultContact ? {
+        name: defaultContact.name,
+        email: defaultContact.email,
+        phone: defaultContact.phone,
+        countryCode: defaultContact.countryCode || 'US',
+        company: defaultContact.company || '',
+        position: defaultContact.position || ''
+      } : {
+        name: user?.name || '',
+        email: user?.email || '',
+        phone: (user as any)?.phone || '',
+        countryCode: (user as any)?.countryCode || 'US',
+        company: '',
+        position: ''
+      };
 
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Payment recorded:', data);
-        toast.success('Payment completed successfully!');
+      if (!bidderContact.name || !bidderContact.email || !bidderContact.phone) {
+        toast.error('Please add your contact details (name, email, phone) before bidding.');
         setShowPayment(false);
-      } else {
-        throw new Error('Failed to record payment');
+        return;
       }
+
+      // Submit bid after successful payment
+      const payload = {
+        quotation: 0,
+        proposal: 'Bid submitted',
+        bidFeePaid: 10,
+        contactDetails: { bidderContact }
+      } as any;
+
+      const res = await apiClient.createGigBid(gigId, payload);
+      if (!res?.success) {
+        throw new Error(res?.message || 'Bid submission failed');
+      }
+
+      // Send email notification
+      try {
+        await fetch('/api/automations/bid-submitted', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: user?._id,
+            userEmail: user?.email,
+            userName: user?.name,
+            jobTitle: gig?.title,
+            quotation: 0,
+            proposal: 'Bid submitted',
+            bidFee: 10,
+          })
+        });
+      } catch (emailError) {
+        console.warn('Email notification failed:', emailError);
+      }
+
+      toast.success('Bid submitted successfully! Contact details will be shown.');
+      setShowPayment(false);
+      
+      // Refresh user bids to show contact details
+      const fetchUserBidsAndContacts = async () => {
+        try {
+          const bidsResponse = await apiClient.getMyBids();
+          const userBidsList = bidsResponse.data || [];
+          
+          const gigBids = userBidsList.filter((bid: any) => {
+            const byGigNested = bid.gig && (bid.gig._id === gigId);
+            const byGigId = bid.gigId === gigId;
+            const byJobLegacy = bid.jobId && (bid.jobId._id === gigId || bid.jobId === gigId);
+            return byGigNested || byGigId || byJobLegacy;
+          });
+          
+          setUserBids(gigBids);
+
+          if (gigBids.length > 0) {
+            const bid = gigBids[0];
+            setContactLoading(true);
+            
+            try {
+              const contactResponse = await apiClient.getGigBidContacts(gigId, bid._id);
+              if (contactResponse.success && contactResponse.data) {
+                setContactDetails(contactResponse.data);
+              }
+            } catch (contactErr) {
+              console.error('Failed to fetch contact details:', contactErr);
+            } finally {
+              setContactLoading(false);
+            }
+          }
+        } catch (err) {
+          console.error('Failed to fetch user bids:', err);
+        }
+      };
+      
+      fetchUserBidsAndContacts();
+      
     } catch (error) {
-      console.error('Error recording payment:', error);
-      toast.error('Payment completed but failed to record. Please contact support.');
+      console.error('Payment success handling failed:', error);
+      toast.error('Payment completed but bid submission failed.');
     } finally {
       setPaymentLoading(false);
     }
@@ -133,16 +263,9 @@ export default function GigDetailPage() {
   const handlePaymentError = (error: string) => {
     console.error('Payment error:', error);
     toast.error(error);
+    setShowPayment(false);
   };
 
-  const handleStartPayment = () => {
-    if (!user) {
-      toast.error('Please login to make a payment');
-      router.push('/login');
-      return;
-    }
-    setShowPayment(true);
-  };
 
   const formatBudget = (budget: number) => {
     return new Intl.NumberFormat('en-IN', {
@@ -161,14 +284,8 @@ export default function GigDetailPage() {
     return diffDays;
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <CustomLoader size={32} color="#0966C2" />
-        <span className="ml-2 text-muted-foreground">Loading gig details...</span>
-      </div>
-    );
-  }
+  // Check if user has submitted a bid for this gig
+  const hasUserBid = userBids.length > 0;
 
   // Show payment modal if payment is in progress
   if (showPayment) {
@@ -186,24 +303,58 @@ export default function GigDetailPage() {
               Back to Gig
             </Button>
 
-            {/* Payment Component */}
-            <div className="flex justify-center">
-              <FakeGigPayment
-                gigId={gigId}
-                gigTitle={gig?.title || 'Unknown Gig'}
-                amount={(gig as any)?.budget || 0}
-                currency="INR"
-                description={`Payment for gig: ${gig?.title}`}
-                onSuccess={handlePaymentSuccess}
-                onError={handlePaymentError}
-                disabled={paymentLoading}
-              />
-            </div>
+            {/* Payment Modal */}
+            <Card className="max-w-md mx-auto">
+              <CardHeader>
+                <CardTitle className="text-2xl font-bold">Place Your Bid</CardTitle>
+                <p className="text-muted-foreground">
+                  Submit your bid for: <strong>{gig?.title}</strong>
+                </p>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  {/* Bid Fee Information */}
+                  <div className="bg-muted p-4 rounded-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                      <CreditCard className="h-5 w-5 text-primary" />
+                      <span className="font-medium">Bid Fee</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      A small fee of ₹5 is required to place your bid. This helps maintain quality and reduces spam.
+                    </p>
+                  </div>
+
+                  {/* Payment Component */}
+                  <div className="flex justify-center">
+                    <FakeGigPayment
+                      gigId={gigId}
+                      gigTitle={gig?.title || 'Unknown Gig'}
+                      amount={5}
+                      currency="INR"
+                      description={`Bid fee for gig: ${gig?.title}`}
+                      onSuccess={handlePaymentSuccess}
+                      onError={handlePaymentError}
+                      disabled={paymentLoading}
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
     );
   }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <CustomLoader size={32} color="#0966C2" />
+        <span className="ml-2 text-muted-foreground">Loading gig details...</span>
+      </div>
+    );
+  }
+
 
   if (error || !gig) {
     return (
@@ -340,14 +491,26 @@ export default function GigDetailPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {user ? (
-                    <Button 
-                      onClick={handlePlaceBid}
-                      className="w-full"
-                      size="lg"
-                    >
-                      <MessageCircle className="h-4 w-4 mr-2" />
-                      Place Bid
-                    </Button>
+                    hasUserBid ? (
+                      <Button 
+                        variant="outline"
+                        className="w-full"
+                        size="lg"
+                        disabled
+                      >
+                        <Shield className="h-4 w-4 mr-2" />
+                        Bid Submitted
+                      </Button>
+                    ) : (
+                      <Button 
+                        onClick={handlePlaceBid}
+                        className="w-full"
+                        size="lg"
+                      >
+                        <MessageCircle className="h-4 w-4 mr-2" />
+                        Place Bid
+                      </Button>
+                    )
                   ) : (
                     <Button 
                       onClick={handleGuestBidPrompt}
@@ -360,16 +523,6 @@ export default function GigDetailPage() {
                     </Button>
                   )}
 
-                  {/* Payment Button */}
-                  <Button 
-                    onClick={handleStartPayment}
-                    variant="default"
-                    className="w-full"
-                    size="lg"
-                  >
-                    <CreditCard className="h-4 w-4 mr-2" />
-                    Pay for Gig
-                  </Button>
                   
                   <Button 
                     variant="outline" 
@@ -382,30 +535,14 @@ export default function GigDetailPage() {
                 </CardContent>
               </Card>
 
-              {/* Payment Information */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Zap className="h-5 w-5 text-primary" />
-                    Payment Info
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="text-center p-4 bg-primary/5 rounded-lg">
-                      <div className="text-2xl font-bold text-primary mb-1">
-                        {formatBudget((gig as any).budget)}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        One-time payment
-                      </div>
-                    </div>
-                    <div className="text-xs text-muted-foreground text-center">
-                      Secure payment processing with fake gateway for demo purposes
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+
+              {/* Contact Details - Only show if user has bids */}
+              {user && userBids.length > 0 && (
+                <ContactDetailsCard 
+                  contactDetails={contactDetails} 
+                  loading={contactLoading}
+                />
+              )}
 
               {/* Gig Stats */}
               <Card>

@@ -1,6 +1,7 @@
 import Hero from '@/components/Hero';
 import StatsSection from '@/components/StatsSection';
 import HowItWorks from '@/components/HowItWorks';
+import LatestGigs from '@/components/gigs/LatestGigs';
 import CTASection from '@/components/CTASection';
 import Footer from '@/components/Footer';
 import type { Metadata } from 'next';
@@ -43,6 +44,7 @@ export default function Home() {
         <Hero />
         <StatsSection />
         <HowItWorks />
+        <LatestGigs />
         <CTASection />
       </main>
       <Footer />

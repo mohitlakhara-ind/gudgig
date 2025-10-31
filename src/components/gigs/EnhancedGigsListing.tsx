@@ -1,12 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import FakeGigPayment from '@/components/payment/FakeGigPayment';
+import ContactDetailsCard from './ContactDetailsCard';
 import { 
   Search, 
   Filter, 
@@ -28,10 +31,15 @@ import {
   Award,
   RefreshCw,
   AlertCircle,
-  Loader2
+  Loader2,
+  ArrowLeft,
+  CreditCard,
+  Mail,
+  Phone
 } from 'lucide-react';
 import { useGigs } from '@/contexts/GigsContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useContactDetails } from '@/contexts/ContactDetailsContext';
 import { apiClient } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { formatGigBudget, getDaysAgo, getGigStatusColor } from '@/hooks/useGigsManager';
@@ -62,9 +70,19 @@ export default function EnhancedGigsListing() {
   const router = useRouter();
   const { user } = useAuth();
   const { state, actions, gigsManager } = useGigs();
+  const { getDefaultContactDetails } = useContactDetails();
   
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
+  const [showPayment, setShowPayment] = useState(false);
+  const [paymentGig, setPaymentGig] = useState<{
+    id: string;
+    title: string;
+  } | null>(null);
+  const [orderingGigId, setOrderingGigId] = useState<string | null>(null);
+  const [paymentLoading, setPaymentLoading] = useState(false);
+  const [appliedGigIds, setAppliedGigIds] = useState<Set<string>>(new Set());
+  const loadMoreRef = useRef<HTMLDivElement>(null);
 
   // Debounced search
   useEffect(() => {
@@ -85,6 +103,35 @@ export default function EnhancedGigsListing() {
 
     return () => clearTimeout(timeoutId);
   }, [searchQuery, state.filters.category]); // Remove actions and gigsManager to prevent infinite loop
+
+  // Fetch user's applied gigs (bids) to filter them out
+  useEffect(() => {
+    const fetchAppliedGigs = async () => {
+      if (!user) {
+        setAppliedGigIds(new Set());
+        return;
+      }
+
+      try {
+        const response = await apiClient.getMyBids();
+        if (response.success && response.data) {
+          const gigIds = response.data.map((bid: any) => {
+            const gigId = bid.gig?._id || bid.gig || bid.gigId;
+            return gigId;
+          }).filter(Boolean);
+          setAppliedGigIds(new Set(gigIds));
+        }
+      } catch (error) {
+        console.error('Error fetching applied gigs:', error);
+        setAppliedGigIds(new Set());
+      }
+    };
+
+    fetchAppliedGigs();
+  }, [user]);
+
+  // Filter out applied gigs from the display
+  const filteredGigs = gigsManager.gigs.filter(gig => !appliedGigIds.has(gig._id));
 
   const handleSaveGig = async (gigId: string) => {
     if (!user) {
@@ -111,17 +158,129 @@ export default function EnhancedGigsListing() {
     }
   };
 
-  const handlePlaceBid = (gigId: string) => {
+  const handlePlaceOrder = async (gigId: string) => {
     if (!user) {
-      toast.error('Please login to place bids');
+      toast.error('Please login to place orders');
       router.push('/auth/login');
       return;
     }
-    router.push(`/gigs/${gigId}/bid`);
+
+    // Find the gig to get its title
+    const gig = filteredGigs.find(g => g._id === gigId);
+    if (!gig) {
+      toast.error('Gig not found');
+      return;
+    }
+
+    // Set loading state
+    setOrderingGigId(gigId);
+    
+    try {
+      // Set payment gig and show payment
+      setPaymentGig({
+        id: gigId,
+        title: gig.title
+      });
+      setShowPayment(true);
+    } catch (error) {
+      console.error('Error opening order payment:', error);
+      toast.error('Failed to open order form');
+    } finally {
+      setOrderingGigId(null);
+    }
   };
 
-  const handleGuestBidPrompt = () => {
-    toast.error('Please login or register to place bids');
+  const handlePaymentSuccess = async (paymentId: string, orderId: string, contactFromPayment?: any) => {
+    if (!paymentGig || !user) return;
+
+    try {
+      setPaymentLoading(true);
+      
+      // Prepare bidder contact details (required by backend)
+      const defaultContact = typeof getDefaultContactDetails === 'function' ? getDefaultContactDetails() : null;
+      const bidderContact = contactFromPayment?.bidderContact ? contactFromPayment.bidderContact : (defaultContact ? {
+        name: defaultContact.name,
+        email: defaultContact.email,
+        phone: defaultContact.phone,
+        countryCode: defaultContact.countryCode || 'US',
+        company: defaultContact.company || '',
+        position: defaultContact.position || ''
+      } : {
+        name: user?.name || '',
+        email: user?.email || '',
+        phone: (user as any)?.phone || '',
+        countryCode: (user as any)?.countryCode || 'US',
+        company: '',
+        position: ''
+      });
+
+      if (!bidderContact.name || !bidderContact.email || !bidderContact.phone) {
+        toast.error('Please add your contact details (name, email, phone) before bidding.');
+        setShowPayment(false);
+        setPaymentGig(null);
+        return;
+      }
+
+      // Submit bid after successful payment (uses gigs bidding flow)
+      const res = await apiClient.createGigBid(paymentGig.id, {
+        quotation: 0,
+        proposal: 'Order placed',
+        bidFeePaid: 10,
+        contactDetails: { bidderContact }
+      });
+      if (!res?.success) {
+        throw new Error(res?.message || 'Order creation failed');
+      }
+
+      // Send email notification
+      try {
+        await fetch('/api/automations/bid-submitted', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: user?._id,
+            userEmail: user?.email,
+            userName: user?.name,
+            jobTitle: paymentGig.title,
+            quotation: 0,
+            proposal: 'Order placed',
+            bidFee: 10, // Updated to match active fee
+          })
+        });
+      } catch (emailError) {
+        console.warn('Email notification failed:', emailError);
+      }
+
+      toast.success('Order created successfully! Contact details unlocked.');
+      setShowPayment(false);
+      setPaymentGig(null);
+      
+      // Add to applied gigs (orders) to hide from list
+      setAppliedGigIds(prev => new Set([...prev, paymentGig.id]));
+      
+      // Refresh gigs to show updated bid count and remove from list
+      gigsManager.refresh();
+      
+      // Optionally, open contact details view (navigate to gig page)
+      router.push(`/gigs/${paymentGig.id}`);
+      
+    } catch (error) {
+      console.error('Payment success handling failed:', error);
+      toast.error('Payment completed but order creation failed.');
+    } finally {
+      setPaymentLoading(false);
+    }
+  };
+
+  const handlePaymentError = (error: string) => {
+    console.error('Payment error:', error);
+    toast.error(error);
+    setShowPayment(false);
+    setPaymentGig(null);
+  };
+
+  const handleGuestOrderPrompt = () => {
+    toast.error('Please login or register to place orders');
     router.push('/auth/login');
   };
 
@@ -142,7 +301,103 @@ export default function EnhancedGigsListing() {
     toast.success('Gigs refreshed');
   };
 
+  // Infinite scroll implementation
+  const handleLoadMore = useCallback(() => {
+    if (gigsManager.hasMore && !gigsManager.loading) {
+      gigsManager.loadMoreGigs();
+    }
+  }, [gigsManager.hasMore, gigsManager.loading, gigsManager.loadMoreGigs]);
+
+  // Intersection Observer for infinite scroll
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const target = entries[0];
+        if (target.isIntersecting && gigsManager.hasMore && !gigsManager.loading) {
+          handleLoadMore();
+        }
+      },
+      {
+        threshold: 0.1,
+        rootMargin: '100px'
+      }
+    );
+
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current);
+    }
+
+    return () => {
+      if (loadMoreRef.current) {
+        observer.unobserve(loadMoreRef.current);
+      }
+    };
+  }, [handleLoadMore, gigsManager.hasMore, gigsManager.loading]);
+
+  // Show payment screen if payment is in progress
+  if (showPayment && paymentGig) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto px-4 py-8">
+          <div className="max-w-4xl mx-auto">
+            {/* Back Button */}
+            <Button 
+              variant="ghost" 
+              onClick={() => {
+                setShowPayment(false);
+                setPaymentGig(null);
+              }}
+              className="mb-6"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Gigs
+            </Button>
+
+            {/* Payment Modal */}
+            <Card className="max-w-md mx-auto">
+              <CardHeader>
+                <CardTitle className="text-2xl font-bold">Place Your Bid</CardTitle>
+                <p className="text-muted-foreground">
+                  Submit your bid for: <strong>{paymentGig.title}</strong>
+                </p>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  {/* Bid Fee Information */}
+                  <div className="bg-muted p-4 rounded-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                      <CreditCard className="h-5 w-5 text-primary" />
+                      <span className="font-medium">Order Fee</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      A fee of ₹10 is required to place your order. This helps maintain quality and reduces spam.
+                    </p>
+                  </div>
+
+                  {/* Payment Component */}
+                  <div className="flex justify-center">
+                      <FakeGigPayment
+                      gigId={paymentGig.id}
+                      gigTitle={paymentGig.title}
+                      amount={10}
+                      currency="INR"
+                      description={`Order fee for gig: ${paymentGig.title}`}
+                      onSuccess={handlePaymentSuccess}
+                      onError={handlePaymentError}
+                      disabled={paymentLoading}
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
+    <TooltipProvider>
     <div className="space-y-6">
           {/* Professional Search and Filters */}
           <Card className="professional-card">
@@ -208,10 +463,14 @@ export default function EnhancedGigsListing() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="flex gap-2">
+                <Tooltip>
+                  <TooltipTrigger asChild>
                 <Button
                   variant={state.viewMode === 'grid' ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => actions.setViewMode('grid')}
+                      className="hover:scale-105 active:scale-95 transition-all duration-200"
+                      aria-label="Grid view"
                 >
                   <div className="grid grid-cols-2 gap-1">
                     <div className="w-1 h-1 bg-current rounded"></div>
@@ -220,10 +479,20 @@ export default function EnhancedGigsListing() {
                     <div className="w-1 h-1 bg-current rounded"></div>
                   </div>
                 </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    <p>Grid view</p>
+                  </TooltipContent>
+                </Tooltip>
+                
+                <Tooltip>
+                  <TooltipTrigger asChild>
                 <Button
                   variant={state.viewMode === 'list' ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => actions.setViewMode('list')}
+                      className="hover:scale-105 active:scale-95 transition-all duration-200"
+                      aria-label="List view"
                 >
                   <div className="flex flex-col gap-1">
                     <div className="w-3 h-1 bg-current rounded"></div>
@@ -231,21 +500,35 @@ export default function EnhancedGigsListing() {
                     <div className="w-3 h-1 bg-current rounded"></div>
                   </div>
                 </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    <p>List view</p>
+                  </TooltipContent>
+                </Tooltip>
               </div>
 
+              <Tooltip>
+                <TooltipTrigger asChild>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleRefresh}
                 disabled={gigsManager.isRefreshing}
+                    className="hover:scale-105 active:scale-95 transition-all duration-200"
+                    aria-label="Refresh gigs list"
               >
                 <RefreshCw className={`h-4 w-4 mr-2 ${gigsManager.isRefreshing ? 'animate-spin' : ''}`} />
                 Refresh
               </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                  <p>Refresh gigs list</p>
+                </TooltipContent>
+              </Tooltip>
             </div>
 
             <div className="text-sm text-muted-foreground">
-              {gigsManager.gigs.length} gigs found
+              {filteredGigs.length} gigs found
               {state.filters.category !== 'all' && ` in ${getCategoryLabel(state.filters.category)}`}
             </div>
           </div>
@@ -307,182 +590,392 @@ export default function EnhancedGigsListing() {
       )}
 
               {/* Professional Gigs Grid/List */}
-          {gigsManager.gigs.length > 0 && (
+          {filteredGigs.length > 0 && (
             <>
               <div className={state.viewMode === 'grid' 
                 ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6" 
-                : "space-y-4"
+                : "space-y-6"
               }>
-                {gigsManager.gigs.map((gig) => (
-                  <Card key={gig._id} className="professional-card hover-professional-primary group">
-                <CardHeader className="pb-4">
-                  <div className="flex items-start justify-between max-w-full">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-3">
-                        <Badge variant="secondary" className="text-xs flex items-center gap-1">
-                          <span>{getCategoryIcon(gig.category)}</span>
-                          {getCategoryLabel(gig.category)}
-                        </Badge>
-                        <Badge 
-                          variant="outline" 
-                          className={`text-xs ${getGigStatusColor(gig.status || 'active')}`}
-                        >
-                          <Zap className="h-3 w-3 mr-1" />
-                          {gig.status || 'Active'}
-                        </Badge>
-                      </div>
-                      <CardTitle className="text-xl mb-3 group-hover:text-primary transition-colors cursor-pointer" 
-                                 onClick={() => handleViewGig(gig._id)}>
-                        {gig.title}
-                      </CardTitle>
-                    </div>
-                    <div className="flex gap-1">
+                {filteredGigs.map((gig) => (
+                  <Card 
+                    key={gig._id} 
+                    className={`group relative overflow-hidden bg-card border border-border rounded-xl shadow-sm hover:shadow-lg hover:border-primary/20 transition-all duration-300 cursor-pointer ${
+                      state.viewMode === 'list' 
+                        ? 'hover:-translate-y-0' 
+                        : 'hover:-translate-y-1'
+                    }`}
+                    onClick={() => handleViewGig(gig._id)}
+                  >
+                    {/* Save Button - Topmost Right Corner */}
+                    <div className="absolute top-2 right-2 z-20">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => handleSaveGig(gig._id)}
-                        className="shrink-0 h-8 w-8"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleSaveGig(gig._id);
+                            }}
+                            className="h-8 w-8 hover:bg-red-50 hover:text-red-600 transition-all duration-200 hover:scale-105 active:scale-95 bg-white/90 backdrop-blur-sm shadow-sm"
+                            aria-label={state.savedGigs.includes(gig._id) ? 'Remove from saved' : 'Save gig'}
                       >
                         <Heart 
-                          className={`h-4 w-4 ${
+                              className={`h-4 w-4 transition-all duration-200 ${
                             state.savedGigs.includes(gig._id) 
-                              ? 'fill-red-500 text-red-500' 
+                                  ? 'fill-red-500 text-red-500 scale-110' 
                               : 'text-muted-foreground hover:text-red-500'
                           }`} 
                         />
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleViewGig(gig._id)}
-                        className="shrink-0 h-8 w-8"
-                      >
-                        <Eye className="h-4 w-4 text-muted-foreground hover:text-primary" />
-                      </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom">
+                          <p>{state.savedGigs.includes(gig._id) ? 'Remove from saved' : 'Save gig'}</p>
+                        </TooltipContent>
+                      </Tooltip>
                     </div>
+
+                    {/* Status Indicator */}
+                    <div className="absolute top-2 right-12 z-10">
+                      <Badge 
+                        variant="outline" 
+                        className={`text-xs font-medium px-2 py-1 ${
+                          gig.status === 'active' 
+                            ? 'bg-green-50 text-green-700 border-green-200' 
+                            : gig.status === 'paused'
+                            ? 'bg-yellow-50 text-yellow-700 border-yellow-200'
+                            : 'bg-gray-50 text-gray-700 border-gray-200'
+                        }`}
+                      >
+                        <div className={`w-2 h-2 rounded-full mr-1.5 ${
+                          gig.status === 'active' 
+                            ? 'bg-green-500' 
+                            : gig.status === 'paused'
+                            ? 'bg-yellow-500'
+                            : 'bg-gray-500'
+                        }`} />
+                        {gig.status || 'Active'}
+                      </Badge>
+                    </div>
+
+                    <CardHeader className={`${state.viewMode === 'list' ? 'pb-4 pt-4' : 'pb-3 pt-6'}`}>
+                      <div className={`flex items-start justify-between ${state.viewMode === 'list' ? 'flex-row' : 'flex-col'}`}>
+                        <div className={`flex-1 ${state.viewMode === 'list' ? 'pr-6' : 'pr-4'}`}>
+                          {/* Category Badge */}
+                          <div className="flex items-center gap-2 mb-3">
+                            <Badge variant="secondary" className="text-xs font-medium px-2 py-1 bg-primary/10 text-primary border-primary/20">
+                              <span className="mr-1">{getCategoryIcon(gig.category)}</span>
+                              {getCategoryLabel(gig.category)}
+                            </Badge>
+                            {/* Urgency Indicator */}
+                            {getDaysAgo(gig.createdAt) === 'Today' && (
+                              <Badge variant="outline" className="text-xs font-medium px-2 py-1 bg-orange-50 text-orange-700 border-orange-200">
+                                <Zap className="h-3 w-3 mr-1" />
+                                New
+                              </Badge>
+                            )}
+                          </div>
+
+                          {/* Title */}
+                          <CardTitle 
+                            className={`${state.viewMode === 'list' ? 'text-xl' : 'text-lg'} font-semibold mb-2 group-hover:text-primary transition-colors line-clamp-2 leading-tight`}
+                          >
+                            {gig.title}
+                          </CardTitle>
+
+                          {/* Description */}
+                          <p className={`text-muted-foreground text-sm leading-relaxed ${state.viewMode === 'list' ? 'line-clamp-1' : 'line-clamp-2'} mb-3`}>
+                            {gig.description}
+                          </p>
+                    </div>
+
                   </div>
-                  <p className="text-muted-foreground text-sm leading-relaxed line-clamp-3">
-                    {gig.description}
-                  </p>
                 </CardHeader>
 
-                <CardContent className="space-y-4">
+                    <CardContent className={`${state.viewMode === 'list' ? 'pt-0 pb-4' : 'space-y-4'}`}>
+                      {state.viewMode === 'list' ? (
+                        // List view layout
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-6">
                         {/* Skills */}
                         {gig.requirements && gig.requirements.length > 0 && (
-                          <div>
-                            <h4 className="font-semibold text-sm mb-2 flex items-center gap-1">
-                              <Award className="h-4 w-4" />
-                              Skills Required:
-                            </h4>
+                              <div className="flex items-center gap-2">
+                                <Award className="h-4 w-4 text-muted-foreground" />
                             <div className="flex flex-wrap gap-1">
-                              {gig.requirements.slice(0, 4).map((skill, index) => (
-                                <Badge key={index} variant="outline" className="text-xs">
+                                  {gig.requirements.slice(0, 2).map((skill, index) => (
+                                    <Badge key={index} variant="outline" className="text-xs px-2 py-1 bg-muted/50">
                                   {skill}
                                 </Badge>
                               ))}
-                              {gig.requirements.length > 4 && (
-                                <Badge variant="outline" className="text-xs">
-                                  +{gig.requirements.length - 4} more
+                                  {gig.requirements.length > 2 && (
+                                    <Badge variant="outline" className="text-xs px-2 py-1 bg-muted/50">
+                                      +{gig.requirements.length - 2}
                                 </Badge>
                               )}
                             </div>
                           </div>
                         )}
 
-                  {/* Gig Details */}
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                          <div className="flex items-center gap-2 min-w-0">
+                            {/* Budget */}
+                            <div className="flex items-center gap-2">
                             <DollarSign className="h-4 w-4 text-green-600" />
-                            <span className="font-semibold text-green-600 truncate max-w-[60px] sm:max-w-[80px] md:max-w-[100px]">
+                              <span className="font-semibold text-green-700">
                               {formatGigBudget(gig)}
                             </span>
                           </div>
-                          <div className="flex items-center gap-2 min-w-0">
+
+                            {/* Posted Date */}
+                            <div className="flex items-center gap-2">
                             <Calendar className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-muted-foreground truncate max-w-[60px] sm:max-w-[80px] md:max-w-[100px]">
+                              <span className="text-muted-foreground text-sm">
                               {getDaysAgo(gig.createdAt)}
                             </span>
                           </div>
-                          <div className="flex items-center gap-2 min-w-0">
-                            <Users className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-muted-foreground truncate max-w-[80px]">
-                              {gig.applicationsCount || 0} applications
-                            </span>
+
+                            {/* Stats */}
+                              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                              <div className="flex items-center gap-1">
+                                <Users className="h-4 w-4" />
+                                  <span>{(gig as any).bidsCount || 0} bids</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Eye className="h-4 w-4" />
+                                <span>{gig.views || 0} views</span>
+                              </div>
+                            </div>
                           </div>
-                          <div className="flex items-center gap-2 min-w-0">
-                            <Eye className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-muted-foreground truncate max-w-[80px]">
-                              {gig.views || 0} views
-                            </span>
+
+                          {/* Action Buttons */}
+                          <div className="flex items-center gap-2">
+                            {user ? (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button 
+                                    className="h-9 px-4 font-medium bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-white shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 border border-primary/20"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handlePlaceOrder(gig._id);
+                                    }}
+                                    disabled={orderingGigId === gig._id}
+                                    aria-label="Place an order for this gig"
+                                  >
+                                    {orderingGigId === gig._id ? (
+                                      <>
+                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                        Opening...
+                                      </>
+                                    ) : (
+                                      <>
+                                        <MessageCircle className="h-4 w-4 mr-2" />
+                                        Place Order
+                                      </>
+                                    )}
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent side="top">
+                                  <p>{orderingGigId === gig._id ? 'Opening order form...' : 'Place an order for this gig'}</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            ) : (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button 
+                                    className="h-9 px-4 font-medium bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-white shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 active:scale-95"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleGuestOrderPrompt();
+                                    }}
+                                    aria-label="Login to place a bid"
+                                  >
+                                    <MessageCircle className="h-4 w-4 mr-2" />
+                                    Login to Order
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent side="top">
+                                  <p>Login to place an order</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            )}
+                            
                           </div>
                         </div>
-                        <div className="flex flex-wrap gap-3 pt-2 w-full">
-                          {user ? (
-                            <Button 
-                              className="flex-1 min-w-[100px] max-w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
-                              onClick={() => handlePlaceBid(gig._id)}
-                            >
-                              <MessageCircle className="h-4 w-4 mr-2" />
-                              <span className="truncate">Place Bid</span>
-                              <ArrowRight className="h-4 w-4 ml-2" />
-                            </Button>
-                          ) : (
-                            <Button 
-                              className="flex-1 min-w-[100px] max-w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
-                              onClick={handleGuestBidPrompt}
-                            >
-                              <MessageCircle className="h-4 w-4 mr-2" />
-                              <span className="truncate">Login to Bid</span>
-                              <ArrowRight className="h-4 w-4 ml-2" />
-                            </Button>
+                      ) : (
+                        // Grid view layout
+                        <>
+                          {/* Skills */}
+                          {gig.requirements && gig.requirements.length > 0 && (
+                            <div>
+                              <div className="flex items-center gap-1 mb-2">
+                                <Award className="h-4 w-4 text-muted-foreground" />
+                                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Skills Required</span>
+                              </div>
+                              <div className="flex flex-wrap gap-1.5">
+                                {gig.requirements.slice(0, 3).map((skill, index) => (
+                                  <Badge key={index} variant="outline" className="text-xs px-2 py-1 bg-muted/50">
+                                    {skill}
+                                  </Badge>
+                                ))}
+                                {gig.requirements.length > 3 && (
+                                  <Badge variant="outline" className="text-xs px-2 py-1 bg-muted/50">
+                                    +{gig.requirements.length - 3} more
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
                           )}
-                          <Button 
-                            variant="outline" 
-                            size="icon"
-                            onClick={() => handleViewGig(gig._id)}
-                            className="min-w-[40px]"
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
+
+                          {/* Gig Stats */}
+                          <div className="grid grid-cols-2 gap-3 text-sm">
+                            <div className="flex items-center gap-2">
+                              <div className="p-1.5 bg-green-50 rounded-md">
+                                <DollarSign className="h-3.5 w-3.5 text-green-600" />
+                              </div>
+                              <div className="min-w-0">
+                                <div className="font-semibold text-green-700 truncate">
+                                  {formatGigBudget(gig)}
+                                </div>
+                                <div className="text-xs text-muted-foreground">Budget</div>
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-center gap-2">
+                              <div className="p-1.5 bg-blue-50 rounded-md">
+                                <Calendar className="h-3.5 w-3.5 text-blue-600" />
+                              </div>
+                              <div className="min-w-0">
+                                <div className="font-medium text-foreground truncate">
+                                  {getDaysAgo(gig.createdAt)}
+                                </div>
+                                <div className="text-xs text-muted-foreground">Posted</div>
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-center gap-2">
+                              <div className="p-1.5 bg-purple-50 rounded-md">
+                                <Users className="h-3.5 w-3.5 text-purple-600" />
+                              </div>
+                              <div className="min-w-0">
+                                <div className="font-medium text-foreground truncate">
+                                  {(gig as any).bidsCount || 0}
+                                </div>
+                                <div className="text-xs text-muted-foreground">Bids</div>
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-center gap-2">
+                              <div className="p-1.5 bg-orange-50 rounded-md">
+                                <Eye className="h-3.5 w-3.5 text-orange-600" />
+                              </div>
+                              <div className="min-w-0">
+                                <div className="font-medium text-foreground truncate">
+                                  {gig.views || 0}
+                                </div>
+                                <div className="text-xs text-muted-foreground">Views</div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Action Buttons */}
+                          <div className="flex gap-2 pt-2">
+                          {user ? (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                            <Button 
+                                    className="flex-1 h-10 font-medium bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-white shadow-md hover:shadow-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 border border-primary/20"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handlePlaceOrder(gig._id);
+                                    }}
+                                    disabled={orderingGigId === gig._id}
+                                    aria-label="Place an order for this gig"
+                                  >
+                                    {orderingGigId === gig._id ? (
+                                      <>
+                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                        Opening...
+                                      </>
+                                    ) : (
+                                      <>
+                              <MessageCircle className="h-4 w-4 mr-2" />
+                                        Place Order
+                              <ArrowRight className="h-4 w-4 ml-2" />
+                                      </>
+                                    )}
+                            </Button>
+                                </TooltipTrigger>
+                                <TooltipContent side="top">
+                                  <p>{orderingGigId === gig._id ? 'Opening order form...' : 'Place an order for this gig'}</p>
+                                </TooltipContent>
+                              </Tooltip>
+                          ) : (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                            <Button 
+                                    className="flex-1 h-10 font-medium bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-white shadow-md hover:shadow-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleGuestOrderPrompt();
+                                    }}
+                                    aria-label="Login to place a bid"
+                            >
+                              <MessageCircle className="h-4 w-4 mr-2" />
+                                    Login to Order
+                              <ArrowRight className="h-4 w-4 ml-2" />
+                            </Button>
+                                </TooltipTrigger>
+                                <TooltipContent side="top">
+                                  <p>Login to place an order</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            )}
+                            
                         </div>
+                        </>
+                      )}
                       </CardContent>
                     </Card>
-                  ))}
+                ))}
                 </div>
 
-          {/* Load More */}
-          {gigsManager.hasMore && (
-            <div className="text-center mt-12">
+          {/* Infinite Scroll Trigger */}
+          {gigsManager.hasMore ? (
+            <div ref={loadMoreRef} className="text-center mt-12">
+              {gigsManager.loading ? (
+                <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Loading more gigs...
+                </div>
+              ) : (
               <Button 
                 variant="outline" 
                 size="lg" 
-                onClick={gigsManager.loadMoreGigs}
-                disabled={gigsManager.loading}
+                  onClick={handleLoadMore}
                 className="px-8"
               >
-                {gigsManager.loading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Loading...
-                  </>
-                ) : (
-                  <>
                     Load More Gigs
                     <ArrowRight className="h-4 w-4 ml-2" />
-                  </>
-                )}
-              </Button>
+                </Button>
+              )}
+            </div>
+          ) : filteredGigs.length > 0 && (
+            <div className="text-center mt-12 py-8">
+              <div className="text-muted-foreground">
+                <Briefcase className="h-8 w-8 mx-auto mb-2" />
+                <p>You've reached the end! No more gigs to load.</p>
+              </div>
             </div>
           )}
 
           {/* Loading More Skeleton */}
-          {gigsManager.loading && gigsManager.gigs.length > 0 && (
+          {gigsManager.loading && filteredGigs.length > 0 && (
             <div className="mt-6">
-              <GigsSkeletonLoader viewMode={state.viewMode} count={3} />
+              <GigsSkeletonLoader viewMode={state.viewMode} count={6} />
             </div>
           )}
         </>
       )}
+
     </div>
+    </TooltipProvider>
   );
 }

@@ -11,7 +11,10 @@ export async function GET(
 
     // Try to fetch from backend first
     try {
-      const backendUrl = new URL(`/api/saved-jobs/${jobId}`, process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000');
+      // Align with real backend saved gigs endpoint
+      const base = (process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000').replace(/\/$/, '');
+      const origin = base.endsWith('/api') ? base : `${base}/api`;
+      const backendUrl = new URL(`/saved-gigs/${jobId}`, origin);
       
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000);
@@ -44,35 +47,9 @@ export async function GET(
       console.warn('❌ Backend connection failed, using fallback:', backendError);
     }
 
-    // Fallback to mock data
-    console.log('📦 Using fallback saved job data');
-    const mockSavedJob = {
-      _id: `saved_${jobId}`,
-      jobId,
-      userId: 'demo_user',
-      title: 'Frontend Developer',
-      company: 'Tech Corp',
-      location: 'Remote',
-      type: 'Full-time',
-      salary: '$80,000 - $120,000',
-      description: 'Looking for an experienced frontend developer...',
-      savedAt: new Date().toISOString(),
-      job: {
-        _id: jobId,
-        title: 'Frontend Developer',
-        company: 'Tech Corp',
-        location: 'Remote',
-        type: 'Full-time',
-        salary: '$80,000 - $120,000',
-        description: 'Looking for an experienced frontend developer...',
-        createdAt: new Date().toISOString()
-      }
-    };
-
-    return NextResponse.json({
-      success: true,
-      data: mockSavedJob
-    });
+    // Fallback to not found to avoid fake demo data
+    console.log('📦 Backend unavailable for saved job detail');
+    return NextResponse.json({ success: false, message: 'Saved job not found' }, { status: 404 });
 
   } catch (error) {
     console.error('Error fetching saved job:', error);
@@ -95,7 +72,10 @@ export async function DELETE(
 
     // Try to delete from backend first
     try {
-      const backendUrl = new URL(`/api/saved-jobs/${jobId}`, process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000');
+      // Align with real backend saved gigs endpoint
+      const base = (process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000').replace(/\/$/, '');
+      const origin = base.endsWith('/api') ? base : `${base}/api`;
+      const backendUrl = new URL(`/saved-gigs/${jobId}`, origin);
       
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000);
@@ -128,13 +108,9 @@ export async function DELETE(
       console.warn('❌ Backend connection failed, using fallback:', backendError);
     }
 
-    // Fallback to mock response
-    console.log('📦 Using fallback delete response');
-    return NextResponse.json({
-      success: true,
-      message: 'Job removed from saved jobs (demo mode)',
-      data: { jobId }
-    });
+    // Fallback to error to avoid misreporting success
+    console.log('📦 Backend unavailable for delete');
+    return NextResponse.json({ success: false, message: 'Backend unavailable. Could not remove saved job.' }, { status: 503 });
 
   } catch (error) {
     console.error('Error removing saved job:', error);

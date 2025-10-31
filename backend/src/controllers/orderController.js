@@ -5,6 +5,40 @@ import User from '../models/User.js';
 import { createPaymentIntent, confirmPaymentIntent, createEscrowPayment } from '../services/paymentService.js';
 import notificationService from '../services/notificationService.js';
 
+// Helper to decide when to expose contact details
+const canExposeContacts = (order) => {
+  const paymentStatus = order?.payment?.status;
+  const orderStatus = order?.status;
+  const paymentOk = ['held', 'released'].includes(paymentStatus);
+  const orderOk = ['payment_confirmed', 'in_progress', 'delivered', 'revision_requested', 'completed'].includes(orderStatus);
+  return paymentOk || orderOk;
+};
+
+// Compose contact details from buyer/seller profile if missing
+const buildContactDetails = (order) => {
+  const buyer = order?.buyerId || {};
+  const seller = order?.sellerId || {};
+  return {
+    bidderContact: {
+      name: buyer?.name || '',
+      email: buyer?.email || '',
+      phone: buyer?.phone || '',
+      countryCode: buyer?.countryCode || '',
+      company: buyer?.company || '',
+      position: buyer?.position || ''
+    },
+    posterContact: {
+      name: seller?.name || '',
+      email: seller?.email || '',
+      phone: seller?.phone || '',
+      countryCode: seller?.countryCode || '',
+      company: seller?.company || '',
+      position: seller?.position || '',
+      alternateContact: ''
+    }
+  };
+};
+
 // Helper function to validate order ownership
 const validateOrderAccess = async (orderId, userId, userRole) => {
   const order = await Order.findById(orderId)
@@ -50,7 +84,8 @@ export const createOrder = async (req, res, next) => {
       requirements,
       buyerInstructions,
       extras = [],
-      paymentMethod = 'stripe'
+      paymentMethod = 'stripe',
+      contactDetails
     } = req.body;
 
     // Get service details
@@ -112,6 +147,8 @@ export const createOrder = async (req, res, next) => {
       requirements,
       buyerInstructions,
       expectedDeliveryDate,
+      // Store contact details if provided (will be shown after payment confirmed)
+      ...(contactDetails ? { contactDetails } : {}),
       payment: {
         method: paymentMethod,
         status: 'pending'
@@ -535,9 +572,20 @@ export const getOrder = async (req, res, next) => {
     const { orderId } = req.params;
     const order = await validateOrderAccess(orderId, req.user._id, req.user.role);
 
+    // Ensure contact details are present when allowed
+    let payload = order.toObject();
+    if (canExposeContacts(payload)) {
+      if (!payload.contactDetails) {
+        payload.contactDetails = buildContactDetails(payload);
+      }
+    } else {
+      // Hide if not allowed
+      payload.contactDetails = undefined;
+    }
+
     return res.status(200).json({
       success: true,
-      data: order
+      data: payload
     });
   } catch (err) {
     next(err);
@@ -595,18 +643,32 @@ export const getUserOrders = async (req, res, next) => {
         .skip((pageNumber - 1) * pageSize)
         .limit(pageSize)
         .populate('serviceId', 'title category')
-        .populate('buyerId', 'name email')
-        .populate('sellerId', 'name email'),
+        .populate('buyerId', 'name email phone countryCode company position')
+        .populate('sellerId', 'name email phone countryCode company position')
+        .lean(),
       Order.countDocuments(filter)
     ]);
 
+    // Attach contact details conditionally
+    const withContacts = orders.map((o) => {
+      const order = { ...o };
+      if (canExposeContacts(order)) {
+        if (!order.contactDetails) {
+          order.contactDetails = buildContactDetails(order);
+        }
+      } else {
+        order.contactDetails = undefined;
+      }
+      return order;
+    });
+
     return res.status(200).json({
       success: true,
-      count: orders.length,
+      count: withContacts.length,
       total,
       page: pageNumber,
       pages: Math.ceil(total / pageSize),
-      data: orders
+      data: withContacts
     });
   } catch (err) {
     next(err);

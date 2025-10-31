@@ -13,7 +13,7 @@ import toast from 'react-hot-toast';
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const next = searchParams?.get('next') || '/dashboard';
+  const next = searchParams?.get('next') || '/orders';
   const { login, isAuthenticated } = useAuth();
 
   const [email, setEmail] = useState('');

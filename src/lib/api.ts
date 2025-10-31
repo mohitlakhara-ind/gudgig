@@ -431,19 +431,42 @@ class ApiClient {
   async createBid(payload: CreateBidRequest): Promise<BidResponse> {
     return this.request<BidResponse>('/bids', { method: 'POST', body: JSON.stringify(payload) });
   }
-  async getMyBids(): Promise<BidsResponse> {
-    return this.request<BidsResponse>('/bids/my');
+  async getGigBidContacts(gigId: string, bidId: string): Promise<ApiResponse<{ bidderContact: { email: string; phone: string; name: string }; posterContact: { email: string; phone: string; alternateContact?: string } }>> {
+    // Backend route: GET /api/gigs/:gigId/bids/:bidId/contacts
+    return this.request(`/gigs/${gigId}/bids/${bidId}/contacts`);
   }
 
   /**
    * Create a bid for a gig/job via internal Next.js API route.
    * This route enforces auth and proxies to the backend with robust handling.
    */
-  async createGigBid(jobId: string, payload: { quotation: string | number; proposal: string; bidFeePaid?: number }): Promise<ApiResponse> {
-    // Use generic bids endpoint; backend resolves job by ID
-    return this.request<ApiResponse>('/bids', {
+  async createGigBid(gigId: string, payload: { 
+    quotation: string | number; 
+    proposal: string; 
+    bidFeePaid?: number;
+    contactDetails?: {
+      bidderContact: {
+        email: string;
+        phone: string;
+        name: string;
+      };
+      posterContact?: {
+        email?: string;
+        phone?: string;
+        name?: string;
+        alternateContact?: string;
+      };
+    };
+  }): Promise<ApiResponse> {
+    // Use internal Next API route
+    return this.request<ApiResponse>(`/api/gigs/${gigId}/bid`, {
       method: 'POST',
-      body: JSON.stringify({ jobId, quotation: String(payload.quotation), proposal: payload.proposal, bidFeePaid: payload.bidFeePaid }),
+      body: JSON.stringify({ 
+        quotation: String(payload.quotation), 
+        proposal: payload.proposal, 
+        bidFeePaid: payload.bidFeePaid,
+        contactDetails: payload.contactDetails
+      }),
     });
   }
 
@@ -459,6 +482,13 @@ class ApiClient {
    */
   async getJobBids(jobId: string): Promise<BidsResponse> {
     return this.getGigBids(jobId);
+  }
+
+  /**
+   * Get all bids for the current user
+   */
+  async getMyBids(): Promise<BidsResponse> {
+    return this.request<BidsResponse>('/api/my-bids');
   }
 
   /**
@@ -576,6 +606,13 @@ class ApiClient {
     return this.request<JobResponse>(`/gigs/${id}`, {
       method: 'PUT',
       body: JSON.stringify(jobData),
+    });
+  }
+
+  async toggleGigVisibility(id: string, isHidden: boolean): Promise<ApiResponse> {
+    return this.request(`/gigs/${id}/visibility`, {
+      method: 'PATCH',
+      body: JSON.stringify({ isHidden }),
     });
   }
 
@@ -698,23 +735,20 @@ class ApiClient {
   }
 
   // Chat
-  async getConversations(params?: { userId?: string }): Promise<ConversationsResponse> {
-    const qs = new URLSearchParams();
-    if (params?.userId) qs.set('userId', params.userId);
-    const q = qs.toString();
-    return this.request<ConversationsResponse>(`/chat${q ? `?${q}` : ''}`);
+  async getConversations(_: { userId?: string } = {} as any): Promise<ConversationsResponse> {
+    return { success: true, data: [] } as unknown as ConversationsResponse;
   }
-  async startConversation(payload: StartConversationRequest): Promise<ConversationsResponse> {
-    return this.request<ConversationsResponse>('/chat', { method: 'POST', body: JSON.stringify(payload) });
+  async startConversation(_: StartConversationRequest): Promise<ConversationsResponse> {
+    return { success: false, message: 'Chat disabled', data: [] } as unknown as ConversationsResponse;
   }
-  async getMessages(conversationId: string): Promise<MessagesResponse> {
-    return this.request<MessagesResponse>(`/chat/${conversationId}/messages`);
+  async getMessages(_: string): Promise<MessagesResponse> {
+    return { success: true, data: [] } as unknown as MessagesResponse;
   }
-  async sendMessage(conversationId: string, payload: SendMessageRequest): Promise<ApiResponse> {
-    return this.request<ApiResponse>(`/chat/${conversationId}/messages`, { method: 'POST', body: JSON.stringify(payload) });
+  async sendMessage(_: string, __: SendMessageRequest): Promise<ApiResponse> {
+    return { success: false, message: 'Chat disabled' } as ApiResponse;
   }
-  async markConversationRead(conversationId: string): Promise<ApiResponse> {
-    return this.request<ApiResponse>(`/chat/${conversationId}/read`, { method: 'PUT' });
+  async markConversationRead(_: string): Promise<ApiResponse> {
+    return { success: true } as ApiResponse;
   }
 
   // Notifications
@@ -883,7 +917,7 @@ class ApiClient {
     return this.request<OrderResponse>(`/orders/${orderId}`);
   }
 
-  async createOrder(orderData: { serviceId: string; packageType: string; requirements: any }): Promise<OrderResponse> {
+  async createOrder(orderData: { serviceId: string; packageType: string; requirements?: any; buyerInstructions?: any; contactDetails?: any; paymentMethod?: 'stripe' | 'paypal' | 'razorpay' }): Promise<OrderResponse> {
     return this.request<OrderResponse>('/orders', { 
       method: 'POST', 
       body: JSON.stringify(orderData) 
@@ -1072,6 +1106,72 @@ class ApiClient {
   async createFakePayment(paymentData: any): Promise<ApiResponse<any>> {
     // Not supported on real payments; no-op for demo button
     return { success: false, message: 'Not supported' } as any;
+  }
+
+  // Contact Details API
+  async getContactDetails(): Promise<ApiResponse<ContactDetails[]>> {
+    return this.request<ApiResponse<ContactDetails[]>>('/contact-details');
+  }
+
+  async createContactDetails(data: Partial<ContactDetails>): Promise<ApiResponse<ContactDetails>> {
+    return this.request<ApiResponse<ContactDetails>>('/contact-details', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async updateContactDetails(id: string, data: Partial<ContactDetails>): Promise<ApiResponse<ContactDetails>> {
+    return this.request<ApiResponse<ContactDetails>>(`/contact-details/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async deleteContactDetails(id: string): Promise<ApiResponse> {
+    return this.request<ApiResponse>(`/contact-details/${id}`, { method: 'DELETE' });
+  }
+
+  async setDefaultContactDetails(id: string): Promise<ApiResponse<ContactDetails>> {
+    return this.request<ApiResponse<ContactDetails>>(`/contact-details/${id}/default`, {
+      method: 'PATCH'
+    });
+  }
+
+  // Admin Contact Details API
+  async getAllContactDetails(params?: {
+    page?: number;
+    limit?: number;
+    userId?: string;
+    search?: string;
+  }): Promise<ApiResponse<ContactDetails[]>> {
+    const searchParams = new URLSearchParams();
+    if (params?.page) searchParams.append('page', params.page.toString());
+    if (params?.limit) searchParams.append('limit', params.limit.toString());
+    if (params?.userId) searchParams.append('userId', params.userId);
+    if (params?.search) searchParams.append('search', params.search);
+    
+    const queryString = searchParams.toString();
+    const url = `/contact-details/admin/all${queryString ? `?${queryString}` : ''}`;
+    
+    return this.request<ApiResponse<ContactDetails[]>>(url);
+  }
+
+  async adminCreateContactDetails(data: Partial<ContactDetails> & { userId: string }): Promise<ApiResponse<ContactDetails>> {
+    return this.request<ApiResponse<ContactDetails>>('/contact-details/admin', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async adminUpdateContactDetails(id: string, data: Partial<ContactDetails>): Promise<ApiResponse<ContactDetails>> {
+    return this.request<ApiResponse<ContactDetails>>(`/contact-details/admin/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async adminDeleteContactDetails(id: string): Promise<ApiResponse> {
+    return this.request<ApiResponse>(`/contact-details/admin/${id}`, { method: 'DELETE' });
   }
 
   // Request/Response interceptors for logging and monitoring

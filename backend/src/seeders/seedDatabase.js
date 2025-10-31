@@ -9,8 +9,8 @@ import Service from '../models/Service.js';
 import Bid from '../models/Bid.js';
 import Order from '../models/Order.js';
 import Review from '../models/Review.js';
-import Conversation from '../models/Conversation.js';
 import Notification from '../models/Notification.js';
+import SavedJob from '../models/SavedJob.js';
 
 // Load environment variables
 dotenv.config();
@@ -32,8 +32,8 @@ const seedDatabase = async () => {
       Bid.deleteMany({}),
       Order.deleteMany({}),
       Review.deleteMany({}),
-      Conversation.deleteMany({}),
-      Notification.deleteMany({})
+      Notification.deleteMany({}),
+      SavedJob.deleteMany({})
     ]);
     console.log('🗑️ Cleared existing data');
 
@@ -75,7 +75,7 @@ const seedDatabase = async () => {
     console.log(`👔 Created ${employers.length} employer users`);
 
     // AdminSettings with bid fee options
-    const settings = await AdminSettings.create({ key: 'gm-config', bidFeeOptions: [1, 5, 10, 20], currentBidFee: 5 });
+    const settings = await AdminSettings.create({ key: 'gm-config', bidFeeOptions: [1, 5, 10, 20], currentBidFee: 10 });
     console.log('⚙️  Created AdminSettings');
 
     // Sample jobs across 7 categories
@@ -133,7 +133,27 @@ const seedDatabase = async () => {
       { title: 'Instagram Reels Campaign', description: 'Plan 30-day reel calendar for fashion brand.', category: 'social media management', requirements: ['Reels', 'Scheduling'] },
       { title: 'Local SEO Audit', description: 'Audit and implement local SEO for SMB.', category: 'SEO', requirements: ['GMB', 'Schema'] },
       { title: 'React Native MVP', description: 'Build MVP with auth and push notifications.', category: 'app development', requirements: ['RN', 'Push'] },
-      { title: 'Level Design for Puzzle Game', description: 'Design 50 levels with increasing difficulty.', category: 'game development', requirements: ['Level design', 'Balancing'] }
+      { title: 'Level Design for Puzzle Game', description: 'Design 50 levels with increasing difficulty.', category: 'game development', requirements: ['Level design', 'Balancing'] },
+      { title: 'WordPress WooCommerce Setup', description: 'Set up an e-commerce store with payment gateways.', category: 'website development', requirements: ['WordPress', 'WooCommerce', 'SSL'] },
+      { title: 'Custom Shopify Theme Development', description: 'Create a unique Shopify theme for fashion brand.', category: 'website development', requirements: ['Shopify', 'Liquid', 'CSS'] },
+      { title: 'Mobile-First Website Redesign', description: 'Redesign existing site with mobile-first approach.', category: 'website development', requirements: ['Responsive design', 'UX/UI'] },
+      { title: 'Brand Identity Package', description: 'Complete brand identity including logo, colors, fonts, and guidelines.', category: 'graphic design', requirements: ['Brand design', 'Logo', 'Typography'] },
+      { title: 'Social Media Graphics Package', description: 'Create templates and designs for social media posts.', category: 'graphic design', requirements: ['Social media', 'Templates', 'Brand consistency'] },
+      { title: 'Illustrated User Manual', description: 'Create illustrated manual with icons and diagrams.', category: 'graphic design', requirements: ['Illustration', 'Technical drawing'] },
+      { title: 'Website Copywriting Services', description: 'Write compelling copy for landing pages and product descriptions.', category: 'content writing', requirements: ['Copywriting', 'SEO', 'Conversion'] },
+      { title: 'Email Newsletter Content', description: 'Write engaging monthly newsletter content.', category: 'content writing', requirements: ['Email marketing', 'Engaging content'] },
+      { title: 'Product Description Writing', description: 'Write 50 unique product descriptions for e-commerce.', category: 'content writing', requirements: ['Product writing', 'SEO'] },
+      { title: 'LinkedIn Content Strategy', description: 'Develop and execute LinkedIn content strategy for B2B brand.', category: 'social media management', requirements: ['LinkedIn', 'B2B', 'Content planning'] },
+      { title: 'TikTok Growth Strategy', description: 'Grow TikTok account with viral content strategy.', category: 'social media management', requirements: ['TikTok', 'Viral content', 'Growth'] },
+      { title: 'Twitter Engagement Campaign', description: 'Manage Twitter account with engaging posts and community management.', category: 'social media management', requirements: ['Twitter', 'Engagement', 'Community'] },
+      { title: 'SEO Content Audit & Optimization', description: 'Audit existing content and optimize for better rankings.', category: 'SEO', requirements: ['Content audit', 'Keyword optimization'] },
+      { title: 'Technical SEO Fixes', description: 'Fix technical SEO issues like crawl errors, site speed, and indexing.', category: 'SEO', requirements: ['Technical SEO', 'Site speed', 'Crawl errors'] },
+      { title: 'Link Building Campaign', description: 'Build high-quality backlinks to improve domain authority.', category: 'SEO', requirements: ['Link building', 'Outreach', 'Content'] },
+      { title: 'Cross-Platform Mobile App', description: 'Build app that works on both iOS and Android with shared codebase.', category: 'app development', requirements: ['Flutter', 'React Native', 'Cross-platform'] },
+      { title: 'Progressive Web App', description: 'Build a PWA with offline capabilities and push notifications.', category: 'app development', requirements: ['PWA', 'Service workers', 'Offline'] },
+      { title: 'API Integration Development', description: 'Integrate multiple third-party APIs into mobile app.', category: 'app development', requirements: ['API integration', 'REST APIs', 'Mobile'] },
+      { title: 'Unity 2D Game Development', description: 'Create a 2D platform game using Unity engine.', category: 'game development', requirements: ['Unity', 'C#', 'Game design'] },
+      { title: 'Game UI/UX Design', description: 'Design intuitive and engaging UI for mobile games.', category: 'game development', requirements: ['Game UI', 'UX design', 'Mobile games'] }
     ];
     const jobs = await Job.insertMany(
       [...sampleJobs, ...extraJobs].map(j => ({
@@ -194,6 +214,96 @@ const seedDatabase = async () => {
         primarySkills: ['Content Writing', 'SEO', 'Copywriting'],
         hourlyRate: { min: 20, max: 35, currency: 'USD' },
         location: { country: 'USA', city: 'New York', timezone: 'EST' }
+      },
+      {
+        userId: freelancers[3]._id,
+        title: 'Social Media Marketing Specialist',
+        description: 'Expert in social media strategy, content creation, and community management. I help brands grow their online presence across Instagram, TikTok, and LinkedIn with engaging content and data-driven strategies.',
+        tagline: 'Growing brands, one post at a time',
+        skills: [
+          { name: 'Social Media Marketing', level: 'expert', yearsOfExperience: 4 },
+          { name: 'Content Creation', level: 'expert', yearsOfExperience: 4 },
+          { name: 'Analytics', level: 'expert', yearsOfExperience: 3 },
+          { name: 'Community Management', level: 'expert', yearsOfExperience: 3 }
+        ],
+        primarySkills: ['Social Media Marketing', 'Content Creation', 'Analytics'],
+        hourlyRate: { min: 20, max: 35, currency: 'USD' },
+        location: { country: 'USA', city: 'Austin', timezone: 'CST' }
+      },
+      {
+        userId: freelancers[4]._id,
+        title: 'SEO Specialist & Digital Marketer',
+        description: 'Passionate about SEO and digital marketing. I help businesses improve their search rankings through technical SEO, content optimization, and strategic link building campaigns.',
+        tagline: 'Boosting your search visibility',
+        skills: [
+          { name: 'SEO', level: 'expert', yearsOfExperience: 5 },
+          { name: 'Technical SEO', level: 'expert', yearsOfExperience: 4 },
+          { name: 'Link Building', level: 'expert', yearsOfExperience: 4 },
+          { name: 'Analytics', level: 'expert', yearsOfExperience: 3 }
+        ],
+        primarySkills: ['SEO', 'Technical SEO', 'Link Building'],
+        hourlyRate: { min: 25, max: 40, currency: 'USD' },
+        location: { country: 'USA', city: 'Seattle', timezone: 'PST' }
+      },
+      {
+        userId: freelancers[5]._id,
+        title: 'Mobile App Developer',
+        description: 'Mobile app developer specializing in React Native and Flutter. I build cross-platform apps that work seamlessly on both iOS and Android with modern architectures.',
+        tagline: 'Creating amazing mobile experiences',
+        skills: [
+          { name: 'React Native', level: 'expert', yearsOfExperience: 4 },
+          { name: 'Flutter', level: 'intermediate', yearsOfExperience: 2 },
+          { name: 'Mobile Development', level: 'expert', yearsOfExperience: 5 },
+          { name: 'Firebase', level: 'expert', yearsOfExperience: 3 }
+        ],
+        primarySkills: ['React Native', 'Mobile Development', 'Firebase'],
+        hourlyRate: { min: 35, max: 55, currency: 'USD' },
+        location: { country: 'USA', city: 'Chicago', timezone: 'CST' }
+      },
+      {
+        userId: freelancers[6]._id,
+        title: 'Game Designer & Developer',
+        description: 'Indie game developer with passion for creating engaging gameplay experiences. Specialized in Unity 2D/3D game development, level design, and game mechanics.',
+        tagline: 'Creating worlds, one game at a time',
+        skills: [
+          { name: 'Unity', level: 'expert', yearsOfExperience: 6 },
+          { name: 'Game Design', level: 'expert', yearsOfExperience: 5 },
+          { name: 'Level Design', level: 'expert', yearsOfExperience: 5 },
+          { name: 'C#', level: 'expert', yearsOfExperience: 6 }
+        ],
+        primarySkills: ['Unity', 'Game Design', 'Level Design'],
+        hourlyRate: { min: 30, max: 50, currency: 'USD' },
+        location: { country: 'USA', city: 'Boston', timezone: 'EST' }
+      },
+      {
+        userId: freelancers[7]._id,
+        title: 'E-commerce Developer',
+        description: 'Specialized in building and optimizing e-commerce stores on Shopify, WooCommerce, and custom platforms. I create seamless shopping experiences that convert.',
+        tagline: 'Selling online, made simple',
+        skills: [
+          { name: 'Shopify', level: 'expert', yearsOfExperience: 5 },
+          { name: 'WooCommerce', level: 'expert', yearsOfExperience: 4 },
+          { name: 'E-commerce', level: 'expert', yearsOfExperience: 5 },
+          { name: 'Payment Integration', level: 'expert', yearsOfExperience: 4 }
+        ],
+        primarySkills: ['Shopify', 'WooCommerce', 'E-commerce'],
+        hourlyRate: { min: 30, max: 50, currency: 'USD' },
+        location: { country: 'USA', city: 'Miami', timezone: 'EST' }
+      },
+      {
+        userId: freelancers[8]._id,
+        title: 'Digital Marketing Strategist',
+        description: 'Strategic digital marketer focused on growth and conversions. I help businesses optimize their digital presence through data-driven strategies and campaigns.',
+        tagline: 'Data-driven growth strategies',
+        skills: [
+          { name: 'Digital Marketing', level: 'expert', yearsOfExperience: 6 },
+          { name: 'Growth Marketing', level: 'expert', yearsOfExperience: 5 },
+          { name: 'Analytics', level: 'expert', yearsOfExperience: 5 },
+          { name: 'Conversion Optimization', level: 'expert', yearsOfExperience: 4 }
+        ],
+        primarySkills: ['Digital Marketing', 'Growth Marketing', 'Analytics'],
+        hourlyRate: { min: 35, max: 60, currency: 'USD' },
+        location: { country: 'USA', city: 'Denver', timezone: 'MST' }
       }
     ]);
     console.log(`👤 Created ${freelancerProfiles.length} freelancer profiles`);
@@ -357,36 +467,52 @@ const seedDatabase = async () => {
         quotation: 'I can deliver this project in 2 weeks for $800',
         proposal: 'I have extensive experience in e-commerce development and can create exactly what you need.',
         attachments: [],
-        bidFeePaid: 5,
+        bidFeePaid: 10,
         paymentStatus: 'succeeded',
-        createdAt: lastMonth
+        createdAt: lastMonth,
+        contactDetails: {
+          bidderContact: { email: freelancers[0].email, phone: freelancers[0].phone },
+          posterContact: { email: adminUser.email, phone: adminUser.phone }
+        }
       },
       {
         jobId: jobs[1]._id,
         userId: freelancers[1]._id,
         quotation: 'Professional logo design for $300',
         proposal: 'I specialize in brand identity and will create a memorable logo for your startup.',
-        bidFeePaid: 5,
+        bidFeePaid: 10,
         paymentStatus: 'pending',
-        createdAt: startOfThisMonth
+        createdAt: startOfThisMonth,
+        contactDetails: {
+          bidderContact: { email: freelancers[1].email, phone: freelancers[1].phone },
+          posterContact: { email: adminUser.email, phone: adminUser.phone }
+        }
       },
       {
         jobId: jobs[2]._id,
         userId: freelancers[2]._id,
         quotation: 'SEO content package for $400',
         proposal: 'I will write engaging, SEO-optimized content that ranks well and converts readers.',
-        bidFeePaid: 5,
+        bidFeePaid: 10,
         paymentStatus: 'failed',
-        createdAt: twoMonthsAgo
+        createdAt: twoMonthsAgo,
+        contactDetails: {
+          bidderContact: { email: freelancers[2].email, phone: freelancers[2].phone },
+          posterContact: { email: adminUser.email, phone: adminUser.phone }
+        }
       },
       {
         jobId: jobs[3]._id,
         userId: freelancers[3]._id,
         quotation: 'Social media monthly management for $500',
         proposal: 'End-to-end content planning, posting, and engagement with analytics reports.',
-        bidFeePaid: 5,
+        bidFeePaid: 10,
         paymentStatus: 'succeeded',
-        createdAt: new Date()
+        createdAt: new Date(),
+        contactDetails: {
+          bidderContact: { email: freelancers[3].email, phone: freelancers[3].phone },
+          posterContact: { email: adminUser.email, phone: adminUser.phone }
+        }
       }
       ,
       {
@@ -394,18 +520,143 @@ const seedDatabase = async () => {
         userId: freelancers[4]._id,
         quotation: 'I can grow followers by 20% this month for $400',
         proposal: 'Content calendar, reels, and community management to drive growth.',
-        bidFeePaid: 5,
+        bidFeePaid: 10,
         paymentStatus: 'pending',
-        createdAt: startOfThisMonth
+        createdAt: startOfThisMonth,
+        contactDetails: {
+          bidderContact: { email: freelancers[4].email, phone: freelancers[4].phone },
+          posterContact: { email: adminUser.email, phone: adminUser.phone }
+        }
       },
       {
         jobId: jobs[7]._id,
         userId: freelancers[7]._id,
         quotation: 'Balanced puzzle levels in 7 days for $350',
         proposal: 'Experienced in level design and difficulty curves.',
-        bidFeePaid: 5,
+        bidFeePaid: 10,
         paymentStatus: 'succeeded',
-        createdAt: new Date()
+        createdAt: new Date(),
+        contactDetails: {
+          bidderContact: { email: freelancers[7].email, phone: freelancers[7].phone },
+          posterContact: { email: adminUser.email, phone: adminUser.phone }
+        }
+      },
+      {
+        jobId: jobs[8]._id,
+        userId: freelancers[0]._id,
+        quotation: 'WordPress WooCommerce setup for $600',
+        proposal: 'Expert in WordPress and e-commerce. Will set up complete store with payment gateways.',
+        bidFeePaid: 10,
+        paymentStatus: 'succeeded',
+        createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+        contactDetails: {
+          bidderContact: { email: freelancers[0].email, phone: freelancers[0].phone },
+          posterContact: { email: adminUser.email, phone: adminUser.phone }
+        }
+      },
+      {
+        jobId: jobs[9]._id,
+        userId: freelancers[7]._id,
+        quotation: 'Custom Shopify theme for $450',
+        proposal: 'Experienced in Shopify theme development with custom Liquid templates.',
+        bidFeePaid: 10,
+        paymentStatus: 'pending',
+        createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+        contactDetails: {
+          bidderContact: { email: freelancers[7].email, phone: freelancers[7].phone },
+          posterContact: { email: adminUser.email, phone: adminUser.phone }
+        }
+      },
+      {
+        jobId: jobs[10]._id,
+        userId: freelancers[0]._id,
+        quotation: 'Mobile-first redesign for $800',
+        proposal: 'Focus on mobile UX with progressive enhancement approach.',
+        bidFeePaid: 10,
+        paymentStatus: 'succeeded',
+        createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+        contactDetails: {
+          bidderContact: { email: freelancers[0].email, phone: freelancers[0].phone },
+          posterContact: { email: adminUser.email, phone: adminUser.phone }
+        }
+      },
+      {
+        jobId: jobs[11]._id,
+        userId: freelancers[1]._id,
+        quotation: 'Complete brand identity for $500',
+        proposal: 'Full brand package with logo, colors, typography, and comprehensive guidelines.',
+        bidFeePaid: 10,
+        paymentStatus: 'succeeded',
+        createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+        contactDetails: {
+          bidderContact: { email: freelancers[1].email, phone: freelancers[1].phone },
+          posterContact: { email: adminUser.email, phone: adminUser.phone }
+        }
+      },
+      {
+        jobId: jobs[12]._id,
+        userId: freelancers[1]._id,
+        quotation: 'Social media graphics package for $250',
+        proposal: 'Create template library for consistent brand presence across platforms.',
+        bidFeePaid: 10,
+        paymentStatus: 'pending',
+        createdAt: new Date(),
+        contactDetails: {
+          bidderContact: { email: freelancers[1].email, phone: freelancers[1].phone },
+          posterContact: { email: adminUser.email, phone: adminUser.phone }
+        }
+      },
+      {
+        jobId: jobs[13]._id,
+        userId: freelancers[2]._id,
+        quotation: 'Copywriting services for $400',
+        proposal: 'Compelling copy that converts with SEO optimization.',
+        bidFeePaid: 10,
+        paymentStatus: 'succeeded',
+        createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+        contactDetails: {
+          bidderContact: { email: freelancers[2].email, phone: freelancers[2].phone },
+          posterContact: { email: adminUser.email, phone: adminUser.phone }
+        }
+      },
+      {
+        jobId: jobs[14]._id,
+        userId: freelancers[3]._id,
+        quotation: 'LinkedIn strategy for $600',
+        proposal: 'B2B content strategy with engagement optimization.',
+        bidFeePaid: 10,
+        paymentStatus: 'succeeded',
+        createdAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
+        contactDetails: {
+          bidderContact: { email: freelancers[3].email, phone: freelancers[3].phone },
+          posterContact: { email: adminUser.email, phone: adminUser.phone }
+        }
+      },
+      {
+        jobId: jobs[15]._id,
+        userId: freelancers[4]._id,
+        quotation: 'SEO audit and fixes for $350',
+        proposal: 'Comprehensive technical SEO audit with optimization.',
+        bidFeePaid: 10,
+        paymentStatus: 'succeeded',
+        createdAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000),
+        contactDetails: {
+          bidderContact: { email: freelancers[4].email, phone: freelancers[4].phone },
+          posterContact: { email: adminUser.email, phone: adminUser.phone }
+        }
+      },
+      {
+        jobId: jobs[16]._id,
+        userId: freelancers[5]._id,
+        quotation: 'Cross-platform app for $1200',
+        proposal: 'React Native app with shared codebase for iOS and Android.',
+        bidFeePaid: 10,
+        paymentStatus: 'succeeded',
+        createdAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000),
+        contactDetails: {
+          bidderContact: { email: freelancers[5].email, phone: freelancers[5].phone },
+          posterContact: { email: adminUser.email, phone: adminUser.phone }
+        }
       }
     ]);
     console.log(`💰 Created ${bids.length} bids`);
@@ -418,6 +669,10 @@ const seedDatabase = async () => {
         packageType: 'basic',
         buyerId: employers[0]._id,
         sellerId: freelancers[0]._id,
+        contactDetails: {
+          bidderContact: { name: employers[0].name, email: employers[0].email, phone: employers[0].phone },
+          posterContact: { name: freelancers[0].name, email: freelancers[0].email, phone: freelancers[0].phone }
+        },
         packageDetails: {
           title: 'Basic Website',
           description: 'Simple 3-page website with responsive design',
@@ -443,6 +698,10 @@ const seedDatabase = async () => {
         packageType: 'standard',
         buyerId: employers[1]._id,
         sellerId: freelancers[1]._id,
+        contactDetails: {
+          bidderContact: { name: employers[1].name, email: employers[1].email, phone: employers[1].phone },
+          posterContact: { name: freelancers[1].name, email: freelancers[1].email, phone: freelancers[1].phone }
+        },
         packageDetails: {
           title: 'Logo + Brand Colors',
           description: 'Logo design with brand color palette',
@@ -511,6 +770,36 @@ const seedDatabase = async () => {
     ]);
     console.log(`📝 Created ${applications.length} applications`);
 
+    // Create sample saved jobs (gigs saved by users)
+    const savedJobs = await SavedJob.insertMany([
+      {
+        userId: freelancers[0]._id,
+        jobId: jobs[0]._id,
+        metadata: { source: 'gigs_listing', category: 'website development', budget: jobs[0].budget }
+      },
+      {
+        userId: freelancers[0]._id,
+        jobId: jobs[1]._id,
+        metadata: { source: 'gig_detail', category: 'graphic design', budget: jobs[1].budget }
+      },
+      {
+        userId: freelancers[1]._id,
+        jobId: jobs[2]._id,
+        metadata: { source: 'search_results', category: 'content writing', budget: jobs[2].budget }
+      },
+      {
+        userId: freelancers[2]._id,
+        jobId: jobs[3]._id,
+        metadata: { source: 'gigs_listing', category: 'social media management', budget: jobs[3].budget }
+      },
+      {
+        userId: employers[0]._id,
+        jobId: jobs[4]._id,
+        metadata: { source: 'gigs_listing', category: 'SEO', budget: jobs[4].budget }
+      }
+    ]);
+    console.log(`⭐ Created ${savedJobs.length} saved jobs`);
+
     // Create sample reviews
     const reviews = await Review.insertMany([
       {
@@ -548,25 +837,6 @@ const seedDatabase = async () => {
     ]);
     console.log(`⭐ Created ${reviews.length} reviews`);
 
-    // Create sample conversations
-    const conversations = await Conversation.insertMany([
-      {
-        participants: [employers[0]._id, freelancers[0]._id],
-        order: orders[0]._id,
-        messages: [
-          {
-            sender: employers[0]._id,
-            content: 'Hi! I\'m excited to work with you on this project. When can we start?'
-          },
-          {
-            sender: freelancers[0]._id,
-            content: 'Hello! I can start immediately. Let me know if you have any specific requirements.'
-          }
-        ]
-      }
-    ]);
-    console.log(`💬 Created ${conversations.length} conversations`);
-
     // Create sample notifications
     const notifications = await Notification.insertMany([
       {
@@ -597,7 +867,7 @@ const seedDatabase = async () => {
     console.log(`   - Bids: ${await Bid.countDocuments()}`);
     console.log(`   - Orders: ${await Order.countDocuments()}`);
     console.log(`   - Reviews: ${await Review.countDocuments()}`);
-    console.log(`   - Conversations: ${await Conversation.countDocuments()}`);
+    console.log(`   - SavedJobs: ${await SavedJob.countDocuments()}`);
     console.log(`   - Notifications: ${await Notification.countDocuments()}`);
 
     console.log('\n🔐 Sample Login Credentials:');

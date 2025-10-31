@@ -10,6 +10,7 @@ import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import PageHeader from '@/components/dashboard/PageHeader';
 import { Textarea } from '@/components/ui/textarea';
+import { PhoneNumberInput } from '@/components/ui/PhoneNumberInput';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
 import {
@@ -52,6 +53,7 @@ export default function ProfilePage() {
     name: '',
     email: '',
     phone: '',
+    countryCode: 'US',
     location: '',
     bio: '',
     skills: [] as string[],
@@ -859,11 +861,26 @@ export default function ProfilePage() {
                             </div>
                           </div>
                           <div>
-                            <label className="block text-sm font-medium text-foreground mb-1">Phone Number</label>
-                            <div className="relative">
-                              <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                              <Input type="tel" value={formData.phone} onChange={(e) => handleInputChange('phone', e.target.value)} className="pl-10" />
-                            </div>
+                            <PhoneNumberInput
+                              label="Phone Number"
+                              value={formData.phone}
+                              onChange={(phone) => {
+                                if (phone) {
+                                  try {
+                                    const { parsePhoneNumber } = require('react-phone-number-input');
+                                    const parsed = parsePhoneNumber(phone);
+                                    handleInputChange('phone', parsed.number);
+                                    handleInputChange('countryCode', parsed.country || 'US');
+                                  } catch (error) {
+                                    handleInputChange('phone', phone);
+                                  }
+                                } else {
+                                  handleInputChange('phone', '');
+                                  handleInputChange('countryCode', 'US');
+                                }
+                              }}
+                              placeholder="Enter your phone number"
+                            />
                           </div>
                         </div>
                         <div>

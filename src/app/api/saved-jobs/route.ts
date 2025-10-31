@@ -17,7 +17,10 @@ export async function GET(request: NextRequest) {
 
     // Try to fetch from backend first
     try {
-      const backendUrl = new URL('/api/saved-jobs', process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000');
+      const rawBase = (process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000').replace(/\/$/, '');
+      const origin = rawBase.endsWith('/api') ? rawBase.replace(/\/api$/, '') : rawBase;
+      // Use real backend endpoint for saved gigs
+      const backendUrl = new URL('/api/saved-gigs', origin);
       
       // Forward all query parameters to the backend
       searchParams.forEach((value, key) => {
@@ -34,6 +37,9 @@ export async function GET(request: NextRequest) {
             'Content-Type': 'application/json',
             ...(request.headers.get('authorization') && {
               'authorization': request.headers.get('authorization')!
+            }),
+            ...(request.headers.get('cookie') && {
+              'cookie': request.headers.get('cookie')!
             }),
           },
           signal: controller.signal,
@@ -55,42 +61,17 @@ export async function GET(request: NextRequest) {
       console.warn('❌ Backend connection failed, using fallback:', backendError);
     }
 
-    // Fallback to mock data
-    console.log('📦 Using fallback saved jobs data');
-    const mockSavedJobs = [
-      {
-        _id: 'saved_job_1',
-        jobId: 'job_123',
-        userId: 'demo_user',
-        title: 'Frontend Developer',
-        company: 'Tech Corp',
-        location: 'Remote',
-        type: 'Full-time',
-        salary: '$80,000 - $120,000',
-        description: 'Looking for an experienced frontend developer...',
-        savedAt: new Date().toISOString(),
-        job: {
-          _id: 'job_123',
-          title: 'Frontend Developer',
-          company: 'Tech Corp',
-          location: 'Remote',
-          type: 'Full-time',
-          salary: '$80,000 - $120,000',
-          description: 'Looking for an experienced frontend developer...',
-          createdAt: new Date().toISOString()
-        }
-      }
-    ];
-
+    // Fallback to empty result to avoid showing fake demo data
+    console.log('📦 Backend unavailable, returning empty saved gigs');
     return NextResponse.json({
       success: true,
-      data: mockSavedJobs,
-      count: mockSavedJobs.length,
+      data: [],
+      count: 0,
       pagination: {
         page: parseInt(page),
         limit: parseInt(limit),
-        total: mockSavedJobs.length,
-        pages: Math.ceil(mockSavedJobs.length / parseInt(limit))
+        total: 0,
+        pages: 0
       }
     });
 
@@ -107,13 +88,17 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { jobId } = body;
+    // Normalize payload to backend shape: expects { gigId }
+    const jobId = body?.jobId || body?.gigId;
 
     console.log('Saving job:', jobId);
 
     // Try to save to backend first
     try {
-      const backendUrl = new URL('/api/saved-jobs', process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000');
+      const rawBase = (process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000').replace(/\/$/, '');
+      const origin = rawBase.endsWith('/api') ? rawBase.replace(/\/api$/, '') : rawBase;
+      // Use real backend endpoint for saved gigs
+      const backendUrl = new URL('/api/saved-gigs', origin);
       
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000);
@@ -126,8 +111,11 @@ export async function POST(request: NextRequest) {
             ...(request.headers.get('authorization') && {
               'authorization': request.headers.get('authorization')!
             }),
+            ...(request.headers.get('cookie') && {
+              'cookie': request.headers.get('cookie')!
+            }),
           },
-          body: JSON.stringify(body),
+          body: JSON.stringify({ gigId: jobId }),
           signal: controller.signal,
         });
 
@@ -138,7 +126,9 @@ export async function POST(request: NextRequest) {
           console.log('✅ Successfully saved job to backend');
           return NextResponse.json(data);
         } else {
-          console.warn(`❌ Backend returned ${response.status}, using fallback`);
+          const err = await response.json().catch(() => ({ message: 'Failed to save gig' }));
+          console.warn(`❌ Backend returned ${response.status}: ${err?.message || 'error'}`);
+          return NextResponse.json({ success: false, message: err?.message || 'Failed to save gig' }, { status: response.status });
         }
       } catch (fetchError) {
         console.warn('❌ Backend save failed, using fallback:', fetchError);
@@ -147,18 +137,12 @@ export async function POST(request: NextRequest) {
       console.warn('❌ Backend connection failed, using fallback:', backendError);
     }
 
-    // Fallback to mock response
-    console.log('📦 Using fallback save response');
-    return NextResponse.json({
-      success: true,
-      message: 'Job saved successfully (demo mode)',
-      data: {
-        _id: `saved_${Date.now()}`,
-        jobId,
-        userId: 'demo_user',
-        savedAt: new Date().toISOString()
-      }
-    });
+    // Fallback to error to avoid implying save succeeded without backend
+    console.log('📦 Backend unavailable for save, returning error');
+    return NextResponse.json(
+      { success: false, message: 'Backend unavailable. Could not save job.' },
+      { status: 503 }
+    );
 
   } catch (error) {
     console.error('Error saving job:', error);

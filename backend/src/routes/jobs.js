@@ -1,7 +1,7 @@
 import express from 'express';
 import { body } from 'express-validator';
 import { protect, authorize } from '../middleware/auth.js';
-import { adminCreateJob, listJobs, getJobById, getBidsForJob, updateJob, deleteJob, getAdminStats, getBidCountForJob } from '../controllers/gmController.js';
+import { adminCreateJob, listJobs, getJobById, getBidsForJob, updateJob, deleteJob, getAdminStats, getBidCountForJob, toggleJobVisibility } from '../controllers/gmController.js';
 
 const router = express.Router();
 
@@ -15,18 +15,31 @@ router.post('/', protect, authorize('admin'), [
   body('title').isString().isLength({ min: 3, max: 120 }),
   body('category').isIn(['website development','graphic design','content writing','social media management','SEO','app development','game development']),
   body('description').isString().isLength({ min: 10, max: 5000 }),
-  body('requirements').optional().isArray()
+  body('requirements').optional().isArray(),
+  body('maxBids').optional({ nullable: true }).custom((value) => {
+    if (value === null) return true;
+    if (typeof value === 'number' && Number.isInteger(value) && value >= 1) return true;
+    throw new Error('maxBids must be null (unlimited) or a positive integer >= 1');
+  })
 ], adminCreateJob);
 
 router.put('/:jobId', protect, authorize('admin'), [
   body('title').optional().isString().isLength({ min: 3, max: 120 }),
   body('category').optional().isIn(['website development','graphic design','content writing','social media management','SEO','app development','game development']),
   body('description').optional().isString().isLength({ min: 10, max: 5000 }),
-  body('requirements').optional().isArray()
+  body('requirements').optional().isArray(),
+  body('maxBids').optional({ nullable: true }).custom((value) => {
+    if (value === null) return true;
+    if (typeof value === 'number' && Number.isInteger(value) && value >= 1) return true;
+    throw new Error('maxBids must be null (unlimited) or a positive integer >= 1');
+  })
 ], updateJob);
 
 router.delete('/:jobId', protect, authorize('admin'), deleteJob);
 router.get('/:jobId/bids', protect, authorize('admin'), getBidsForJob);
+router.patch('/:jobId/visibility', protect, authorize('admin'), [
+  body('isHidden').isBoolean().withMessage('isHidden must be a boolean value')
+], toggleJobVisibility);
 // Note: Admin stats route moved to /api/admin/stats (see routes/admin.js)
 
 export default router;

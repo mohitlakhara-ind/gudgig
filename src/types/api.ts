@@ -1,5 +1,21 @@
 // Simplified API Types for Gigs Mint
 
+export interface ContactDetails {
+  _id: string;
+  userId: string;
+  name: string;
+  email: string;
+  phone: string;
+  countryCode: string;
+  company?: string;
+  position?: string;
+  notes?: string;
+  isDefault: boolean;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface User {
   _id: string;
   name: string;
@@ -9,6 +25,12 @@ export interface User {
   lastLogin?: string | Date | null;
   isActive: boolean;
   deactivatedUntil?: string | Date | null;
+  phone?: string;
+  countryCode?: string;
+  location?: string;
+  bio?: string;
+  skills?: string[];
+  avatar?: string;
   createdAt: string;
 }
 
@@ -27,6 +49,10 @@ export interface Job {
   location?: string;
   type?: string;
   salary?: { min?: number; max?: number; currency?: string; period?: 'hourly' | 'project' };
+  /** Gig model aligned fields */
+  budget?: number;
+  experienceLevel?: 'any' | 'junior' | 'mid' | 'senior';
+  skills?: string[];
   /**
    * Optional explicit salary disclosure block used by UI helpers
    */
@@ -35,6 +61,8 @@ export interface Job {
   views?: number;
   applicationsCount?: number;
   bidsCount?: number;
+  maxBids?: number;
+  isHidden?: boolean;
 }
 
 // Gig is an alias for Job in this codebase
@@ -103,6 +131,10 @@ export interface Order {
   price: number;
   status: 'pending' | 'active' | 'delivered' | 'revision' | 'completed' | 'cancelled';
   requirements: Record<string, any>;
+  contactDetails?: {
+    bidderContact?: { name?: string; email?: string; phone?: string; countryCode?: string; company?: string; position?: string };
+    posterContact?: { name?: string; email?: string; phone?: string; countryCode?: string; company?: string; position?: string; alternateContact?: string };
+  };
   deliverables: Array<{
     url: string;
     name: string;
@@ -300,6 +332,7 @@ export interface CreateJobRequest {
   description: string;
   category: Job['category'];
   requirements?: string[];
+  maxBids?: number;
 }
 
 // Search/filter request parameters used by gigs hooks and API client
@@ -438,6 +471,31 @@ export interface ConversationsResponse extends ApiResponse<Conversation[]> {}
 export interface MessagesResponse extends ApiResponse<Message[]> {}
 
 // Requests
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface RegisterRequest {
+  name: string;
+  email: string;
+  password: string;
+  role?: 'freelancer' | 'admin';
+  phone?: string;
+  countryCode?: string;
+}
+
+export interface LoginResponse extends ApiResponse {
+  token: string;
+  refreshToken: string;
+  user: User;
+}
+
+export interface RegisterResponse extends ApiResponse {
+  token: string;
+  user: User;
+}
+
 export interface StartConversationRequest { participantId?: string; participantRole?: 'admin'; context?: { jobId?: string; bidId?: string } }
 export interface SendMessageRequest { content?: string; attachments?: Array<{ url: string; publicId?: string; name?: string; size?: number }> }
 export interface UpdateBidFeesRequest { fees: number[]; active?: number }

@@ -7,9 +7,10 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Heart, Search, MapPin, Clock, DollarSign, Building, Trash2, ExternalLink, Filter } from 'lucide-react';
+import { Heart, Search, MapPin, Clock, DollarSign, Building, Trash2, ExternalLink, Filter, MessageCircle, Eye } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { apiClient } from '@/lib/api';
+// savedJobsService bypasses the internal proxy and can miss auth; use apiClient here
 import toast from 'react-hot-toast';
 import Link from 'next/link';
 
@@ -18,13 +19,16 @@ interface SavedGig {
   title: string;
   company: string;
   location: string;
-  type: 'full-time' | 'part-time' | 'contract' | 'remote';
+  type: 'full-time' | 'part-time' | 'contract' | 'remote' | string;
   salary: string;
   postedDate: string;
   savedDate: string;
   description: string;
   tags: string[];
   urgent: boolean;
+  category?: string;
+  bidsCount?: number;
+  views?: number;
 }
 
 export default function SavedGigsPage() {
@@ -51,40 +55,46 @@ export default function SavedGigsPage() {
         });
         
         if (response.success && response.data) {
-          console.log('Raw saved jobs response:', response.data); // Debug log
           
-          // Transform saved jobs data to saved gigs format
+          // Transform saved gigs to UI format
           const savedGigs = response.data.map((savedJob: any) => {
-            console.log('Processing saved job:', savedJob); // Debug log
-            
-            // Handle different response structures
-            let jobObj = null;
+            // Handle different response structures (prefer gigId as per backend)
+            let gigObj: any = null;
             let gigId = '';
-            
-            if (savedJob.jobId && typeof savedJob.jobId === 'object') {
-              // jobId is populated
-              jobObj = savedJob.jobId;
-              gigId = jobObj._id;
+
+            if (savedJob.gigId && typeof savedJob.gigId === 'object') {
+              gigObj = savedJob.gigId;
+              gigId = gigObj._id;
+            } else if (typeof savedJob.gigId === 'string') {
+              gigId = savedJob.gigId;
+            } else if (savedJob.jobId && typeof savedJob.jobId === 'object') {
+              gigObj = savedJob.jobId;
+              gigId = gigObj._id;
             } else if (typeof savedJob.jobId === 'string') {
-              // jobId is just a string ID
               gigId = savedJob.jobId;
             } else {
-              // Fallback
               gigId = savedJob._id;
             }
-            
-            const title = jobObj?.title || 'Unknown Gig';
-            const company = 'Gigs Mint'; // Default company name
-            const location = jobObj?.location || 'Remote';
-            const type = jobObj?.category || 'contract';
-            const salary = jobObj?.budget ? `₹${jobObj.budget}` : 'Not specified';
-            const postedDate = jobObj?.createdAt || savedJob?.createdAt || new Date().toISOString();
+
+            const title = gigObj?.title || savedJob?.title || 'Untitled';
+            const company = (gigObj?.createdBy && (gigObj.createdBy.name || gigObj.createdBy.company)) || savedJob?.company || '';
+            const location = gigObj?.location || savedJob?.location || '';
+            const rawType = gigObj?.category || gigObj?.type || savedJob?.type || '';
+            const type = typeof rawType === 'string' ? rawType.toLowerCase() : '';
+            const budget = gigObj?.budget ?? gigObj?.minBudget ?? gigObj?.maxBudget;
+            const salary = typeof budget === 'number'
+              ? new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(budget)
+              : (savedJob?.salary || '');
+            const postedDate = gigObj?.createdAt || (savedJob as any)?.job?.createdAt || savedJob?.createdAt || '';
             const savedDate = savedJob?.savedAt || savedJob?.createdAt || new Date().toISOString();
-            const description = jobObj?.description || '';
-            const tags = jobObj?.requirements || jobObj?.skills || [];
-            const urgent = false; // We don't have urgent field in Job model
+            const description = gigObj?.description || '';
+            const tagsArr = (gigObj?.tags || gigObj?.skills || gigObj?.requirements || savedJob?.tags || []) as any[];
+            const tags = (Array.isArray(tagsArr) ? tagsArr : []).filter(Boolean).map(String).slice(0, 5);
+            const category = gigObj?.category;
+            const bidsCount = gigObj?.applicationsCount ?? (savedJob as any)?.applicationsCount ?? undefined;
+            const views = gigObj?.views ?? undefined;
+            const urgent = !!(gigObj?.urgent || savedJob?.urgent);
             
-            console.log('Transformed gig:', { title, company, location, type, salary }); // Debug log
             
             return {
               id: savedJob._id,
@@ -98,12 +108,14 @@ export default function SavedGigsPage() {
               savedDate,
               description,
               tags,
-              urgent
+              urgent,
+              category,
+              bidsCount,
+              views
             } as SavedGig & { gigId: string };
           });
           setSavedGigs(savedGigs);
         } else {
-          console.log('No saved jobs found or error:', response); // Debug log
           setSavedGigs([]);
         }
       } catch (error) {
@@ -238,7 +250,7 @@ export default function SavedGigsPage() {
               <Select value={filterType} onValueChange={setFilterType}>
                 <SelectTrigger className="w-[140px]">
                   <Filter className="h-4 w-4 mr-2" />
-                  <SelectValue />
+                  <SelectValue placeholder="All Types" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Types</SelectItem>
@@ -252,7 +264,7 @@ export default function SavedGigsPage() {
               <Select value={locationFilter} onValueChange={setLocationFilter}>
                 <SelectTrigger className="w-[140px]">
                   <MapPin className="h-4 w-4 mr-2" />
-                  <SelectValue />
+                  <SelectValue placeholder="All Locations" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Locations</SelectItem>
@@ -267,7 +279,7 @@ export default function SavedGigsPage() {
               </Select>
               <Select value={urgentFilter} onValueChange={setUrgentFilter}>
                 <SelectTrigger className="w-[140px]">
-                  <SelectValue />
+                  <SelectValue placeholder="All Jobs" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Jobs</SelectItem>
@@ -324,26 +336,37 @@ export default function SavedGigsPage() {
                       )}
                     </div>
                     <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
-                      <div className="flex items-center gap-1">
-                        <Building className="h-4 w-4" />
-                        {job.company}
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <MapPin className="h-4 w-4" />
-                        {job.location}
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <DollarSign className="h-4 w-4" />
-                        {job.salary}
-                      </div>
+                      {job.company && (
+                        <div className="flex items-center gap-1">
+                          <Building className="h-4 w-4" />
+                          {job.company}
+                        </div>
+                      )}
+                      {job.location && (
+                        <div className="flex items-center gap-1">
+                          <MapPin className="h-4 w-4" />
+                          {job.location}
+                        </div>
+                      )}
+                      {job.salary && (
+                        <div className="flex items-center gap-1">
+                          <DollarSign className="h-4 w-4" />
+                          {job.salary}
+                        </div>
+                      )}
                     </div>
                     <p className="text-muted-foreground mb-4 line-clamp-2">
                       {job.description}
                     </p>
                     <div className="flex items-center gap-2 mb-4">
-                      <Badge className={getJobTypeColor(job.type)}>
-                        {job.type.replace('-', ' ')}
-                      </Badge>
+                      {job.type && (
+                        <Badge className={getJobTypeColor(job.type)}>
+                          {job.type.replace('-', ' ')}
+                        </Badge>
+                      )}
+                      {job.category && (
+                        <Badge variant="outline">{job.category}</Badge>
+                      )}
                       {job.tags.map((tag) => (
                         <Badge key={tag} variant="secondary">
                           {tag}
@@ -359,6 +382,18 @@ export default function SavedGigsPage() {
                         <Heart className="h-3 w-3" />
                         Saved {formatDate(job.savedDate)}
                       </div>
+                      {typeof (job as any).bidsCount === 'number' && (
+                        <div className="flex items-center gap-1">
+                          <MessageCircle className="h-3 w-3" />
+                          {(job as any).bidsCount} bids
+                        </div>
+                      )}
+                      {typeof (job as any).views === 'number' && (
+                        <div className="flex items-center gap-1">
+                          <Eye className="h-3 w-3" />
+                          {(job as any).views} views
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div className="flex flex-col gap-2 ml-4">

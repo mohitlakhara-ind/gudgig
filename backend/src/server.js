@@ -9,7 +9,6 @@ import { Server } from 'socket.io';
 import dotenv from 'dotenv';
 import { v2 as cloudinary } from 'cloudinary';
 import notificationService from './services/notificationService.js';
-import chatNotificationService from './services/chatNotificationService.js';
 import automationService from './services/automationService.js';
 import * as Sentry from '@sentry/node';
 import logger from './utils/logger.js';
@@ -29,8 +28,6 @@ import adminBidFeesRoutes from './routes/admin-bid-fees.js';
 import adminSettingsRoutes from './routes/admin-settings.js';
 import adminBidsRoutes from './routes/admin-bids.js';
 import adminRoutes from './routes/admin.js';
-import chatRoutes from './routes/chat.js';
-import chatNotificationRoutes from './routes/chat-notifications.js';
 import serviceRoutes from './routes/services.js';
 import orderRoutes from './routes/orders.js';
 import reviewRoutes from './routes/reviews.js';
@@ -40,12 +37,13 @@ import applicationRoutes from './routes/applications.js';
 import appApiRoutes from './routes/app-api.js';
 import userRoutes from './routes/users.js';
 import savedJobsRoutes from './routes/saved-jobs.js';
-import jobAlertsRoutes from './routes/job-alerts.js';
+import savedGigsRoutes from './routes/saved-gigs.js';
 import paymentsRoutes from './routes/payments.js';
 import userGigsRoutes from './routes/user-gigs.js';
 import supportRoutes from './routes/support.js';
 import uploadsRoutes from './routes/uploads.js';
 import analyticsRoutes from './routes/analytics.js';
+import contactDetailsRoutes from './routes/contactDetails.js';
 import requestId from './middleware/requestId.js';
 
 // Load environment variables
@@ -256,8 +254,6 @@ app.use('/api/admin/bid-fees', adminBidFeesRoutes);
 app.use('/api/admin/settings', adminSettingsRoutes);
 app.use('/api/admin/bids', adminBidsRoutes);
 app.use('/api/admin', adminRoutes);
-app.use('/api/chat', chatRoutes);
-app.use('/api/chat-notifications', chatNotificationRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/reviews', reviewRoutes);
@@ -266,12 +262,13 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/applications', applicationRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/saved-jobs', savedJobsRoutes);
-app.use('/api/job-alerts', jobAlertsRoutes);
+app.use('/api/saved-gigs', savedGigsRoutes);
 app.use('/api/payments', paymentsRoutes);
 app.use('/api/user/gigs', userGigsRoutes);
 app.use('/api/support', supportRoutes);
 app.use('/api/uploads', uploadsRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/contact-details', contactDetailsRoutes);
 app.use('/app-api', appApiRoutes);
 
 // Cache debugging endpoints
@@ -416,8 +413,6 @@ try {
 // Make io accessible to our routes
 app.set('io', io);
 
-// Initialize chat notification service with Socket.io
-chatNotificationService.setSocketIO(io);
 
 // Notifications removed in simplified version
 

@@ -176,8 +176,10 @@ export default function NotificationsPage() {
 
   // Filter notifications based on search and filter
   const filteredNotifications = notifications.filter(notification => {
-    const matchesSearch = notification.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         notification.message.toLowerCase().includes(searchQuery.toLowerCase());
+    const title = (notification as any)?.title ? String((notification as any).title) : '';
+    const message = (notification as any)?.message ? String((notification as any).message) : '';
+    const matchesSearch = title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         message.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesFilter = filter === 'all' || 
                          (filter === 'unread' && !notification.isRead) ||
                          (filter === 'read' && notification.isRead);

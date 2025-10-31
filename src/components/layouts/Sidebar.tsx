@@ -150,12 +150,7 @@ export default function Sidebar({ isOpen, onToggle, isMobile = false }: SidebarP
               icon: FileText,
               description: 'Transaction history'
             },
-            {
-              name: 'Messages',
-              href: '/admin/chat',
-              icon: MessageSquare,
-              description: 'Admin chat'
-            },
+            // Chat removed
             {
               name: 'Settings',
               href: '/admin/settings',
@@ -190,10 +185,10 @@ export default function Sidebar({ isOpen, onToggle, isMobile = false }: SidebarP
         title: 'Overview',
         items: [
           {
-            name: 'Dashboard',
-            href: '/dashboard',
-            icon: Home,
-            description: 'Overview and stats'
+            name: 'My Orders',
+            href: '/orders',
+            icon: Briefcase,
+            description: 'Your orders'
           },
           {
             name: 'Browse Gigs',
@@ -209,23 +204,7 @@ export default function Sidebar({ isOpen, onToggle, isMobile = false }: SidebarP
           }
         ]
       },
-      {
-        title: 'Work',
-        items: [
-          {
-            name: 'My Bids',
-            href: '/bids',
-            icon: Briefcase,
-            description: 'Your applications'
-          },
-          {
-            name: 'Gig Alerts',
-            href: '/gig-alerts',
-            icon: Bell,
-            description: 'Job notifications'
-          }
-        ]
-      },
+      // Work section removed (Gig Alerts deprecated)
       {
         title: 'Activity',
         items: [
@@ -235,12 +214,7 @@ export default function Sidebar({ isOpen, onToggle, isMobile = false }: SidebarP
             icon: CreditCard,
             description: 'Payment history'
           },
-          {
-            name: 'Chat',
-            href: '/chat',
-            icon: MessageSquare,
-            description: 'Conversations'
-          },
+          // Chat removed
           {
             name: 'Notifications',
             href: '/notifications',
@@ -305,7 +279,7 @@ export default function Sidebar({ isOpen, onToggle, isMobile = false }: SidebarP
     if (href === '/notifications') return pathname === '/notifications' || pathname === '/dashboard/notifications';
     if (href === '/settings') return pathname === '/settings' || pathname === '/dashboard/settings';
     if (href === '/help') return pathname === '/help' || pathname === '/support';
-    if (href === '/bids') return pathname === '/bids' || pathname === '/dashboard/bids';
+    if (href === '/orders') return pathname === '/orders' || pathname === '/dashboard/orders';
     if (href === '/payments') return pathname === '/payments' || pathname === '/dashboard/payments';
     if (href === '/services') return pathname === '/services' || pathname === '/dashboard/services';
     if (href === '/gig-alerts') return pathname === '/gig-alerts' || pathname === '/dashboard/gig-alerts';

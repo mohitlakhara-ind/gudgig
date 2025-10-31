@@ -49,7 +49,7 @@ export function useGigsManager(options: UseGigsManagerOptions = {}): GigsManager
     error: null,
     pagination: {
       page: 1,
-      limit: 10,
+      limit: 12,
       total: 0,
       totalPages: 0
     },
@@ -106,7 +106,7 @@ export function useGigsManager(options: UseGigsManagerOptions = {}): GigsManager
           gigs: Array.isArray(cached.data.data) ? cached.data.data : cached.data.data || [],
           pagination: {
             page: cached.data.pagination?.page || 1,
-            limit: cached.data.pagination?.limit || 10,
+            limit: cached.data.pagination?.limit || 12,
             total: cached.data.total || 0,
             totalPages: cached.data.pagination?.totalPages || 1
           },
@@ -147,7 +147,7 @@ export function useGigsManager(options: UseGigsManagerOptions = {}): GigsManager
         gigs: gigsData,
         pagination: {
           page: response.pagination?.page || 1,
-          limit: response.pagination?.limit || 10,
+          limit: response.pagination?.limit || 12,
           total: response.total || gigsData.length,
           totalPages: response.pagination?.totalPages || 1
         },
@@ -290,21 +290,18 @@ export const getGigTypeColor = (type: string) => {
 };
 
 export const formatGigBudget = (job: Job) => {
+  if (typeof job.budget === 'number' && job.budget > 0) {
+    return `₹${job.budget.toLocaleString()}`;
+  }
   const budget = job.salary?.min || job.salaryDisclosure?.min;
   const budgetMax = job.salary?.max || job.salaryDisclosure?.max;
   const currency = job.salary?.currency || job.salaryDisclosure?.currency || 'USD';
   const period = job.salaryDisclosure?.period || job.salary?.period || 'project';
-
   const prefix = period === 'hourly' ? '/hr' : '';
-
-  if (budget && budgetMax) {
-    return `${currency}${budget.toLocaleString()} - ${currency}${budgetMax.toLocaleString()}${prefix}`;
-  } else if (budget) {
-    return `From ${currency}${budget.toLocaleString()}${prefix}`;
-  } else if (budgetMax) {
-    return `Up to ${currency}${budgetMax.toLocaleString()}${prefix}`;
-  }
-  return period === 'hourly' ? 'Hourly rate not disclosed' : 'Project budget not disclosed';
+  if (budget && budgetMax) return `${currency}${budget.toLocaleString()} - ${currency}${budgetMax.toLocaleString()}${prefix}`;
+  if (budget) return `From ${currency}${budget.toLocaleString()}${prefix}`;
+  if (budgetMax) return `Up to ${currency}${budgetMax.toLocaleString()}${prefix}`;
+  return 'Budget not specified';
 };
 
 export const getGigStatusColor = (status: string) => {

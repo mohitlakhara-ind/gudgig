@@ -55,10 +55,10 @@ export default function AppLayout({ children }: AppLayoutProps) {
     pathname.startsWith('/saved-gigs') ||
     pathname.startsWith('/bids') ||
     pathname.startsWith('/payments') ||
+    pathname.startsWith('/orders') ||
     pathname.startsWith('/help') ||
     pathname.startsWith('/support') ||
     pathname.startsWith('/chat') ||
-    pathname.startsWith('/gig-alerts') ||
     pathname.startsWith('/services') ||
     pathname.startsWith('/admin');
 

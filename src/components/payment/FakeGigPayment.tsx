@@ -23,9 +23,15 @@ interface FakeGigPaymentProps {
   amount: number;
   currency?: string;
   description?: string;
-  onSuccess: (paymentId: string, orderId: string) => void;
+  onSuccess: (paymentId: string, orderId: string, contactDetails?: any) => void;
   onError: (error: string) => void;
   disabled?: boolean;
+  gigContactDetails?: {
+    email: string;
+    phone: string;
+    name: string;
+    alternateContact?: string;
+  };
 }
 
 interface PaymentMethod {
@@ -75,12 +81,27 @@ export default function FakeGigPayment({
   description,
   onSuccess,
   onError,
-  disabled = false
+  disabled = false,
+  gigContactDetails
 }: FakeGigPaymentProps) {
   const [loading, setLoading] = useState(false);
   const [selectedMethod, setSelectedMethod] = useState<string>('');
   const [processing, setProcessing] = useState(false);
   const [paymentStep, setPaymentStep] = useState<'method' | 'processing' | 'success' | 'error'>('method');
+  const [contactDetails, setContactDetails] = useState({
+    bidderContact: {
+      email: '',
+      phone: '',
+      name: ''
+    },
+    posterContact: gigContactDetails || {
+      email: '',
+      phone: '',
+      name: '',
+      alternateContact: ''
+    }
+  });
+  const [showContactForm, setShowContactForm] = useState(false);
 
   const formatAmount = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
@@ -115,8 +136,8 @@ export default function FakeGigPayment({
     try {
       await new Promise(resolve => setTimeout(resolve, delay));
 
-      // Simulate 95% success rate for fake payments
-      const success = Math.random() > 0.05;
+      // Simulate success for demo; adjust failure rate as needed
+      const success = true;
       
       if (success) {
         const paymentId = generateFakePaymentId();
@@ -127,7 +148,7 @@ export default function FakeGigPayment({
         
         // Call success callback after a short delay
         setTimeout(() => {
-          onSuccess(paymentId, orderId);
+          onSuccess(paymentId, orderId, contactDetails);
         }, 1000);
       } else {
         setPaymentStep('error');
@@ -146,6 +167,12 @@ export default function FakeGigPayment({
   const handlePayment = async () => {
     if (!selectedMethod) {
       toast.error('Please select a payment method');
+      return;
+    }
+
+    // Validate contact details
+    if (!contactDetails.bidderContact.name || !contactDetails.bidderContact.email || !contactDetails.bidderContact.phone) {
+      toast.error('Please fill in all contact details');
       return;
     }
 
@@ -268,6 +295,58 @@ export default function FakeGigPayment({
           {description && (
             <p className="text-xs text-gray-500 mt-1">{description}</p>
           )}
+        </div>
+
+        {/* Contact Details Form */}
+        <div className="space-y-4 border-t pt-4">
+          <h3 className="font-medium text-sm text-muted-foreground">Your Contact Details</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Your Name *</label>
+              <input
+                type="text"
+                value={contactDetails.bidderContact.name}
+                onChange={(e) => setContactDetails(prev => ({
+                  ...prev,
+                  bidderContact: { ...prev.bidderContact, name: e.target.value }
+                }))}
+                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                placeholder="Your full name"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Your Email *</label>
+              <input
+                type="email"
+                value={contactDetails.bidderContact.email}
+                onChange={(e) => setContactDetails(prev => ({
+                  ...prev,
+                  bidderContact: { ...prev.bidderContact, email: e.target.value }
+                }))}
+                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                placeholder="your.email@example.com"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Your Phone *</label>
+              <input
+                type="tel"
+                value={contactDetails.bidderContact.phone}
+                onChange={(e) => setContactDetails(prev => ({
+                  ...prev,
+                  bidderContact: { ...prev.bidderContact, phone: e.target.value }
+                }))}
+                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                placeholder="+91 9876543210"
+                required
+              />
+            </div>
+          </div>
+          <div className="text-xs text-gray-500">
+            These details will be shared with the gig poster after successful payment.
+          </div>
         </div>
 
         {/* Payment Methods */}

@@ -80,7 +80,7 @@ class SavedJobsService {
       if (params?.page) queryParams.set('page', String(params.page));
 
       const query = queryParams.toString();
-      const url = `${this.baseUrl}/saved-jobs${query ? `?${query}` : ''}`;
+      const url = `${this.baseUrl}/saved-gigs${query ? `?${query}` : ''}`;
 
       const response = await fetch(url, {
         method: 'GET',
@@ -120,7 +120,7 @@ class SavedJobsService {
   // Get saved job by ID
   async getSavedJobById(id: string): Promise<SavedJobResponse> {
     try {
-      const response = await fetch(`${this.baseUrl}/saved-jobs/${id}`, {
+      const response = await fetch(`${this.baseUrl}/saved-gigs/${id}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -147,7 +147,7 @@ class SavedJobsService {
   // Save a job
   async saveJob(jobId: string): Promise<{ success: boolean; message: string }> {
     try {
-      const response = await fetch(`${this.baseUrl}/saved-jobs`, {
+      const response = await fetch(`${this.baseUrl}/saved-gigs`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -174,7 +174,7 @@ class SavedJobsService {
   // Remove a saved job
   async removeSavedJob(jobId: string): Promise<{ success: boolean; message: string }> {
     try {
-      const response = await fetch(`${this.baseUrl}/saved-jobs/${jobId}`, {
+      const response = await fetch(`${this.baseUrl}/saved-gigs/${jobId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -200,7 +200,7 @@ class SavedJobsService {
   // Check if job is saved
   async isJobSaved(jobId: string): Promise<boolean> {
     try {
-      const response = await fetch(`${this.baseUrl}/saved-jobs/check/${jobId}`, {
+      const response = await fetch(`${this.baseUrl}/saved-gigs/check/${jobId}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -223,7 +223,7 @@ class SavedJobsService {
   // Get saved jobs count
   async getSavedJobsCount(): Promise<number> {
     try {
-      const response = await fetch(`${this.baseUrl}/saved-jobs/count`, {
+      const response = await fetch(`${this.baseUrl}/saved-gigs/count`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -246,7 +246,7 @@ class SavedJobsService {
   // Bulk operations
   async bulkSaveJobs(jobIds: string[]): Promise<{ success: boolean; message: string; saved: number }> {
     try {
-      const response = await fetch(`${this.baseUrl}/saved-jobs/bulk-save`, {
+      const response = await fetch(`${this.baseUrl}/saved-gigs/bulk-save`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -273,7 +273,7 @@ class SavedJobsService {
 
   async bulkRemoveJobs(jobIds: string[]): Promise<{ success: boolean; message: string; removed: number }> {
     try {
-      const response = await fetch(`${this.baseUrl}/saved-jobs/bulk-remove`, {
+      const response = await fetch(`${this.baseUrl}/saved-gigs/bulk-remove`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
