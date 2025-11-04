@@ -25,6 +25,11 @@ class BidService {
 
   private loadBidsFromStorage() {
     try {
+      if (typeof window === 'undefined') {
+        // Avoid touching localStorage on the server during build/SSR
+        this.bids = [];
+        return;
+      }
       const stored = localStorage.getItem('demo_bids');
       if (stored) {
         this.bids = JSON.parse(stored);
@@ -39,6 +44,7 @@ class BidService {
 
   private saveBidsToStorage() {
     try {
+      if (typeof window === 'undefined') return;
       localStorage.setItem('demo_bids', JSON.stringify(this.bids));
     } catch (error) {
       console.warn('Failed to save bids to storage:', error);

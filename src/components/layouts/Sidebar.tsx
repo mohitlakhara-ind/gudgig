@@ -102,7 +102,7 @@ export default function Sidebar({ isOpen, onToggle, isMobile = false }: SidebarP
 
   // Navigation items based on user role and current page
   const getNavigationItems = () => {
-    // If on admin pages, show admin navigation
+    // If on admin pages, show only admin navigation
     if (isAdminPage && isAdmin) {
       return [
         {
@@ -173,6 +173,23 @@ export default function Sidebar({ isOpen, onToggle, isMobile = false }: SidebarP
               href: '/admin/payment-settings',
               icon: CreditCard,
               description: 'Configure payments'
+            }
+          ]
+        }
+      ];
+    }
+
+    // If on admin pages but user is not admin, hide sidebar navigation (or provide safe fallback)
+    if (isAdminPage && !isAdmin) {
+      return [
+        {
+          title: 'Account',
+          items: [
+            {
+              name: 'Back to Dashboard',
+              href: '/dashboard',
+              icon: Home,
+              description: 'Return to your dashboard'
             }
           ]
         }

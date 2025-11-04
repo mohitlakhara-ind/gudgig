@@ -142,7 +142,7 @@ The Gigs Mint Team`);
 
           <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
             <div className="flex items-center gap-2">
-              <Crown className="h-4 w-4 text-yellow-500" />
+              <Crown className="h-4 w-4 text-warning" />
               <span className="text-sm font-medium">Include Administrators</span>
             </div>
             <Switch
@@ -187,21 +187,21 @@ The Gigs Mint Team`);
           <CardContent className="space-y-4">
             {/* Summary Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="text-center p-3 bg-green-50 rounded-lg">
-                <div className="text-2xl font-bold text-green-600">{successCount}</div>
-                <div className="text-xs text-green-600">Successful</div>
+              <div className="text-center p-3 bg-success/10 rounded-lg">
+                <div className="text-2xl font-bold text-success">{successCount}</div>
+                <div className="text-xs text-success">Successful</div>
               </div>
-              <div className="text-center p-3 bg-red-50 rounded-lg">
-                <div className="text-2xl font-bold text-red-600">{failureCount}</div>
-                <div className="text-xs text-red-600">Failed</div>
+              <div className="text-center p-3 bg-error/10 rounded-lg">
+                <div className="text-2xl font-bold text-error">{failureCount}</div>
+                <div className="text-xs text-error">Failed</div>
               </div>
-              <div className="text-center p-3 bg-blue-50 rounded-lg">
-                <div className="text-2xl font-bold text-blue-600">{userCount}</div>
-                <div className="text-xs text-blue-600">Users</div>
+              <div className="text-center p-3 bg-primary/10 rounded-lg">
+                <div className="text-2xl font-bold text-primary">{userCount}</div>
+                <div className="text-xs text-primary">Users</div>
               </div>
-              <div className="text-center p-3 bg-yellow-50 rounded-lg">
-                <div className="text-2xl font-bold text-yellow-600">{adminCount}</div>
-                <div className="text-xs text-yellow-600">Admins</div>
+              <div className="text-center p-3 bg-warning/10 rounded-lg">
+                <div className="text-2xl font-bold text-warning">{adminCount}</div>
+                <div className="text-xs text-warning">Admins</div>
               </div>
             </div>
 
@@ -212,15 +212,15 @@ The Gigs Mint Team`);
                   key={index}
                   className={`flex items-center justify-between p-3 rounded-lg border ${
                     result.status === 'success' 
-                      ? 'bg-green-50 border-green-200' 
-                      : 'bg-red-50 border-red-200'
+                      ? 'bg-success/10 border-success/20' 
+                      : 'bg-error/10 border-error/20'
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     {result.status === 'success' ? (
-                      <CheckCircle className="h-4 w-4 text-green-600" />
+                      <CheckCircle className="h-4 w-4 text-success" />
                     ) : (
-                      <XCircle className="h-4 w-4 text-red-600" />
+                      <XCircle className="h-4 w-4 text-error" />
                     )}
                     <div>
                       <div className="font-medium">{result.name}</div>
@@ -230,7 +230,7 @@ The Gigs Mint Team`);
                   <div className="flex items-center gap-2">
                     <Badge 
                       variant="outline" 
-                      className={result.role === 'admin' ? 'text-yellow-600' : 'text-blue-600'}
+                      className={result.role === 'admin' ? 'text-warning' : 'text-primary'}
                     >
                       {result.role === 'admin' ? (
                         <Crown className="h-3 w-3 mr-1" />

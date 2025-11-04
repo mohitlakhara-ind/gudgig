@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { apiClient } from '@/lib/api';
 import toast from 'react-hot-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 export interface ContactDetails {
   _id: string;
@@ -42,9 +43,17 @@ export const ContactDetailsProvider: React.FC<ContactDetailsProviderProps> = ({ 
   const [contactDetails, setContactDetails] = useState<ContactDetails[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { isAuthenticated } = useAuth();
 
   const fetchContactDetails = async () => {
     try {
+      // Skip fetch when unauthenticated to avoid 401 noise on guest pages
+      const hasToken = typeof window !== 'undefined' && !!localStorage.getItem('token');
+      if (!isAuthenticated && !hasToken) {
+        setContactDetails([]);
+        setError(null);
+        return;
+      }
       setLoading(true);
       setError(null);
       const response = await apiClient.getContactDetails();
@@ -180,7 +189,7 @@ export const ContactDetailsProvider: React.FC<ContactDetailsProviderProps> = ({ 
 
   useEffect(() => {
     fetchContactDetails();
-  }, []);
+  }, [isAuthenticated]);
 
   const value: ContactDetailsContextType = {
     contactDetails,

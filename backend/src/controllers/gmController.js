@@ -115,23 +115,31 @@ export const listJobs = async (req, res, next) => {
     ]);
     const gigIdToCount = new Map(bidCountsAgg.map(r => [String(r._id), r.count]));
 
-    const data = jobs.map(j => ({
-      _id: j._id,
-      title: j.title,
-      description: j.description,
-      requirements: j.requirements,
-      createdAt: j.createdAt,
-      category: j.category,
-      budget: j.budget,
-      location: j.location,
-      experienceLevel: j.experienceLevel,
-      skills: j.skills,
-      status: j.status,
-      views: j.views,
-      tags: j.tags,
-      applicationsCount: j.applicationsCount,
-      bidsCount: gigIdToCount.get(String(j._id)) || 0
-    }));
+    const data = jobs.map(j => {
+      const fullDesc = String(j.description || '');
+      const shortDesc = fullDesc.length > 160 ? `${fullDesc.slice(0, 160)}…` : fullDesc;
+      return {
+        _id: j._id,
+        title: j.title,
+        // Backward compatibility
+        description: shortDesc,
+        // New fields
+        descriptionShort: shortDesc,
+        descriptionFull: fullDesc,
+        requirements: j.requirements,
+        createdAt: j.createdAt,
+        category: j.category,
+        budget: j.budget,
+        location: j.location,
+        experienceLevel: j.experienceLevel,
+        skills: j.skills,
+        status: j.status,
+        views: j.views,
+        tags: j.tags,
+        applicationsCount: j.applicationsCount,
+        bidsCount: gigIdToCount.get(String(j._id)) || 0
+      };
+    });
 
     return res.status(200).json({
       success: true,
@@ -398,7 +406,7 @@ export const getBidContacts = async (req, res, next) => {
 // Public/Admin: Get bid count for a job (counts succeeded payments as valid bids)
 export const getBidCountForJob = async (req, res, next) => {
   try {
-    const { gigId } = req.params;
+    const gigId = req.params.gigId || req.params.jobId || req.params.id;
     const gig = await Gig.findById(gigId).select('_id');
     if (!gig) return res.status(404).json({ success: false, message: 'Gig not found' });
     const count = await Bid.countDocuments({ gigId, paymentStatus: 'succeeded' });
@@ -422,7 +430,41 @@ export const getJobById = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Job not found' });
     }
     
-    return res.status(200).json({ success: true, data: gig });
+    // Determine access to full details: admin or user with a succeeded bid for this gig
+    let hasUnlockedAccess = false;
+    try {
+      if (req.user && req.user.role === 'admin') {
+        hasUnlockedAccess = true;
+      } else if (req.user) {
+        const succeededBid = await Bid.findOne({ gigId: gig._id, userId: req.user._id, paymentStatus: 'succeeded' }).select('_id');
+        hasUnlockedAccess = !!succeededBid;
+      }
+    } catch (_) {
+      // Non-blocking: default to locked if any error
+      hasUnlockedAccess = false;
+    }
+
+    // Shape response to hide sensitive details when locked
+    const response = gig.toObject();
+    const fullDesc = String(response.description || '');
+    const shortDesc = fullDesc.length > 160 ? `${fullDesc.slice(0, 160)}…` : fullDesc;
+    if (!hasUnlockedAccess) {
+      // Provide short only when locked
+      response.descriptionShort = shortDesc;
+      response.descriptionHidden = true;
+      // For backward compatibility, set description to short for locked state
+      response.description = shortDesc;
+      // Do not include explicit full field when locked
+      delete response.descriptionFull;
+    } else {
+      response.descriptionHidden = false;
+      response.descriptionFull = fullDesc;
+      response.descriptionShort = shortDesc;
+      // Keep description as full for backward compatibility
+      response.description = fullDesc;
+    }
+
+    return res.status(200).json({ success: true, data: response });
   } catch (err) {
     next(err);
   }

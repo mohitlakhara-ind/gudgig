@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import FakeGigPayment from '@/components/payment/FakeGigPayment';
+import RazorpayPayment from '@/components/payment/RazorpayPayment';
 import ContactDetailsCard from './ContactDetailsCard';
 import { 
   Search, 
@@ -35,7 +36,8 @@ import {
   ArrowLeft,
   CreditCard,
   Mail,
-  Phone
+  Phone,
+  Lock
 } from 'lucide-react';
 import { useGigs } from '@/contexts/GigsContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -83,6 +85,11 @@ export default function EnhancedGigsListing() {
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [appliedGigIds, setAppliedGigIds] = useState<Set<string>>(new Set());
   const loadMoreRef = useRef<HTMLDivElement>(null);
+  const [creatingOrder, setCreatingOrder] = useState(false);
+  const [rzpOrderId, setRzpOrderId] = useState<string | null>(null);
+  const [rzpKeyId, setRzpKeyId] = useState<string | undefined>(undefined);
+  const [payerEmail, setPayerEmail] = useState<string>('');
+  const [payerContact, setPayerContact] = useState<string>('');
 
   // Debounced search
   useEffect(() => {
@@ -222,14 +229,21 @@ export default function EnhancedGigsListing() {
       }
 
       // Submit bid after successful payment (uses gigs bidding flow)
-      const res = await apiClient.createGigBid(paymentGig.id, {
-        quotation: 0,
-        proposal: 'Order placed',
-        bidFeePaid: 10,
-        contactDetails: { bidderContact }
-      });
-      if (!res?.success) {
-        throw new Error(res?.message || 'Order creation failed');
+      try {
+        const res = await apiClient.createGigBid(paymentGig.id, {
+          quotation: 0,
+          proposal: 'Order placed',
+          bidFeePaid: 10,
+          contactDetails: { bidderContact }
+        });
+        if (!res?.success) {
+          throw new Error(res?.message || 'Order creation failed');
+        }
+      } catch (e: any) {
+        const msg = e?.message || '';
+        if (!/already placed a bid/i.test(msg)) {
+          throw e;
+        }
       }
 
       // Send email notification
@@ -251,7 +265,7 @@ export default function EnhancedGigsListing() {
         console.warn('Email notification failed:', emailError);
       }
 
-      toast.success('Order created successfully! Contact details unlocked.');
+      toast.success('Access unlocked. Contact details will be shown.');
       setShowPayment(false);
       setPaymentGig(null);
       
@@ -277,6 +291,54 @@ export default function EnhancedGigsListing() {
     toast.error(error);
     setShowPayment(false);
     setPaymentGig(null);
+  };
+
+  const verifyAndSubmitAfterRzp = async (paymentId: string, signature: string) => {
+    try {
+      if (!rzpOrderId) return;
+      const base = (process.env.NEXT_PUBLIC_BACKEND_URL || '').replace(/\/$/, '');
+      const resp = await fetch(`${base}/api/payment/verify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ order_id: rzpOrderId, payment_id: paymentId, signature })
+      });
+      const data = await resp.json();
+      if (!data?.success) throw new Error(data?.message || 'Verification failed');
+      await handlePaymentSuccess(paymentId, rzpOrderId);
+    } catch (e: any) {
+      console.error('Verification failed:', e);
+      toast.error(e?.message || 'Payment verification failed');
+    }
+  };
+
+  const startRazorpayCheckout = async () => {
+    try {
+      const def = typeof getDefaultContactDetails === 'function' ? getDefaultContactDetails() : null;
+      const email = def?.email || user?.email || '';
+      const contact = def?.phone || (user as any)?.phone || '';
+      if (!email || !contact) {
+        toast.error('Please add your contact details (email, phone) in your profile before paying.');
+        return;
+      }
+      setPayerEmail(email);
+      setPayerContact(contact);
+
+      setCreatingOrder(true);
+      const base = (process.env.NEXT_PUBLIC_BACKEND_URL || '').replace(/\/$/, '');
+      const resp = await fetch(`${base}/api/payment/order`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: 1000, gigId: paymentGig?.id, description: `Order fee for gig: ${paymentGig?.title}`, email, contact })
+      });
+      const data = await resp.json();
+      if (!data?.success) throw new Error(data?.message || 'Failed to create order');
+      setRzpOrderId(data.order.id);
+      setRzpKeyId(data.keyId);
+    } catch (e: any) {
+      toast.error(e?.message || 'Failed to start payment');
+    } finally {
+      setCreatingOrder(false);
+    }
   };
 
   const handleGuestOrderPrompt = () => {
@@ -374,19 +436,23 @@ export default function EnhancedGigsListing() {
                     </p>
                   </div>
 
-                  {/* Payment Component */}
-                  <div className="flex justify-center">
-                      <FakeGigPayment
-                      gigId={paymentGig.id}
-                      gigTitle={paymentGig.title}
-                      amount={10}
-                      currency="INR"
+                  {/* Razorpay Payment */}
+                  {!rzpOrderId ? (
+                    <Button onClick={startRazorpayCheckout} disabled={creatingOrder} className="w-full h-11">
+                      {creatingOrder ? 'Preparing…' : 'Proceed to secure payment'}
+                    </Button>
+                  ) : (
+                    <RazorpayPayment
+                      amount={1000}
                       description={`Order fee for gig: ${paymentGig.title}`}
-                      onSuccess={handlePaymentSuccess}
+                      orderId={rzpOrderId}
+                      keyId={rzpKeyId}
+                      prefillEmail={payerEmail}
+                      prefillContact={payerContact}
+                      onSuccess={verifyAndSubmitAfterRzp}
                       onError={handlePaymentError}
-                      disabled={paymentLoading}
                     />
-                  </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -685,7 +751,7 @@ export default function EnhancedGigsListing() {
 
                           {/* Description */}
                           <p className={`text-muted-foreground text-sm leading-relaxed ${state.viewMode === 'list' ? 'line-clamp-1' : 'line-clamp-2'} mb-3`}>
-                            {gig.description}
+                            {(gig as any).descriptionShort || gig.description}
                           </p>
                     </div>
 
@@ -733,70 +799,34 @@ export default function EnhancedGigsListing() {
                           </div>
 
                             {/* Stats */}
-                              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                            <div className="flex items-center gap-4 text-sm text-muted-foreground">
                               <div className="flex items-center gap-1">
                                 <Users className="h-4 w-4" />
-                                  <span>{(gig as any).bidsCount || 0} bids</span>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <Eye className="h-4 w-4" />
-                                <span>{gig.views || 0} views</span>
+                                <span>{(gig as any).bidsCount || 0} bids</span>
                               </div>
                             </div>
                           </div>
 
                           {/* Action Buttons */}
                           <div className="flex items-center gap-2">
-                            {user ? (
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button 
-                                    className="h-9 px-4 font-medium bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-white shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 border border-primary/20"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handlePlaceOrder(gig._id);
-                                    }}
-                                    disabled={orderingGigId === gig._id}
-                                    aria-label="Place an order for this gig"
-                                  >
-                                    {orderingGigId === gig._id ? (
-                                      <>
-                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                        Opening...
-                                      </>
-                                    ) : (
-                                      <>
-                                        <MessageCircle className="h-4 w-4 mr-2" />
-                                        Place Order
-                                      </>
-                                    )}
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent side="top">
-                                  <p>{orderingGigId === gig._id ? 'Opening order form...' : 'Place an order for this gig'}</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            ) : (
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button 
-                                    className="h-9 px-4 font-medium bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-white shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 active:scale-95"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleGuestOrderPrompt();
-                                    }}
-                                    aria-label="Login to place a bid"
-                                  >
-                                    <MessageCircle className="h-4 w-4 mr-2" />
-                                    Login to Order
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent side="top">
-                                  <p>Login to place an order</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            )}
-                            
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button 
+                                  className="h-10 px-4 font-medium bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-white shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 active:scale-95"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleViewGig(gig._id);
+                                  }}
+                                  aria-label="View contact details"
+                                >
+                                  <Lock className="h-4 w-4 mr-2" />
+                                  Unlock more details
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent side="top">
+                                <p>Open gig to view contact details</p>
+                              </TooltipContent>
+                            </Tooltip>
                           </div>
                         </div>
                       ) : (
@@ -862,73 +892,30 @@ export default function EnhancedGigsListing() {
                               </div>
                             </div>
                             
-                            <div className="flex items-center gap-2">
-                              <div className="p-1.5 bg-orange-50 rounded-md">
-                                <Eye className="h-3.5 w-3.5 text-orange-600" />
-                              </div>
-                              <div className="min-w-0">
-                                <div className="font-medium text-foreground truncate">
-                                  {gig.views || 0}
-                                </div>
-                                <div className="text-xs text-muted-foreground">Views</div>
-                              </div>
-                            </div>
+                            {/* Removed views */}
                           </div>
 
                           {/* Action Buttons */}
                           <div className="flex gap-2 pt-2">
-                          {user ? (
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                            <Button 
-                                    className="flex-1 h-10 font-medium bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-white shadow-md hover:shadow-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 border border-primary/20"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handlePlaceOrder(gig._id);
-                                    }}
-                                    disabled={orderingGigId === gig._id}
-                                    aria-label="Place an order for this gig"
-                                  >
-                                    {orderingGigId === gig._id ? (
-                                      <>
-                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                        Opening...
-                                      </>
-                                    ) : (
-                                      <>
-                              <MessageCircle className="h-4 w-4 mr-2" />
-                                        Place Order
-                              <ArrowRight className="h-4 w-4 ml-2" />
-                                      </>
-                                    )}
-                            </Button>
-                                </TooltipTrigger>
-                                <TooltipContent side="top">
-                                  <p>{orderingGigId === gig._id ? 'Opening order form...' : 'Place an order for this gig'}</p>
-                                </TooltipContent>
-                              </Tooltip>
-                          ) : (
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                            <Button 
-                                    className="flex-1 h-10 font-medium bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-white shadow-md hover:shadow-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleGuestOrderPrompt();
-                                    }}
-                                    aria-label="Login to place a bid"
-                            >
-                              <MessageCircle className="h-4 w-4 mr-2" />
-                                    Login to Order
-                              <ArrowRight className="h-4 w-4 ml-2" />
-                            </Button>
-                                </TooltipTrigger>
-                                <TooltipContent side="top">
-                                  <p>Login to place an order</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            )}
-                            
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button 
+                                  className="flex-1 h-10 font-medium bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-white shadow-md hover:shadow-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleViewGig(gig._id);
+                                  }}
+                                  aria-label="View contact details"
+                                >
+                                  <Lock className="h-4 w-4 mr-2" />
+                                  Unlock more details
+                                  <ArrowRight className="h-4 w-4 ml-2" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent side="top">
+                                <p>Open gig to view contact details</p>
+                              </TooltipContent>
+                            </Tooltip>
                         </div>
                         </>
                       )}

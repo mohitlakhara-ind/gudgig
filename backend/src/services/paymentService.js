@@ -1,4 +1,5 @@
 import Stripe from 'stripe';
+import crypto from 'crypto';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -381,3 +382,32 @@ export const createSellerPayout = async (sellerId, amount, currency = 'USD', pay
 
 // Legacy functions for backward compatibility
 export const createPaymentIntent = createEscrowPayment;
+
+// Razorpay compatibility helpers expected by routes
+export const getRazorpayClient = () => {
+  return razorpay;
+};
+
+export const createOrder = async (amount, currency = 'INR', receipt = '', notes = {}) => {
+  if (!razorpay) {
+    throw new Error('Razorpay not configured');
+  }
+
+  const order = await razorpay.orders.create({
+    amount,
+    currency,
+    receipt,
+    notes,
+  });
+
+  return order;
+};
+
+export const verifySignature = ({ orderId, paymentId, signature }) => {
+  if (!process.env.RAZORPAY_KEY_SECRET) return false;
+  const hmac = crypto
+    .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+    .update(`${orderId}|${paymentId}`)
+    .digest('hex');
+  return hmac === signature;
+};

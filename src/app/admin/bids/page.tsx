@@ -112,13 +112,13 @@ export default function AdminBidsPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'accepted':
-        return 'bg-green-500/10 text-green-600 border-green-500/20';
+        return 'bg-success/10 text-success border-success/20';
       case 'rejected':
-        return 'bg-red-500/10 text-red-600 border-red-500/20';
+        return 'bg-error/10 text-error border-error/20';
       case 'withdrawn':
         return 'bg-gray-500/10 text-gray-600 border-gray-500/20';
       default:
-        return 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20';
+        return 'bg-warning/10 text-warning border-warning/20';
     }
   };
 
@@ -228,11 +228,11 @@ export default function AdminBidsPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Pending Review</p>
-                    <p className="text-2xl font-bold text-yellow-600">
+                  <p className="text-2xl font-bold text-warning">
                       {bids.filter(bid => bid.status === 'pending').length}
                     </p>
                   </div>
-                  <Clock className="h-8 w-8 text-yellow-600" />
+                  <Clock className="h-8 w-8 text-warning" />
                 </div>
               </CardContent>
             </Card>
@@ -242,11 +242,11 @@ export default function AdminBidsPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Accepted</p>
-                    <p className="text-2xl font-bold text-green-600">
+                    <p className="text-2xl font-bold text-success">
                       {bids.filter(bid => bid.status === 'accepted').length}
                     </p>
                   </div>
-                  <CheckCircle className="h-8 w-8 text-green-600" />
+                  <CheckCircle className="h-8 w-8 text-success" />
                 </div>
               </CardContent>
             </Card>

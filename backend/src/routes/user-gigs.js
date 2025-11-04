@@ -14,16 +14,16 @@ router.get('/applied', async (req, res) => {
     const userId = req.user._id;
     const bids = await Bid.find({ userId })
       .sort({ createdAt: -1 })
-      .populate('jobId', 'title company category createdAt');
+      .populate('gigId', 'title category createdAt');
     const data = bids.map(b => ({
       _id: b._id,
-      jobId: b.jobId && typeof b.jobId === 'object' ? b.jobId._id : b.jobId,
+      jobId: b.gigId && typeof b.gigId === 'object' ? b.gigId._id : b.gigId,
       quotation: b.quotation,
       proposal: b.proposal,
       bidFeePaid: b.bidFeePaid,
       paymentStatus: b.paymentStatus,
       createdAt: b.createdAt,
-      job: b.jobId && typeof b.jobId === 'object' ? { _id: b.jobId._id, title: b.jobId.title, company: b.jobId.company, category: b.jobId.category, createdAt: b.jobId.createdAt } : null,
+      job: b.gigId && typeof b.gigId === 'object' ? { _id: b.gigId._id, title: b.gigId.title, category: b.gigId.category, createdAt: b.gigId.createdAt } : null,
     }));
     res.status(200).json({ success: true, data });
   } catch (e) {

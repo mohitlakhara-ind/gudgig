@@ -199,12 +199,12 @@ export default function PaymentSettingsPage() {
                     />
                   </div>
                 </div>
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
                   <div className="flex items-start gap-2">
-                    <AlertCircle className="h-5 w-5 text-blue-600 mt-0.5" />
+                    <AlertCircle className="h-5 w-5 text-primary mt-0.5" />
                     <div className="text-sm">
-                      <p className="font-medium text-blue-800 mb-1">Security Note</p>
-                      <p className="text-blue-700">
+                      <p className="font-medium text-primary mb-1">Security Note</p>
+                      <p className="text-primary">
                         Your Razorpay secret key is encrypted and stored securely. 
                         Never share these credentials with unauthorized personnel.
                       </p>

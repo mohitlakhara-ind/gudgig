@@ -33,13 +33,13 @@ export default function AdminJobBidsPage() {
   return (
     <div className="space-y-4">
       <h1 className="text-xl font-semibold">Bids for Job #{jobId}</h1>
-      {error && <div className="text-sm text-red-600">{error}</div>}
+      {error && <div className="text-sm text-error">{error}</div>}
       {loading ? (
         <div className="text-sm">Loading...</div>
       ) : (
         <div className="overflow-auto rounded border scrollbar-thin">
           <table className="min-w-full text-sm">
-            <thead className="bg-gray-50">
+            <thead className="bg-muted">
               <tr>
                 <th className="p-2 text-left">Freelancer</th>
                 <th className="p-2 text-left">Quotation</th>
@@ -51,7 +51,7 @@ export default function AdminJobBidsPage() {
             </thead>
             <tbody>
               {bids.length === 0 && (
-                <tr><td colSpan={6} className="p-4 text-center text-gray-500">No bids yet</td></tr>
+                <tr><td colSpan={6} className="p-4 text-center text-muted-foreground">No bids yet</td></tr>
               )}
               {bids.map((b: any, idx: number) => (
                 <tr
@@ -70,13 +70,12 @@ export default function AdminJobBidsPage() {
                   <td className="p-2">{b.quotation ? `₹${b.quotation}` : '-'}</td>
                   <td className="p-2">{b.bidFeePaid ? `₹${b.bidFeePaid}` : '₹0'}</td>
                   <td className="p-2">
-                    <span className={`px-2 py-0.5 rounded text-xs ${b.paymentStatus === 'succeeded' ? 'bg-green-50 text-green-700' : b.paymentStatus === 'failed' ? 'bg-red-50 text-red-700' : 'bg-yellow-50 text-yellow-700'}`}>{b.paymentStatus}</span>
+                    <span className={`px-2 py-0.5 rounded text-xs ${b.paymentStatus === 'succeeded' ? 'bg-success/10 text-success' : b.paymentStatus === 'failed' ? 'bg-error/10 text-error' : 'bg-warning/10 text-warning'}`}>{b.paymentStatus}</span>
                   </td>
                   <td className="p-2">{b.createdAt ? new Date(b.createdAt).toLocaleString() : '-'}</td>
                   <td className="p-2">
                     <a
-                      className="text-sm"
-                      style={{ color: '#0966C2' }}
+                      className="text-sm text-primary hover:text-primary/80"
                       href={`/admin/chat?userId=${(() => {
                         const uid = (typeof b?.userId === 'object' ? b?.userId?._id : b?.userId) || b?.freelancer?._id || b?.user?._id || '';
                         return encodeURIComponent(String(uid));

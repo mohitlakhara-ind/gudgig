@@ -43,7 +43,9 @@ import userGigsRoutes from './routes/user-gigs.js';
 import supportRoutes from './routes/support.js';
 import uploadsRoutes from './routes/uploads.js';
 import analyticsRoutes from './routes/analytics.js';
+import razorpayWebhookRoutes from './routes/razorpay-webhook.js';
 import contactDetailsRoutes from './routes/contactDetails.js';
+import paymentGuestRoutes from './routes/payment-guest.js';
 import requestId from './middleware/requestId.js';
 
 // Load environment variables
@@ -183,7 +185,7 @@ app.use(limiter);
 // Body parsing middleware
 // Need to support Stripe webhook raw body on a specific route; use conditional raw parser
 app.use((req, res, next) => {
-  if (req.originalUrl === '/api/billing/stripe/webhook') {
+  if (req.originalUrl === '/api/billing/stripe/webhook' || req.originalUrl === '/api/payment/razorpay/webhook') {
     next();
   } else {
     express.json({ limit: '10mb' })(req, res, next);
@@ -264,6 +266,8 @@ app.use('/api/users', userRoutes);
 app.use('/api/saved-jobs', savedJobsRoutes);
 app.use('/api/saved-gigs', savedGigsRoutes);
 app.use('/api/payments', paymentsRoutes);
+app.use('/api/payment', paymentGuestRoutes);
+app.use('/api/payment', razorpayWebhookRoutes);
 app.use('/api/user/gigs', userGigsRoutes);
 app.use('/api/support', supportRoutes);
 app.use('/api/uploads', uploadsRoutes);

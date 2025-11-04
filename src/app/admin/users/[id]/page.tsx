@@ -67,7 +67,7 @@ export default function AdminUserProfilePage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <CustomLoader size={32} color="#0966C2" />
+        <CustomLoader size={32} color="var(--primary)" />
         <span className="ml-2 text-muted-foreground">Loading user...</span>
       </div>
     );
@@ -91,7 +91,7 @@ export default function AdminUserProfilePage() {
   }
 
   const roleBadge = (
-    <span className={`px-2 py-0.5 rounded text-xs ${user.role === 'admin' ? 'bg-purple-50 text-purple-700' : user.role === 'freelancer' ? 'bg-blue-50 text-blue-700' : 'bg-gray-100 text-gray-700'}`}>
+    <span className={`px-2 py-0.5 rounded text-xs ${user.role === 'admin' ? 'bg-primary/10 text-primary' : user.role === 'freelancer' ? 'bg-secondary text-foreground' : 'bg-muted text-muted-foreground'}`}>
       {user.role}
     </span>
   );
@@ -100,7 +100,7 @@ export default function AdminUserProfilePage() {
     <div className="max-w-6xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold" style={{ color: '#0966C2' }}>{user.name || 'User'} <span className="ml-2">{roleBadge}</span></h1>
+          <h1 className="text-xl font-semibold text-primary">{user.name || 'User'} <span className="ml-2">{roleBadge}</span></h1>
           <p className="text-sm text-muted-foreground">{user.email}</p>
         </div>
         <div className="flex items-center gap-2">
@@ -108,7 +108,7 @@ export default function AdminUserProfilePage() {
           <Button variant="outline" className="bg-transparent" onClick={load}>Refresh</Button>
           {user.isActive && (
             <select
-              className="border rounded px-2 py-1 text-xs"
+              className="border border-input rounded px-2 py-1 text-xs bg-background"
               value={duration}
               onChange={e => setDuration(parseInt(e.target.value, 10))}
               title="Deactivation duration"
@@ -150,9 +150,9 @@ export default function AdminUserProfilePage() {
               <div><span className="text-muted-foreground">Role:</span> <span className="font-medium capitalize">{user.role || '—'}</span></div>
               <div>
                 <span className="text-muted-foreground">Status:</span>{' '}
-                <span className={`font-medium ${user.isActive ? 'text-green-600' : 'text-gray-600'}`}>{user.isActive ? 'Active' : 'Inactive'}</span>
+                <span className={`font-medium ${user.isActive ? 'text-success' : 'text-muted-foreground'}`}>{user.isActive ? 'Active' : 'Inactive'}</span>
                 {!user.isActive && (
-                  <span className="ml-2 text-xs text-gray-500">
+                  <span className="ml-2 text-xs text-muted-foreground">
                     {user.deactivatedUntil ? `Until ${new Date(user.deactivatedUntil as any).toLocaleString()}` : '(Until reactivated)'}
                   </span>
                 )}
@@ -181,7 +181,7 @@ export default function AdminUserProfilePage() {
                   <div className="mt-1 flex flex-wrap gap-2">
                     {(freelancer.primarySkills || []).length > 0 ? (
                       (freelancer.primarySkills || []).map((s: string, i: number) => (
-                        <span key={i} className="px-2 py-0.5 rounded bg-gray-100 text-gray-700 text-xs">{s}</span>
+                        <span key={i} className="px-2 py-0.5 rounded bg-muted text-foreground text-xs">{s}</span>
                       ))
                     ) : (
                       <span className="text-muted-foreground">—</span>

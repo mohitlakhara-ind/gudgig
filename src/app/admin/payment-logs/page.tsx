@@ -116,13 +116,13 @@ export default function PaymentLogsPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'success':
-        return 'bg-green-500/10 text-green-600 border-green-500/20';
+        return 'bg-success/10 text-success border-success/20';
       case 'failed':
-        return 'bg-red-500/10 text-red-600 border-red-500/20';
+        return 'bg-error/10 text-error border-error/20';
       case 'refunded':
-        return 'bg-blue-500/10 text-blue-600 border-blue-500/20';
+        return 'bg-primary/10 text-primary border-primary/20';
       default:
-        return 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20';
+        return 'bg-warning/10 text-warning border-warning/20';
     }
   };
 
@@ -162,12 +162,12 @@ export default function PaymentLogsPage() {
       case 'card':
         return <CreditCard className="h-4 w-4" />;
       case 'upi':
-        return <div className="w-4 h-4 bg-green-100 rounded flex items-center justify-center">
-          <span className="text-green-600 font-bold text-xs">UPI</span>
+        return <div className="w-4 h-4 bg-success/10 rounded flex items-center justify-center">
+          <span className="text-success font-bold text-xs">UPI</span>
         </div>;
       case 'netbanking':
-        return <div className="w-4 h-4 bg-blue-100 rounded flex items-center justify-center">
-          <span className="text-blue-600 font-bold text-xs">NB</span>
+        return <div className="w-4 h-4 bg-primary/10 rounded flex items-center justify-center">
+          <span className="text-primary font-bold text-xs">NB</span>
         </div>;
       default:
         return <CreditCard className="h-4 w-4" />;
@@ -222,9 +222,9 @@ export default function PaymentLogsPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Total Revenue</p>
-                    <p className="text-2xl font-bold text-green-600">{formatAmount(totalRevenue)}</p>
+                    <p className="text-2xl font-bold text-success">{formatAmount(totalRevenue)}</p>
                   </div>
-                  <DollarSign className="h-8 w-8 text-green-600" />
+                  <DollarSign className="h-8 w-8 text-success" />
                 </div>
               </CardContent>
             </Card>
@@ -246,9 +246,9 @@ export default function PaymentLogsPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Total Refunds</p>
-                    <p className="text-2xl font-bold text-red-600">{formatAmount(totalRefunds)}</p>
+                    <p className="text-2xl font-bold text-error">{formatAmount(totalRefunds)}</p>
                   </div>
-                  <Download className="h-8 w-8 text-red-600" />
+                  <Download className="h-8 w-8 text-error" />
                 </div>
               </CardContent>
             </Card>
@@ -388,16 +388,16 @@ export default function PaymentLogsPage() {
                         </div>
 
                         {payment.status === 'refunded' && payment.refundAmount && (
-                          <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
-                            <div className="flex items-center gap-2 text-red-800">
+                          <div className="mt-3 p-3 bg-error/10 border border-error/20 rounded-lg">
+                            <div className="flex items-center gap-2 text-error">
                               <Download className="h-4 w-4" />
                               <span className="font-medium">Refunded: {formatAmount(payment.refundAmount)}</span>
                             </div>
                             {payment.refundReason && (
-                              <p className="text-sm text-red-700 mt-1">Reason: {payment.refundReason}</p>
+                              <p className="text-sm text-error mt-1">Reason: {payment.refundReason}</p>
                             )}
                             {payment.refundedAt && (
-                              <p className="text-xs text-red-600 mt-1">
+                              <p className="text-xs text-error mt-1">
                                 Refunded on: {formatDate(payment.refundedAt)}
                               </p>
                             )}
@@ -410,7 +410,7 @@ export default function PaymentLogsPage() {
                         <div className="text-right">
                           <div className={`text-2xl font-bold ${
                             payment.status === 'refunded' ? 'text-red-600' : 
-                            payment.status === 'success' ? 'text-green-600' : 'text-primary'
+                            payment.status === 'success' ? 'text-success' : 'text-primary'
                           }`}>
                             {formatAmount(payment.amount)}
                           </div>

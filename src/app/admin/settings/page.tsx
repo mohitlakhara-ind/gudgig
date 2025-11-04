@@ -40,17 +40,16 @@ export default function AdminSettingsPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-semibold" style={{ color: '#0966C2' }}>Fee Settings</h1>
-      {error && <div className="text-sm text-red-600">{error}</div>}
+      <h1 className="text-xl font-semibold text-primary">Fee Settings</h1>
+      {error && <div className="text-sm text-error">{error}</div>}
 
-      <div className="rounded-xl bg-white shadow-sm ring-1 ring-gray-100 p-4">
-        <div className="text-sm text-gray-500">Bid Fee Options</div>
+      <div className="rounded-xl bg-card shadow-sm ring-1 ring-border p-4">
+        <div className="text-sm text-muted-foreground">Bid Fee Options</div>
         <div className="mt-3 flex flex-wrap gap-2">
           {settings?.bidFeeOptions?.map((f) => (
             <button
               key={f}
-              className={`px-3 py-1 rounded-full text-sm border ${settings.currentBidFee === f ? 'text-white' : ''}`}
-              style={settings.currentBidFee === f ? { backgroundColor: '#0966C2', borderColor: '#0966C2' } : {}}
+              className={`px-3 py-1 rounded-full text-sm border ${settings.currentBidFee === f ? 'bg-primary text-primary-foreground border-primary' : 'hover:bg-muted'}`}
               onClick={() => update(settings.bidFeeOptions, f)}
             >
               ₹{f}
@@ -58,8 +57,8 @@ export default function AdminSettingsPage() {
           ))}
         </div>
         <div className="mt-4 flex items-center gap-2">
-          <input className="border rounded px-3 py-2 text-sm w-40" placeholder="Add fee (₹)" value={newFee} onChange={e => setNewFee(e.target.value)} />
-          <button className="border rounded px-3 py-2 text-sm" onClick={() => {
+          <input className="border border-input bg-background rounded px-3 py-2 text-sm w-40" placeholder="Add fee (₹)" value={newFee} onChange={e => setNewFee(e.target.value)} />
+          <button className="border border-input rounded px-3 py-2 text-sm hover:bg-muted" onClick={() => {
             const n = Number(newFee);
             if (!Number.isFinite(n) || n <= 0) return setError('Enter a positive number');
             if (!settings) return;

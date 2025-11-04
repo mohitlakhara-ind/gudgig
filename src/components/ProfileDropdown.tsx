@@ -15,7 +15,13 @@ import {
   CreditCard, 
   Bookmark,
   ChevronDown,
-  Shield
+  Shield,
+  FileText,
+  Package,
+  Users,
+  Briefcase,
+  BarChart3,
+  DollarSign
 } from 'lucide-react';
 
 export default function ProfileDropdown() {
@@ -85,26 +91,27 @@ export default function ProfileDropdown() {
   // Debug logging to help identify user object structure
   log.debug('profile_dropdown_user', { hasUser: !!user });
 
-  const profileItems = [
+  // Role-based menu items
+  const freelancerItems = [
     // Hide Profile entry on admin pages
     ...(!isAdminPage ? [{ label: 'Profile', href: '/profile', icon: User }] : []),
-    { label: 'Settings', href: '/settings', icon: Settings },
-    { label: 'Notifications', href: '/notifications', icon: Bell },
+    { label: 'My Bids', href: '/bids', icon: FileText },
+    { label: 'Orders', href: '/orders', icon: Package },
+    { label: 'Payments', href: '/payments', icon: CreditCard },
     { label: 'Saved Gigs', href: '/saved-gigs', icon: Bookmark },
-    { label: 'Payment History', href: '/dashboard/payments', icon: CreditCard },
+    { label: 'Notifications', href: '/notifications', icon: Bell },
+    { label: 'Settings', href: '/settings', icon: Settings },
   ];
 
   const adminItems = [
-    {
-      label: 'Admin Dashboard',
-      href: '/admin',
-      icon: Shield,
-    },
-    {
-      label: 'Manage Bids',
-      href: '/admin/bids',
-      icon: Settings,
-    },
+    { label: 'Admin Dashboard', href: '/admin', icon: Shield },
+    { label: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
+    { label: 'Manage Gigs', href: '/admin/gigs', icon: Briefcase },
+    { label: 'View Bids', href: '/admin/bids', icon: FileText },
+    { label: 'Users', href: '/admin/users', icon: Users },
+    { label: 'Payment Settings', href: '/admin/payment-settings', icon: DollarSign },
+    { label: 'Payment Logs', href: '/admin/payment-logs', icon: FileText },
+    { label: 'Notifications', href: '/admin/notifications', icon: Bell },
   ];
 
   return (
@@ -160,7 +167,7 @@ export default function ProfileDropdown() {
               </Link>
             )}
 
-            {profileItems.map((item) => (
+            {(isAdmin ? [] : freelancerItems).map((item) => (
               <Link
                 key={item.href}
                 href={item.href}

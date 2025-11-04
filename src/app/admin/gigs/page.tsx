@@ -201,7 +201,7 @@ export default function AdminGigsPage() {
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row gap-2 sm:items-center justify-between">
-        <h1 className="text-xl font-semibold" style={{ color: '#0966C2' }}>Manage Gigs</h1>
+        <h1 className="text-xl font-semibold text-primary">Manage Gigs</h1>
         <div className="flex gap-2">
           <select
             value={category}
@@ -214,15 +214,15 @@ export default function AdminGigsPage() {
             ))}
           </select>
           <button onClick={load} className="border rounded px-3 py-2 text-sm">Filter</button>
-          <button onClick={openCreate} className="rounded px-3 py-2 text-sm text-white" style={{ backgroundColor: '#0966C2' }}>Create New Gig</button>
+          <button onClick={openCreate} className="rounded px-3 py-2 text-sm bg-primary text-primary-foreground hover:bg-primary/90">Create New Gig</button>
         </div>
       </div>
 
-      {error && <div className="text-red-600 text-sm">{error}</div>}
+      {error && <div className="text-error text-sm">{error}</div>}
 
       <div className="overflow-auto rounded border scrollbar-thin">
         <table className="min-w-full text-sm">
-          <thead className="bg-gray-50">
+          <thead className="bg-muted">
             <tr>
               <th className="p-2 text-left">Title</th>
               <th className="p-2 text-left">Category</th>
@@ -261,7 +261,7 @@ export default function AdminGigsPage() {
                       {job.bidsCount ?? 0}/{job.maxBids ?? '∞'}
                     </span>
                     {job.maxBids && job.bidsCount && job.bidsCount >= job.maxBids && (
-                      <AlertTriangle className="h-3 w-3 text-orange-500" />
+                      <AlertTriangle className="h-3 w-3 text-warning" />
                     )}
                   </div>
                 </td>
@@ -286,8 +286,8 @@ export default function AdminGigsPage() {
                     onClick={() => toggleGigVisibility(job._id, job.isHidden || false)}
                     className={`px-2 py-1 text-xs rounded border flex items-center gap-1 ${
                       job.isHidden 
-                        ? 'border-green-300 text-green-600 hover:bg-green-50' 
-                        : 'border-orange-300 text-orange-600 hover:bg-orange-50'
+                        ? 'border-success/30 text-success hover:bg-success/10' 
+                        : 'border-warning/30 text-warning hover:bg-warning/10'
                     }`}
                     disabled={isLoading}
                   >
@@ -303,7 +303,7 @@ export default function AdminGigsPage() {
                       </>
                     )}
                   </button>
-                  <button onClick={() => removeGig(job._id)} className="px-2 py-1 text-xs rounded border border-red-300 text-red-600">Delete</button>
+                  <button onClick={() => removeGig(job._id)} className="px-2 py-1 text-xs rounded border border-error/30 text-error">Delete</button>
                   <a href={`/admin/gigs/${job._id}/bids`} className="px-2 py-1 text-xs rounded border">View Bids</a>
                 </td>
               </tr>
@@ -312,7 +312,7 @@ export default function AdminGigsPage() {
         </table>
       </div>
 
-      {error && <div className="text-sm text-red-600">{error}</div>}
+      {error && <div className="text-sm text-error">{error}</div>}
 
       {(creating || editing) && (
         <div
@@ -325,8 +325,8 @@ export default function AdminGigsPage() {
             }
           }}
         >
-          <div className="bg-white w-full sm:max-w-[900px] sm:w-full max-h-[90vh] rounded-t-lg sm:rounded-lg shadow-lg flex flex-col">
-            <div className="flex items-center justify-between p-3 border-b sticky top-0 bg-white z-10">
+          <div className="bg-card w-full sm:max-w-[900px] sm:w-full max-h-[90vh] rounded-t-lg sm:rounded-lg shadow-lg flex flex-col ring-1 ring-border">
+            <div className="flex items-center justify-between p-3 border-b border-border sticky top-0 bg-card z-10">
               <div className="font-semibold">{editing ? 'Edit Gig' : 'Create Gig'}</div>
               <Button variant="ghost" size="sm" onClick={() => { if (!isLoading) { setCreating(false); setEditing(null); } }} disabled={isLoading}>Close</Button>
             </div>
@@ -335,38 +335,38 @@ export default function AdminGigsPage() {
                 <div>
                   <label className="block text-sm mb-1">Title</label>
                   <input
-                    className={`w-full border rounded px-3 py-2 text-sm ${touched.title && !form.title.trim() ? 'border-red-400' : ''}`}
+                    className={`w-full border border-input bg-background rounded px-3 py-2 text-sm ${touched.title && !form.title.trim() ? 'border-error/40' : ''}`}
                     value={form.title}
                     placeholder="e.g., Build a responsive portfolio website"
                     onBlur={() => setTouched((t) => ({ ...t, title: true }))}
                     onChange={e => setForm({ ...form, title: e.target.value })}
                   />
                   {touched.title && !form.title.trim() && (
-                    <div className="text-xs text-red-600 mt-1">Title is required</div>
+                    <div className="text-xs text-error mt-1">Title is required</div>
                   )}
                 </div>
                 <div>
                   <label className="block text-sm mb-1">Description</label>
                   <textarea
-                    className={`w-full border rounded px-3 py-2 text-sm ${touched.description && !form.description.trim() ? 'border-red-400' : ''}`}
+                    className={`w-full border border-input bg-background rounded px-3 py-2 text-sm ${touched.description && !form.description.trim() ? 'border-error/40' : ''}`}
                     rows={5}
                     value={form.description}
                     placeholder="Describe the scope, deliverables, timeline, and required skills"
                     onBlur={() => setTouched((t) => ({ ...t, description: true }))}
                     onChange={e => setForm({ ...form, description: e.target.value })}
                   />
-                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <div className="flex justify-between text-xs text-muted-foreground mt-1">
                     <span>Minimum 20 characters</span>
                     <span>{form.description.length} chars</span>
                   </div>
                   {touched.description && !form.description.trim() && (
-                    <div className="text-xs text-red-600 mt-1">Description is required</div>
+                    <div className="text-xs text-error mt-1">Description is required</div>
                   )}
                 </div>
                 <div>
                   <label className="block text-sm mb-1">Category</label>
                   <select
-                    className="w-full border rounded px-3 py-2 text-sm"
+                    className="w-full border border-input bg-background rounded px-3 py-2 text-sm"
                     value={form.category}
                     onChange={e => setForm({ ...form, category: e.target.value as Gig['category'] })}
                   >
@@ -381,7 +381,7 @@ export default function AdminGigsPage() {
                     {form.requirements.map((r, idx) => (
                       <div key={idx} className="flex gap-2">
                         <input
-                          className="flex-1 border rounded px-3 py-2 text-sm"
+                          className="flex-1 border border-input bg-background rounded px-3 py-2 text-sm"
                           value={r}
                           placeholder={idx === 0 ? 'e.g., Experience with React and TailwindCSS' : 'Add another requirement'}
                           onChange={e => setForm({ ...form, requirements: form.requirements.map((x, i) => i===idx ? e.target.value : x) })}
@@ -401,7 +401,7 @@ export default function AdminGigsPage() {
                         onClick={() => setForm({ ...form, requirements: [...form.requirements, ''] })}
                         disabled={isLoading || form.requirements.length >= 10}
                       >Add Requirement</Button>
-                      <div className="text-xs text-gray-500">{form.requirements.filter(Boolean).length}/10</div>
+                      <div className="text-xs text-muted-foreground">{form.requirements.filter(Boolean).length}/10</div>
                     </div>
                   </div>
                 </div>
@@ -411,24 +411,24 @@ export default function AdminGigsPage() {
                     type="number"
                     min="1"
                     max="100"
-                    className="w-full border rounded px-3 py-2 text-sm"
+                    className="w-full border border-input bg-background rounded px-3 py-2 text-sm"
                     value={form.maxBids}
                     placeholder="e.g., 10"
                     onChange={e => setForm({ ...form, maxBids: parseInt(e.target.value) || 10 })}
                   />
-                  <div className="text-xs text-gray-500 mt-1">
+                  <div className="text-xs text-muted-foreground mt-1">
                     Set the maximum number of bids allowed for this gig. Leave empty for unlimited.
                   </div>
                 </div>
                 
                 {/* Contact Details Section */}
-                <div className="border-t pt-4">
-                  <h3 className="text-sm font-medium mb-3 text-gray-700">Contact Details</h3>
+                <div className="border-t border-border pt-4">
+                  <h3 className="text-sm font-medium mb-3 text-foreground">Contact Details</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm mb-1">Your Name *</label>
                       <input
-                        className={`w-full border rounded px-3 py-2 text-sm ${touched.contactName && !form.contactDetails.name.trim() ? 'border-red-400' : ''}`}
+                        className={`w-full border border-input bg-background rounded px-3 py-2 text-sm ${touched.contactName && !form.contactDetails.name.trim() ? 'border-error/40' : ''}`}
                         value={form.contactDetails.name}
                         placeholder="Your full name"
                         onBlur={() => setTouched((t) => ({ ...t, contactName: true }))}
@@ -438,14 +438,14 @@ export default function AdminGigsPage() {
                         })}
                       />
                       {touched.contactName && !form.contactDetails.name.trim() && (
-                        <div className="text-xs text-red-600 mt-1">Name is required</div>
+                        <div className="text-xs text-error mt-1">Name is required</div>
                       )}
                     </div>
                     <div>
                       <label className="block text-sm mb-1">Your Email *</label>
                       <input
                         type="email"
-                        className={`w-full border rounded px-3 py-2 text-sm ${touched.contactEmail && !form.contactDetails.email.trim() ? 'border-red-400' : ''}`}
+                        className={`w-full border border-input bg-background rounded px-3 py-2 text-sm ${touched.contactEmail && !form.contactDetails.email.trim() ? 'border-error/40' : ''}`}
                         value={form.contactDetails.email}
                         placeholder="your.email@example.com"
                         onBlur={() => setTouched((t) => ({ ...t, contactEmail: true }))}
@@ -455,14 +455,14 @@ export default function AdminGigsPage() {
                         })}
                       />
                       {touched.contactEmail && !form.contactDetails.email.trim() && (
-                        <div className="text-xs text-red-600 mt-1">Email is required</div>
+                        <div className="text-xs text-error mt-1">Email is required</div>
                       )}
                     </div>
                     <div>
                       <label className="block text-sm mb-1">Your Phone *</label>
                       <input
                         type="tel"
-                        className={`w-full border rounded px-3 py-2 text-sm ${touched.contactPhone && !form.contactDetails.phone.trim() ? 'border-red-400' : ''}`}
+                        className={`w-full border border-input bg-background rounded px-3 py-2 text-sm ${touched.contactPhone && !form.contactDetails.phone.trim() ? 'border-error/40' : ''}`}
                         value={form.contactDetails.phone}
                         placeholder="+91 9876543210"
                         onBlur={() => setTouched((t) => ({ ...t, contactPhone: true }))}
@@ -472,13 +472,13 @@ export default function AdminGigsPage() {
                         })}
                       />
                       {touched.contactPhone && !form.contactDetails.phone.trim() && (
-                        <div className="text-xs text-red-600 mt-1">Phone is required</div>
+                        <div className="text-xs text-error mt-1">Phone is required</div>
                       )}
                     </div>
                     <div>
                       <label className="block text-sm mb-1">Alternate Contact (Optional)</label>
                       <input
-                        className="w-full border rounded px-3 py-2 text-sm"
+                        className="w-full border border-input bg-background rounded px-3 py-2 text-sm"
                         value={form.contactDetails.alternateContact}
                         placeholder="WhatsApp, Telegram, etc."
                         onChange={e => setForm({ 
@@ -488,7 +488,7 @@ export default function AdminGigsPage() {
                       />
                     </div>
                   </div>
-                  <div className="text-xs text-gray-500 mt-2">
+                  <div className="text-xs text-muted-foreground mt-2">
                     These contact details will be shared with bidders after they successfully place a bid.
                   </div>
                 </div>

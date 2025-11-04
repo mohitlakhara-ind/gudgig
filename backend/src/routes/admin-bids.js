@@ -4,7 +4,7 @@ import { protect, authorize } from '../middleware/auth.js';
 
 // Lazy import models to avoid circulars in some setups
 const getBidModel = async () => (await import('../models/Bid.js')).default;
-const getJobModel = async () => (await import('../models/Job.js')).default;
+const getGigModel = async () => (await import('../models/Job.js')).default; // Job.js exports the Gig model
 
 const router = express.Router();
 
@@ -17,7 +17,8 @@ router.get(
   [
     query('page').optional().isInt({ min: 1 }).toInt(),
     query('limit').optional().isInt({ min: 1, max: 100 }).toInt(),
-    query('jobId').optional().isMongoId(),
+    query('jobId').optional().isMongoId(), // backward compat
+    query('gigId').optional().isMongoId(),
     query('userId').optional().isMongoId(),
     query('status').optional().isIn(['succeeded', 'failed', 'pending']),
     query('from').optional().isISO8601(),
@@ -30,6 +31,7 @@ router.get(
         page = 1,
         limit = 20,
         jobId,
+        gigId,
         userId,
         status,
         from,
@@ -37,7 +39,9 @@ router.get(
       } = req.query;
 
       const filter = {};
-      if (jobId) filter.jobId = jobId;
+      // Support both gigId and legacy jobId parameter; Bid schema uses gigId
+      if (gigId) filter.gigId = gigId;
+      if (jobId && !gigId) filter.gigId = jobId;
       if (userId) filter.userId = userId;
       if (status) filter.paymentStatus = status;
       if (from || to) {
@@ -55,13 +59,13 @@ router.get(
           .skip((pageNumber - 1) * pageSize)
           .limit(pageSize)
           .populate('userId', 'name email')
-          .populate('jobId', 'title category'),
+          .populate('gigId', 'title category'),
         Bid.countDocuments(filter),
       ]);
 
       const data = items.map((b) => ({
         _id: b._id,
-        job: b.jobId && typeof b.jobId === 'object' ? { _id: b.jobId._id, title: b.jobId.title, category: b.jobId.category } : { _id: b.jobId },
+        job: b.gigId && typeof b.gigId === 'object' ? { _id: b.gigId._id, title: b.gigId.title, category: b.gigId.category } : { _id: b.gigId },
         freelancer: b.userId && typeof b.userId === 'object' ? { _id: b.userId._id, name: b.userId.name, email: b.userId.email } : { _id: b.userId },
         quotation: b.quotation,
         proposal: b.proposal,
@@ -93,7 +97,7 @@ router.patch(
   async (req, res, next) => {
     try {
       const Bid = await getBidModel();
-      const Job = await getJobModel();
+      const Job = await getGigModel();
       const { bidId } = req.params;
       const { status } = req.body;
 
@@ -105,9 +109,9 @@ router.patch(
       bid.selectedAt = status === 'accepted' ? new Date() : bid.selectedAt;
       await bid.save();
 
-      // Update job selection snapshot if accepted
+      // Update job/gig selection snapshot if accepted
       if (status === 'accepted') {
-        const job = await Job.findById(bid.jobId);
+        const job = await Job.findById(bid.gigId);
         if (job) {
           job.selectedFreelancerId = bid.userId;
           job.selection = {
@@ -132,7 +136,7 @@ router.patch(
               'bid_accepted',
               '🎉 Bid Accepted',
               'Congratulations! Your bid has been accepted.',
-              { bidId: bid._id, jobId: bid.jobId }
+              { bidId: bid._id, jobId: bid.gigId }
             );
             // Emit realtime socket event to the freelancer
             if (io) {
@@ -141,7 +145,7 @@ router.patch(
                 type: 'bid_accepted',
                 title: '🎉 Bid Accepted',
                 message: 'Congratulations! Your bid has been accepted.',
-                data: { bidId: String(bid._id), jobId: String(bid.jobId) },
+                data: { bidId: String(bid._id), jobId: String(bid.gigId) },
                 createdAt: new Date().toISOString()
               });
             }
@@ -151,7 +155,7 @@ router.patch(
               'bid_rejected',
               'Bid Update',
               'Your bid was not selected this time.',
-              { bidId: bid._id, jobId: bid.jobId }
+              { bidId: bid._id, jobId: bid.gigId }
             );
             if (io) {
               io.to(`user:${String(bid.userId)}`).emit('notification:new', {
@@ -159,7 +163,7 @@ router.patch(
                 type: 'bid_rejected',
                 title: 'Bid Update',
                 message: 'Your bid was not selected this time.',
-                data: { bidId: String(bid._id), jobId: String(bid.jobId) },
+                data: { bidId: String(bid._id), jobId: String(bid.gigId) },
                 createdAt: new Date().toISOString()
               });
             }

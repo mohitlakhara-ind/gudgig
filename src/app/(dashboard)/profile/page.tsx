@@ -768,10 +768,7 @@ export default function ProfilePage() {
                             <div className="text-xs text-muted-foreground">Active Services</div>
                             <div className="text-xl font-semibold">{freelancerStats.activeServices ?? 0}</div>
                           </div>
-                          <div>
-                            <div className="text-xs text-muted-foreground">Total Orders</div>
-                            <div className="text-xl font-semibold">{freelancerStats.totalOrders ?? 0}</div>
-                          </div>
+                          {/* Total Orders removed per requirements */}
                           <div>
                             <div className="text-xs text-muted-foreground">Avg. Rating</div>
                             <div className="text-xl font-semibold">{freelancerStats.averageRating ?? 0}</div>

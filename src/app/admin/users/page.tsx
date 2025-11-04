@@ -80,57 +80,57 @@ export default function AdminUsersPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold" style={{ color: '#0966C2' }}>User Management</h1>
+        <h1 className="text-xl font-semibold text-primary">User Management</h1>
       </div>
 
-      <div className="rounded-xl bg-white shadow-sm ring-1 ring-gray-100 p-4">
+      <div className="rounded-xl bg-card shadow-sm ring-1 ring-border p-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           <input
-            className="border rounded px-3 py-2 text-sm"
+            className="border border-input rounded px-3 py-2 text-sm bg-background"
             placeholder="Search name or email"
             value={search}
             onChange={e => setSearch(e.target.value)}
           />
-          <select className="border rounded px-3 py-2 text-sm" value={role} onChange={e => setRole(e.target.value)}>
+          <select className="border border-input rounded px-3 py-2 text-sm bg-background" value={role} onChange={e => setRole(e.target.value)}>
             <option value="">All roles</option>
             <option value="freelancer">Freelancer</option>
             <option value="admin">Admin</option>
           </select>
-          <select className="border rounded px-3 py-2 text-sm" value={isActive} onChange={e => setIsActive(e.target.value)}>
+          <select className="border border-input rounded px-3 py-2 text-sm bg-background" value={isActive} onChange={e => setIsActive(e.target.value)}>
             <option value="">All statuses</option>
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>
           </select>
-          <button className="border rounded px-3 py-2 text-sm" onClick={() => { setPage(1); load(); }}>Apply Filters</button>
+          <button className="border border-input rounded px-3 py-2 text-sm hover:bg-muted" onClick={() => { setPage(1); load(); }}>Apply Filters</button>
         </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        <div className="rounded-xl bg-white shadow-sm ring-1 ring-gray-100 p-4">
-          <div className="text-sm text-gray-500">Total Users</div>
+        <div className="rounded-xl bg-card shadow-sm ring-1 ring-border p-4">
+          <div className="text-sm text-muted-foreground">Total Users</div>
           <div className="text-2xl font-semibold">{loading ? '—' : stats.total}</div>
         </div>
-        <div className="rounded-xl bg-white shadow-sm ring-1 ring-gray-100 p-4">
-          <div className="text-sm text-gray-500">Active Users</div>
+        <div className="rounded-xl bg-card shadow-sm ring-1 ring-border p-4">
+          <div className="text-sm text-muted-foreground">Active Users</div>
           <div className="text-2xl font-semibold">{loading ? '—' : stats.active}</div>
         </div>
-        <div className="rounded-xl bg-white shadow-sm ring-1 ring-gray-100 p-4">
-          <div className="text-sm text-gray-500">Freelancers</div>
+        <div className="rounded-xl bg-card shadow-sm ring-1 ring-border p-4">
+          <div className="text-sm text-muted-foreground">Freelancers</div>
           <div className="text-2xl font-semibold">{loading ? '—' : stats.freelancers}</div>
         </div>
-        <div className="rounded-xl bg-white shadow-sm ring-1 ring-gray-100 p-4">
-          <div className="text-sm text-gray-500">Admins</div>
+        <div className="rounded-xl bg-card shadow-sm ring-1 ring-border p-4">
+          <div className="text-sm text-muted-foreground">Admins</div>
           <div className="text-2xl font-semibold">{loading ? '—' : stats.admins}</div>
         </div>
       </div>
 
       {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 text-red-700 p-3 text-sm">
+        <div className="rounded-lg border border-error/20 bg-error/10 text-error p-3 text-sm">
           <div className="flex items-center justify-between">
             <span>{error}</span>
             <button 
               onClick={load}
-              className="text-red-700 underline text-sm hover:no-underline"
+              className="text-error underline text-sm hover:no-underline"
             >
               Retry
             </button>
@@ -140,7 +140,7 @@ export default function AdminUsersPage() {
 
       <div className="overflow-auto rounded border scrollbar-thin">
         <table className="min-w-full text-sm">
-          <thead className="bg-gray-50">
+          <thead className="bg-muted">
             <tr>
               <th className="p-2 text-left">Name</th>
               <th className="p-2 text-left">Email</th>
@@ -156,7 +156,7 @@ export default function AdminUsersPage() {
               <tr>
                 <td colSpan={7} className="p-4 text-center">
                   <div className="flex items-center justify-center space-x-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
                     <span>Loading users...</span>
                   </div>
                 </td>
@@ -164,7 +164,7 @@ export default function AdminUsersPage() {
             )}
             {!loading && users.length === 0 && !error && (
               <tr>
-                <td colSpan={7} className="p-6 text-center text-gray-600">
+                <td colSpan={7} className="p-6 text-center text-muted-foreground">
                   No users found. Try adjusting your filters.
                 </td>
               </tr>
@@ -173,22 +173,21 @@ export default function AdminUsersPage() {
               <tr key={u._id} className="border-t">
                 <td className="p-2">
                   <div className="font-medium">{u.name}</div>
-                  <div className="text-gray-500 text-xs">{u.email}</div>
+                  <div className="text-muted-foreground text-xs">{u.email}</div>
                 </td>
                 <td className="p-2">{u.email}</td>
                 <td className="p-2">
-                  <span className={`px-2 py-0.5 rounded text-xs ${u.role === 'admin' ? 'bg-purple-50 text-purple-700' : 'bg-blue-50 text-blue-700'}`}>{u.role}</span>
+                  <span className={`px-2 py-0.5 rounded text-xs ${u.role === 'admin' ? 'bg-primary/10 text-primary' : 'bg-secondary text-foreground'}`}>{u.role}</span>
                 </td>
                 <td className="p-2">
-                  <span className={`px-2 py-0.5 rounded text-xs ${u.isActive ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-600'}`}>{u.isActive ? 'Active' : 'Inactive'}</span>
+                  <span className={`px-2 py-0.5 rounded text-xs ${u.isActive ? 'bg-success/10 text-success' : 'bg-muted text-muted-foreground'}`}>{u.isActive ? 'Active' : 'Inactive'}</span>
                 </td>
                 <td className="p-2">{u.lastLogin ? new Date(u.lastLogin).toLocaleString() : '-'}</td>
                 <td className="p-2">{u.createdAt ? new Date(u.createdAt).toLocaleString() : '-'}</td>
                 <td className="p-2">
                   <div className="flex items-center gap-2">
                     <button 
-                      className="text-sm" 
-                      style={{ color: '#0966C2' }} 
+                      className="text-sm text-primary hover:text-primary/80" 
                       disabled={false} 
                       title="View details"
                       onClick={() => router.push(`/admin/users/${u._id}`)}
@@ -197,7 +196,7 @@ export default function AdminUsersPage() {
                     </button>
                     {u.role !== 'admin' ? (
                       <button
-                        className="text-sm text-purple-700 hover:text-purple-800"
+                        className="text-sm text-primary hover:text-primary/80"
                         onClick={() => changeRole(u._id, 'admin')}
                         title="Promote to admin"
                       >
@@ -205,7 +204,7 @@ export default function AdminUsersPage() {
                       </button>
                     ) : (
                       <button
-                        className="text-sm text-gray-700 hover:text-gray-800"
+                        className="text-sm text-muted-foreground hover:text-foreground"
                         onClick={() => changeRole(u._id, 'freelancer')}
                         title="Demote to freelancer"
                       >
@@ -215,7 +214,7 @@ export default function AdminUsersPage() {
                     {u.isActive ? (
                       <>
                         <select
-                          className="border rounded px-2 py-1 text-xs"
+                          className="border border-input rounded px-2 py-1 text-xs bg-background"
                           value={durationByUser[u._id] ?? 1440}
                           onChange={e => setDurationByUser(prev => ({ ...prev, [u._id]: parseInt(e.target.value, 10) }))}
                           title="Deactivation duration"
@@ -228,7 +227,7 @@ export default function AdminUsersPage() {
                           <option value={0}>Until reactivated</option>
                         </select>
                         <button 
-                          className="text-sm text-orange-600 hover:text-orange-700" 
+                          className="text-sm text-warning hover:text-warning" 
                           onClick={() => toggleUserStatus(u._id, u.isActive)}
                           title="Deactivate user"
                         >
@@ -237,11 +236,11 @@ export default function AdminUsersPage() {
                       </>
                     ) : (
                       <>
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-muted-foreground">
                           {u.deactivatedUntil ? `Until ${new Date(u.deactivatedUntil as any).toLocaleString()}` : 'Until reactivated'}
                         </span>
                         <button 
-                          className="text-sm text-green-600 hover:text-green-700" 
+                          className="text-sm text-success hover:text-success" 
                           onClick={() => toggleUserStatus(u._id, u.isActive)}
                           title="Activate user"
                         >
@@ -258,7 +257,7 @@ export default function AdminUsersPage() {
       </div>
 
       <div className="flex items-center justify-between">
-        <div className="text-sm text-gray-600">
+        <div className="text-sm text-muted-foreground">
           Showing {users.length} of {totalUsers} users
         </div>
         <div className="flex items-center gap-2">

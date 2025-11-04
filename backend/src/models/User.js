@@ -57,6 +57,11 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  // Set when account was created/verified via successful payment
+  verifiedByPayment: {
+    type: Boolean,
+    default: false
+  },
   emailVerificationToken: String,
   emailVerificationExpires: Date,
   passwordResetToken: String,

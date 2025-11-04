@@ -26,6 +26,10 @@ interface RazorpayPaymentProps {
   currency?: string;
   description: string;
   orderId: string;
+  keyId?: string;
+  prefillEmail?: string;
+  prefillContact?: string;
+  tempUserId?: string;
   onSuccess: (paymentId: string, signature: string) => void;
   onError: (error: string) => void;
   disabled?: boolean;
@@ -36,6 +40,10 @@ export default function RazorpayPayment({
   currency = 'INR',
   description,
   orderId,
+  keyId,
+  prefillEmail,
+  prefillContact,
+  tempUserId,
   onSuccess,
   onError,
   disabled = false
@@ -86,9 +94,13 @@ export default function RazorpayPayment({
 
     try {
       setLoading(true);
+      // Normalize prefill values to match Razorpay's expectations
+      const normalizedEmail = (prefillEmail || '').trim();
+      const normalizedContact = (prefillContact || '').replace(/\D+/g, '').slice(-15);
+      const inferredName = normalizedEmail ? normalizedEmail.split('@')[0] : '';
 
       const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        key: keyId || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
         amount: amount,
         currency: currency,
         name: 'Gigs Mint',
@@ -100,13 +112,20 @@ export default function RazorpayPayment({
           onSuccess(response.razorpay_payment_id, response.razorpay_signature);
         },
         prefill: {
-          name: '', // You can prefill user details
-          email: '',
-          contact: '',
+          name: inferredName,
+          email: normalizedEmail,
+          contact: normalizedContact,
         },
+        // Ensure checkout shows editable email/contact fields so Razorpay collects them
+        readonly: {
+          email: false,
+          contact: false,
+        },
+        remember_customer: true,
         notes: {
           order_id: orderId,
           platform: 'gigs-mint',
+          tempUserId: tempUserId || '',
         },
         theme: {
           color: '#0966C2', // Your brand color

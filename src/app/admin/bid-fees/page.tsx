@@ -97,24 +97,24 @@ export default function AdminBidFeesPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold" style={{ color: '#0966C2' }}>Bid Fee Configuration</h1>
-        <button className="border rounded px-3 py-2 text-sm" onClick={load} disabled={loading}>Refresh</button>
+        <h1 className="text-xl font-semibold text-primary">Bid Fee Configuration</h1>
+        <button className="border border-input rounded px-3 py-2 text-sm hover:bg-muted" onClick={load} disabled={loading}>Refresh</button>
       </div>
 
-      <p className="text-sm text-gray-600">Configure bid fee options used when freelancers place bids. Choose an active fee and manage available fee options.</p>
+      <p className="text-sm text-muted-foreground">Configure bid fee options used when freelancers place bids. Choose an active fee and manage available fee options.</p>
 
-      {error && <div className="text-sm text-red-600">{error}</div>}
-      {message && <div className="text-sm text-green-600">{message}</div>}
+      {error && <div className="text-sm text-error">{error}</div>}
+      {message && <div className="text-sm text-success">{message}</div>}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <div className="rounded-xl bg-white shadow-sm ring-1 ring-gray-100 p-4">
-          <div className="text-sm text-gray-500">Current Active Fee</div>
+        <div className="rounded-xl bg-card shadow-sm ring-1 ring-border p-4">
+          <div className="text-sm text-muted-foreground">Current Active Fee</div>
           <div className="mt-2 text-3xl font-semibold">{settings ? `₹${settings.currentBidFee}` : (loading ? '—' : 'N/A')}</div>
-          <div className="mt-1 text-xs text-gray-500">Active since —</div>
-          <div className="mt-2"><span className="px-2 py-0.5 rounded text-xs bg-green-50 text-green-700">Active</span></div>
+          <div className="mt-1 text-xs text-muted-foreground">Active since —</div>
+          <div className="mt-2"><span className="px-2 py-0.5 rounded text-xs bg-success/10 text-success">Active</span></div>
         </div>
 
-        <div className="rounded-xl bg-white shadow-sm ring-1 ring-gray-100 p-4 md:col-span-2">
+        <div className="rounded-xl bg-card shadow-sm ring-1 ring-border p-4 md:col-span-2">
           <div className="text-sm font-medium mb-2">Available Fee Options</div>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
             {settings?.bidFeeOptions.map(fee => {
@@ -122,7 +122,7 @@ export default function AdminBidFeesPage() {
               return (
                 <button
                   key={fee}
-                  className={`rounded-lg border px-3 py-3 text-sm transition ${isActive ? 'bg-blue-600 text-white border-blue-600' : 'hover:bg-gray-50'}`}
+                  className={`rounded-lg border px-3 py-3 text-sm transition ${isActive ? 'bg-primary text-primary-foreground border-primary' : 'hover:bg-muted'}`}
                   onClick={() => !isActive && activateFee(fee)}
                   disabled={saving}
                 >
@@ -134,26 +134,26 @@ export default function AdminBidFeesPage() {
         </div>
       </div>
 
-      <div className="rounded-xl bg-white shadow-sm ring-1 ring-gray-100 p-4">
+      <div className="rounded-xl bg-card shadow-sm ring-1 ring-border p-4">
         <div className="flex flex-col sm:flex-row items-center gap-2">
           <input
-            className="border rounded px-3 py-2 text-sm w-full sm:w-64"
+            className="border border-input bg-background rounded px-3 py-2 text-sm w-full sm:w-64"
             type="number"
             min={1}
             placeholder="Enter new fee (₹)"
             value={newFee}
             onChange={e => setNewFee(e.target.value)}
           />
-          <button className="border rounded px-3 py-2 text-sm" onClick={addFee} disabled={saving}>Add Fee Option</button>
-          <div className="text-xs text-gray-500">Fee should be in rupees (₹), positive values only.</div>
+          <button className="border border-input rounded px-3 py-2 text-sm hover:bg-muted" onClick={addFee} disabled={saving}>Add Fee Option</button>
+          <div className="text-xs text-muted-foreground">Fee should be in rupees (₹), positive values only.</div>
         </div>
       </div>
 
-      <div className="rounded-xl bg-white shadow-sm ring-1 ring-gray-100 p-4">
+      <div className="rounded-xl bg-card shadow-sm ring-1 ring-border p-4">
         <div className="text-sm font-medium mb-2">Fee Management</div>
         <div className="overflow-auto rounded border scrollbar-thin">
           <table className="min-w-full text-sm">
-            <thead className="bg-gray-50">
+            <thead className="bg-muted">
               <tr>
                 <th className="p-2 text-left">Amount</th>
                 <th className="p-2 text-left">Status</th>
@@ -164,14 +164,14 @@ export default function AdminBidFeesPage() {
               {settings?.bidFeeOptions.map(fee => (
                 <tr key={fee} className="border-t">
                   <td className="p-2">₹{fee}</td>
-                  <td className="p-2">{settings.currentBidFee === fee ? <span className="px-2 py-0.5 rounded text-xs bg-green-50 text-green-700">Active</span> : '-'}</td>
+                  <td className="p-2">{settings.currentBidFee === fee ? <span className="px-2 py-0.5 rounded text-xs bg-success/10 text-success">Active</span> : '-'}</td>
                   <td className="p-2">
-                    <button className="text-sm text-red-600 disabled:text-gray-400" disabled={saving || settings.currentBidFee === fee} onClick={() => removeFee(fee)}>Remove</button>
+                    <button className="text-sm text-error disabled:text-muted-foreground" disabled={saving || settings.currentBidFee === fee} onClick={() => removeFee(fee)}>Remove</button>
                   </td>
                 </tr>
               ))}
               {!settings && !loading && (
-                <tr><td colSpan={3} className="p-4 text-center text-gray-500">No settings loaded</td></tr>
+                <tr><td colSpan={3} className="p-4 text-center text-muted-foreground">No settings loaded</td></tr>
               )}
               {loading && (
                 <tr><td colSpan={3} className="p-4 text-center">Loading...</td></tr>
