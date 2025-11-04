@@ -168,11 +168,34 @@ app.use((req, res, next) => {
   next();
 });
 
-// CORS configuration (allow dev ports)
-app.use(cors({
-  origin: allowedOrigins,
-  credentials: true
-}));
+// CORS configuration (allow dev ports, Render backend, Vercel previews via regex, and CSV from CORS_ORIGINS)
+const extraOrigins = (process.env.CORS_ORIGINS || '')
+  .split(',')
+  .map(s => s.trim())
+  .filter(Boolean);
+
+const vercelPreviewRegex = /^https?:\/\/[^/]*vercel\.app$/i;
+const renderAppRegex = /^https?:\/\/[^/]*onrender\.com$/i;
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true); // allow same-origin/non-browser
+    const origins = [...allowedOrigins, ...extraOrigins];
+    const isAllowed =
+      origins.includes(origin) ||
+      vercelPreviewRegex.test(origin) ||
+      renderAppRegex.test(origin);
+    return isAllowed ? callback(null, true) : callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'x-admin-token'],
+  exposedHeaders: ['Set-Cookie'],
+  maxAge: 86400
+};
+
+app.options('*', cors(corsOptions));
+app.use(cors(corsOptions));
 
 // Rate limiting
 const limiter = rateLimit({
