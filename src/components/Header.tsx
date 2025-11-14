@@ -104,7 +104,7 @@ export default function Header() {
               ))}
             </nav>
             <div className="flex items-center gap-2">
-              {isAuthenticated && (user as any)?.role === 'admin' && (
+              {isAuthenticated && String(((user as any)?.role || '')).toLowerCase() === 'admin' && (
                 <Link href="/admin/login" className="hidden sm:block">
                   <Button className="tap-target rounded-xl">Post a Gig</Button>
                 </Link>
@@ -137,7 +137,7 @@ export default function Header() {
                     </Link>
                   </div>
                 )}
-                {isAuthenticated && (user as any)?.role === 'admin' && (
+                {isAuthenticated && String(((user as any)?.role || '')).toLowerCase() === 'admin' && (
                   <Link href="/admin/login" onClick={() => setIsMenuOpen(false)}>
                     <Button className="w-full tap-target rounded-2xl">Post a Gig</Button>
                   </Link>

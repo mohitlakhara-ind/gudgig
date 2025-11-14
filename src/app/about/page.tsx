@@ -3,209 +3,229 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
   Target, 
-  Users, 
   Zap, 
   Shield, 
-  Heart, 
-  Award,
-  CheckCircle,
-  TrendingUp
+  Heart
 } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'About Us - Gigs Mint | Connecting Freelancers with Opportunities',
-  description: 'Learn about Gigs Mint - the clean, simple freelancing platform that connects talented freelancers with meaningful gig opportunities.',
+  title: 'About Us - Gigsmint.com | Connecting Freelancers with Opportunities',
+  description: 'Learn about Gigsmint.com - where opportunities meet talent, one lead at a time. A simple, transparent, and affordable platform connecting clients with freelancers.',
   openGraph: {
-    title: 'About Gigs Mint - Your Freelancing Success Partner',
-    description: 'Discover how Gigs Mint is revolutionizing the freelancing experience with a clean, LinkedIn-inspired platform.',
+    title: 'About Gigsmint.com - Your Freelancing Success Partner',
+    description: 'Discover how Gigsmint.com is revolutionizing the freelancing experience with verified leads and affordable access.',
     type: 'website',
   },
 };
 
 export default function AboutPage() {
-  const values = [
-    {
-      icon: <Target className="h-8 w-8 text-primary" />,
-      title: "Focused Experience",
-      description: "Clean, LinkedIn-inspired design that eliminates clutter and focuses on what matters - connecting talent with opportunity."
-    },
-    {
-      icon: <Zap className="h-8 w-8 text-primary" />,
-      title: "Fast & Simple",
-      description: "No complex subscriptions or hidden fees. Just straightforward bidding on projects that match your skills."
-    },
-    {
-      icon: <Shield className="h-8 w-8 text-primary" />,
-      title: "Quality Focused",
-      description: "Bid fees ensure serious proposals and help maintain a high-quality marketplace for both freelancers and clients."
-    },
-    {
-      icon: <Heart className="h-8 w-8 text-primary" />,
-      title: "Community Driven",
-      description: "Built by freelancers, for freelancers. We understand the challenges and opportunities in the gig economy."
-    }
-  ];
-
-  const features = [
-    {
-      title: "Clean Interface",
-      description: "LinkedIn-inspired design that's professional and easy to navigate",
-      icon: <CheckCircle className="h-6 w-6 text-green-500" />
-    },
-    {
-      title: "No Subscriptions",
-      description: "Pay only when you bid, no monthly fees or hidden costs",
-      icon: <CheckCircle className="h-6 w-6 text-green-500" />
-    },
-    {
-      title: "Quality Control",
-      description: "Bid fees ensure serious proposals and reduce spam",
-      icon: <CheckCircle className="h-6 w-6 text-green-500" />
-    },
-    {
-      title: "Direct Communication",
-      description: "Connect directly with project admins for clear communication",
-      icon: <CheckCircle className="h-6 w-6 text-green-500" />
-    },
-    {
-      title: "Skill-Based Matching",
-      description: "Find projects that match your expertise and interests",
-      icon: <CheckCircle className="h-6 w-6 text-green-500" />
-    },
-    {
-      title: "Transparent Process",
-      description: "Clear project requirements and fair bidding process",
-      icon: <CheckCircle className="h-6 w-6 text-green-500" />
-    }
-  ];
-
-  const stats = [
-    { label: "Active Projects", value: "500+", icon: <TrendingUp className="h-5 w-5" /> },
-    { label: "Freelancers", value: "2,500+", icon: <Users className="h-5 w-5" /> },
-    { label: "Success Rate", value: "95%", icon: <Award className="h-5 w-5" /> },
-    { label: "Countries", value: "25+", icon: <Shield className="h-5 w-5" /> }
-  ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20">
       {/* Hero Section */}
-      <section className="bg-muted py-16">
-        <div className="container mx-auto px-4">
+      <section className="relative py-20 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/10" />
+        <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">
-              About Gigs Mint
-            </h1>
-            <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
-              We\'re building the future of freelancing with a clean, simple platform that connects talented freelancers 
-              with meaningful opportunities. No complexity, no hidden fees, just quality work.
-            </p>
-            <div className="flex flex-wrap justify-center gap-8">
-              {stats.map((stat, index) => (
-                <div key={index} className="text-center">
-                  <div className="flex items-center justify-center gap-2 text-primary mb-2">
-                    {stat.icon}
-                  </div>
-                  <div className="text-2xl font-bold text-foreground">{stat.value}</div>
-                  <div className="text-sm text-muted-foreground">{stat.label}</div>
-                </div>
-              ))}
+            <div className="inline-flex items-center justify-center gap-3 mb-8 p-4 bg-primary/10 rounded-2xl">
+              <div className="p-2 bg-primary/20 rounded-lg">
+                <Target className="h-8 w-8 text-primary" />
+              </div>
+              <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
+                About Gigsmint
+              </h1>
             </div>
+            <div className="space-y-6 max-w-3xl mx-auto">
+              <p className="text-xl md:text-2xl text-foreground font-medium leading-relaxed">
+                Welcome to Gigsmint.com — where opportunities meet talent, one lead at a time.
+              </p>
+              <p className="text-lg text-muted-foreground leading-relaxed">
+                We're building a simple, transparent, and affordable platform that connects clients looking for remote services with freelancers and professionals ready to work. Whether it's web development, graphic design, digital marketing, content writing, app development, or virtual assistance, Gigsmint brings everyone under one roof.
+              </p>
+              <p className="text-lg text-muted-foreground leading-relaxed">
+                Our goal is to make the process of finding work and clients as easy as possible. No complicated bidding, no long waiting periods — just real, verified leads available instantly. Freelancers can browse leads for free and pay a nominal ₹5 to unlock the client's contact details.
+              </p>
+              <div className="bg-primary/5 rounded-lg p-6 border border-primary/20 mt-6">
+                <p className="text-base font-semibold text-foreground mb-3">How It Works:</p>
+                <div className="grid md:grid-cols-3 gap-4 text-sm">
+                  <div className="flex items-start gap-2">
+                    <span className="text-primary font-bold">1.</span>
+                    <span className="text-muted-foreground">Browse verified leads across multiple categories</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-primary font-bold">2.</span>
+                    <span className="text-muted-foreground">Pay ₹5 to unlock contact details instantly</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-primary font-bold">3.</span>
+                    <span className="text-muted-foreground">Connect directly with clients and grow your business</span>
+                  </div>
+                </div>
+              </div>
+              <p className="text-lg text-muted-foreground leading-relaxed">
+                At Gigsmint, we believe in equal opportunities for every skill and fair access to potential clients. By keeping the cost minimal and the process transparent, we empower independent professionals to grow their careers on their own terms.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Vision Section */}
+      <section className="py-20">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <Card className="shadow-xl border-2 bg-gradient-to-br from-background to-muted/30">
+              <CardHeader className="text-center pb-6">
+                <CardTitle className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                  Our Vision
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="px-8 pb-8">
+                <p className="text-lg md:text-xl text-muted-foreground leading-relaxed text-center">
+                  To become the most trusted platform for freelancers and remote workers to find genuine, verified clients across industries — quickly and affordably.
+                </p>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
 
       {/* Mission Section */}
-      <section className="py-16">
+      <section className="py-20 bg-muted/50">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold mb-6 text-foreground">Our Mission</h2>
-              <p className="text-lg text-muted-foreground leading-relaxed">
-                To create a professional, transparent freelancing platform that eliminates the complexity 
-                and hidden costs found in traditional marketplaces. We believe in quality over quantity, 
-                and that great work deserves a great platform.
-              </p>
-            </div>
+            <Card className="shadow-xl border-2">
+              <CardHeader className="text-center pb-6 bg-gradient-to-r from-primary/5 to-primary/10 border-b">
+                <CardTitle className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                  Our Mission
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="px-8 py-8">
+                <p className="text-lg text-muted-foreground leading-relaxed mb-6 text-center">
+                  To simplify the way people connect for work by offering:
+                </p>
+                <div className="grid md:grid-cols-2 gap-4 max-w-2xl mx-auto">
+                  <div className="flex items-start gap-3 p-4 bg-primary/5 rounded-lg border border-primary/20">
+                    <div className="p-1.5 bg-primary/20 rounded mt-0.5">
+                      <Shield className="h-4 w-4 text-primary" />
+                    </div>
+                    <p className="text-base text-foreground">Verified, real-time client leads</p>
+                  </div>
+                  <div className="flex items-start gap-3 p-4 bg-primary/5 rounded-lg border border-primary/20">
+                    <div className="p-1.5 bg-primary/20 rounded mt-0.5">
+                      <Heart className="h-4 w-4 text-primary" />
+                    </div>
+                    <p className="text-base text-foreground">Affordable pay-per-lead access</p>
+                  </div>
+                  <div className="flex items-start gap-3 p-4 bg-primary/5 rounded-lg border border-primary/20">
+                    <div className="p-1.5 bg-primary/20 rounded mt-0.5">
+                      <Target className="h-4 w-4 text-primary" />
+                    </div>
+                    <p className="text-base text-foreground">Equal opportunity for all freelancers</p>
+                  </div>
+                  <div className="flex items-start gap-3 p-4 bg-primary/5 rounded-lg border border-primary/20">
+                    <div className="p-1.5 bg-primary/20 rounded mt-0.5">
+                      <Zap className="h-4 w-4 text-primary" />
+                    </div>
+                    <p className="text-base text-foreground">A safe and transparent experience</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
 
-      {/* Values Section */}
-      <section className="bg-muted py-16">
+      {/* Why Choose Section */}
+      <section className="py-20">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold mb-6 text-foreground">Our Values</h2>
-              <p className="text-lg text-muted-foreground">
-                The principles that guide everything we do
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">Why Choose Gigsmint</h2>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                Discover what makes Gigsmint the preferred choice for freelancers and clients
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {values.map((value, index) => (
-                <Card key={index} className="text-center">
-                  <CardHeader>
-                    <div className="flex justify-center mb-4">
-                      {value.icon}
+              <Card className="text-center hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/50">
+                <CardHeader className="pb-4">
+                  <div className="flex justify-center mb-4">
+                    <div className="p-3 bg-primary/10 rounded-xl">
+                      <Zap className="h-8 w-8 text-primary" />
                     </div>
-                    <CardTitle className="text-xl">{value.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground">{value.description}</p>
-                  </CardContent>
-                </Card>
-              ))}
+                  </div>
+                  <CardTitle className="text-xl font-bold">No Bidding — Just Leads</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground leading-relaxed">Skip the complicated bidding process. Browse verified leads and connect directly with clients.</p>
+                </CardContent>
+              </Card>
+              <Card className="text-center hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/50">
+                <CardHeader className="pb-4">
+                  <div className="flex justify-center mb-4">
+                    <div className="p-3 bg-primary/10 rounded-xl">
+                      <Shield className="h-8 w-8 text-primary" />
+                    </div>
+                  </div>
+                  <CardTitle className="text-xl font-bold">Verified Projects</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground leading-relaxed">All leads are verified by our team to ensure you're connecting with real, legitimate clients.</p>
+                </CardContent>
+              </Card>
+              <Card className="text-center hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/50">
+                <CardHeader className="pb-4">
+                  <div className="flex justify-center mb-4">
+                    <div className="p-3 bg-primary/10 rounded-xl">
+                      <Heart className="h-8 w-8 text-primary" />
+                    </div>
+                  </div>
+                  <CardTitle className="text-xl font-bold">Affordable Access</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground leading-relaxed">Pay just ₹5 to unlock contact details. No subscriptions, no hidden fees.</p>
+                </CardContent>
+              </Card>
+              <Card className="text-center hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/50">
+                <CardHeader className="pb-4">
+                  <div className="flex justify-center mb-4">
+                    <div className="p-3 bg-primary/10 rounded-xl">
+                      <Target className="h-8 w-8 text-primary" />
+                    </div>
+                  </div>
+                  <CardTitle className="text-xl font-bold">Work Across Categories</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground leading-relaxed">From web development to virtual assistance, find opportunities in your field.</p>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold mb-6 text-foreground">Why Choose Gigs Mint?</h2>
-              <p className="text-lg text-muted-foreground">
-                We've simplified freelancing to focus on what matters most
-              </p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {features.map((feature, index) => (
-                <div key={index} className="flex items-start gap-4">
-                  <div className="flex-shrink-0 mt-1">
-                    {feature.icon}
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-foreground mb-2">{feature.title}</h3>
-                    <p className="text-muted-foreground">{feature.description}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* CTA Section */}
-      <section className="bg-primary py-16">
-        <div className="container mx-auto px-4">
+      <section className="relative py-20 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary to-primary/90" />
+        <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl font-bold mb-6 text-primary-foreground">
-              Ready to Start Your Freelancing Journey?
+            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-primary-foreground">
+              Join the Gigsmint Community
             </h2>
-            <p className="text-lg text-primary-foreground/90 mb-8">
-              Join thousands of freelancers who are already finding great opportunities on Gigs Mint.
+            <p className="text-lg md:text-xl text-primary-foreground/90 mb-10 leading-relaxed max-w-3xl mx-auto">
+              Whether you're a freelancer searching for new clients or a business looking for skilled professionals, Gigsmint makes the connection simple, fast, and fair. Start browsing leads, connect directly, and grow your work — one gig at a time.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link 
                 href="/gigs" 
-                className="inline-flex items-center justify-center px-6 py-3 bg-primary-foreground text-primary font-medium rounded-lg hover:bg-primary-foreground/90 transition-colors"
+                className="inline-flex items-center justify-center px-8 py-4 bg-primary-foreground text-primary font-semibold rounded-lg hover:bg-primary-foreground/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
               >
-                Browse Gigs
+                Browse Leads
               </Link>
               <Link 
                 href="/register" 
-                className="inline-flex items-center justify-center px-6 py-3 border border-primary-foreground text-primary-foreground font-medium rounded-lg hover:bg-primary-foreground/10 transition-colors"
+                className="inline-flex items-center justify-center px-8 py-4 border-2 border-primary-foreground text-primary-foreground font-semibold rounded-lg hover:bg-primary-foreground/10 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
               >
                 Get Started
               </Link>

@@ -167,8 +167,12 @@ export default function AdminGigsPage() {
       toast.success('Gig created');
       await load();
     } catch (e: any) {
-      setError(e?.message || 'Failed to create gig');
-      toast.error(e?.message || 'Failed to create gig');
+      const details = Array.isArray(e?.payload?.errors)
+        ? e.payload.errors.map((er: any) => er?.msg || er?.message).filter(Boolean).join('; ')
+        : '';
+      const msg = details ? `${e?.message || 'Validation errors'}: ${details}` : (e?.message || 'Failed to create gig');
+      setError(msg);
+      toast.error(msg);
     } finally {
       setIsLoading(false);
     }
@@ -189,8 +193,12 @@ export default function AdminGigsPage() {
       toast.success('Gig updated');
       await load();
     } catch (e: any) {
-      setError(e?.message || 'Failed to update gig');
-      toast.error(e?.message || 'Failed to update gig');
+      const details = Array.isArray(e?.payload?.errors)
+        ? e.payload.errors.map((er: any) => er?.msg || er?.message).filter(Boolean).join('; ')
+        : '';
+      const msg = details ? `${e?.message || 'Validation errors'}: ${details}` : (e?.message || 'Failed to update gig');
+      setError(msg);
+      toast.error(msg);
     } finally {
       setIsLoading(false);
     }

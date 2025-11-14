@@ -2,28 +2,28 @@
 
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Upload, Search, CheckCircle, Users, Briefcase, ArrowRight, ChevronRight } from 'lucide-react';
+import { Mail, Search, CheckCircle, Users, Briefcase, ArrowRight, MessageSquare } from 'lucide-react';
 
 const employerSteps = [
   {
-    icon: Upload,
-    title: 'Post Your Job',
-    description: 'Create detailed job listings with requirements, skills, and budget. Our team reviews for quality assurance.',
-    detail: 'Add job title, description, requirements, budget range, and timeline',
+    icon: MessageSquare,
+    title: 'Contact Admin',
+    description: 'Reach out to our admin team with your job requirements. Share details about the project, skills needed, budget, and timeline.',
+    detail: 'Email support@gigsmint.com with your job requirements and project details',
     color: 'primary'
   },
   {
     icon: CheckCircle,
-    title: 'Get Approved',
-    description: 'Quick admin review ensures quality listings. Most jobs are approved within 24 hours.',
-    detail: 'Quality check for clear requirements and fair compensation',
+    title: 'Admin Creates Lead',
+    description: 'Our admin team reviews your request and creates a verified lead listing. The lead is posted on the platform for freelancers to discover.',
+    detail: 'Admin verifies and posts your lead within 24-48 hours of contact',
     color: 'secondary'
   },
   {
     icon: Users,
-    title: 'Connect with Talent',
-    description: 'Receive applications from qualified candidates and manage the hiring process seamlessly.',
-    detail: 'Review applications, schedule interviews, and hire the best fit',
+    title: 'Freelancers Connect',
+    description: 'Qualified freelancers browse and unlock your contact details. They reach out directly to discuss the project and collaborate.',
+    detail: 'Freelancers pay ₹5 to unlock your contact information and connect with you',
     color: 'accent'
   }
 ];
@@ -31,23 +31,23 @@ const employerSteps = [
 const candidateSteps = [
   {
     icon: Search,
-    title: 'Browse Jobs',
-    description: 'Explore job listings across various categories and skill levels. Filter by location, budget, and type.',
-    detail: 'Search by category, location, skills, or company size',
+    title: 'Browse Leads',
+    description: 'Explore verified client leads across various categories. Browse for free and see lead details before unlocking.',
+    detail: 'Search by category, skills, or location. All leads are verified by our team',
     color: 'primary'
   },
   {
     icon: CheckCircle,
-    title: 'Choose Your Plan',
-    description: 'Select from flexible subscription plans to unlock full job details and application features.',
-    detail: 'Basic free access or premium plans with full details and priority support',
+    title: 'Unlock Contact Details',
+    description: 'Pay just ₹5 to unlock client contact information. No subscriptions, no hidden fees - pay only for leads you want.',
+    detail: 'Instant access to contact details after payment. Secure payment via Razorpay',
     color: 'secondary'
   },
   {
     icon: Briefcase,
-    title: 'Apply & Track',
-    description: 'Submit applications directly and track your progress through an intuitive dashboard.',
-    detail: 'One-click apply, application tracking, and interview scheduling',
+    title: 'Connect & Grow',
+    description: 'Contact clients directly using the unlocked information. Build relationships and grow your freelance business.',
+    detail: 'Direct communication with clients. Track your unlocked leads in dashboard',
     color: 'accent'
   }
 ];
@@ -68,7 +68,7 @@ export default function HowItWorksMinimal() {
             How It Works
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto font-normal leading-relaxed mb-10">
-            Simple steps for both employers and freelancers to connect and collaborate
+            Simple process for clients to post leads and freelancers to connect with verified opportunities
           </p>
 
           {/* Tab Switcher */}
@@ -146,10 +146,13 @@ export default function HowItWorksMinimal() {
 
             {/* Employer CTA */}
             <div className="text-center">
-              <button className="bg-primary text-primary-foreground px-10 py-4 rounded-full font-medium hover:bg-primary/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-sm tracking-wide">
-                Start Hiring Today
-              </button>
-              <p className="text-xs text-muted-foreground mt-3">Free to post • Quick approval process</p>
+              <a 
+                href="/contact" 
+                className="inline-block bg-primary text-primary-foreground px-10 py-4 rounded-full font-medium hover:bg-primary/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-sm tracking-wide"
+              >
+                Contact Admin to Post Lead
+              </a>
+              <p className="text-xs text-muted-foreground mt-3">Contact admin to create your lead • Quick response within 24 hours</p>
             </div>
           </div>
 
@@ -203,13 +206,13 @@ export default function HowItWorksMinimal() {
             <div className="text-center">
               <div className="flex flex-col sm:flex-row gap-3 justify-center items-center max-w-md mx-auto">
                 <button className="w-full sm:w-auto bg-secondary text-secondary-foreground px-8 py-4 rounded-full font-medium hover:bg-secondary/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-sm tracking-wide">
-                  Browse Jobs
+                  Browse Leads
                 </button>
                 <button className="w-full sm:w-auto border border-secondary/30 text-secondary px-8 py-4 rounded-full font-medium hover:bg-secondary/5 transition-all duration-300 text-sm tracking-wide">
-                  View Plans
+                  Learn More
                 </button>
               </div>
-              <p className="text-xs text-muted-foreground mt-3">Free to browse • Premium features available</p>
+              <p className="text-xs text-muted-foreground mt-3">Free to browse • ₹5 to unlock • No subscriptions</p>
             </div>
           </div>
         </div>

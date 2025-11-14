@@ -175,6 +175,22 @@ export const submitBid = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Gig not found' });
     }
 
+    // Enforce bid limit before attempting payment
+    try {
+      if (gig.maxBids !== null && typeof gig.maxBids === 'number') {
+        const currentSucceededCount = await Bid.countDocuments({ gigId: gig._id, paymentStatus: 'succeeded' });
+        if (currentSucceededCount >= gig.maxBids) {
+          return res.status(400).json({
+            success: false,
+            message: 'Bid limit reached for this gig'
+          });
+        }
+      }
+    } catch (countErr) {
+      // If counting fails, do not accept the bid to be safe
+      return res.status(503).json({ success: false, message: 'Temporarily unable to accept bids. Please try again later.' });
+    }
+
     // Validate contact details are provided
     if (!contactDetails || !contactDetails.bidderContact) {
       return res.status(400).json({ 

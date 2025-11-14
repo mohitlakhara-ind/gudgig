@@ -25,10 +25,10 @@ export default function CTASection() {
                 Ready to begin?
               </div>
               <h2 className="text-3xl md:text-5xl font-extrabold text-foreground mb-4 tracking-tight">
-                Start Your Journey Today
+                Join the Gigsmint Community
               </h2>
               <p className="text-base md:text-xl text-muted-foreground mb-8 leading-relaxed max-w-3xl mx-auto">
-                Subscribe & unlock MicroJobs — find gigs and short-term projects that match your skills.
+                Browse verified client leads for free. Unlock contact details for just ₹5 and connect directly with clients. No bidding, no subscriptions — just real opportunities.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -44,7 +44,7 @@ export default function CTASection() {
               </div>
 
               <p className="text-muted-foreground mt-6 text-xs md:text-sm">
-                Free to start • No credit card required • Cancel anytime
+                Free to browse • ₹5 per lead unlock • No subscriptions • No credit card required
               </p>
             </div>
           </div>

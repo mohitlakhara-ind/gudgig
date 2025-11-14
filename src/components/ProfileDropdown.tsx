@@ -72,8 +72,8 @@ export default function ProfileDropdown() {
   // Handle different user object structures - check if user is nested under 'data'
   const actualUser = (user as any)?.data || user;
   const userRole = actualUser?.role;
-  const isAdmin = userRole === 'admin';
-  const isAdminPage = pathname.startsWith('/admin');
+  const isAdmin = String(userRole || '').toLowerCase() === 'admin';
+  const isAdminPage = pathname.includes('/admin');
   const userName = actualUser?.name || 
                    actualUser?.fullName || 
                    actualUser?.firstName || 

@@ -44,10 +44,10 @@ export default function Hero() {
   ];
 
   const stats = [
-    { label: "Active Gigs", value: "15,000+" },
-    { label: "Freelancers", value: "50,000+" },
-    { label: "Projects Done", value: "100K+" },
-    { label: "Avg Response", value: "< 2hrs" },
+    { label: "Verified Leads", value: "15,000+" },
+    { label: "Active Freelancers", value: "50,000+" },
+    { label: "Leads Unlocked", value: "100K+" },
+    { label: "Unlock Fee", value: "₹5" },
   ];
 
   return (
@@ -67,20 +67,20 @@ export default function Hero() {
           >
             <div className="inline-flex items-center bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium mb-6">
               <span className="w-2 h-2 bg-primary rounded-full mr-2 animate-pulse"></span>
-              Where Talent Meets Opportunity
+              No Bidding — Just Leads
             </div>
 
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-extrabold leading-tight mb-4 sm:mb-6">
               <span className="text-foreground">Welcome to</span>
               <br />
               <span className="text-primary">
-                Gigs Mint
+                Gigsmint
               </span>
             </h1>
 
             <p className="text-base sm:text-lg md:text-xl text-muted-foreground mb-6 sm:mb-8 leading-relaxed px-4 lg:px-0">
-              Discover meaningful micro-jobs and connect with talented freelancers. 
-              Start browsing for free, upgrade when you&apos;re ready to mint your success.
+              Where opportunities meet talent, one lead at a time. 
+              Browse verified client leads for free, unlock contact details for just ₹5, and connect directly.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start px-4 lg:px-0">
@@ -88,7 +88,7 @@ export default function Hero() {
                 href="/gigs"
                 className="px-6 sm:px-8 py-3 sm:py-4 rounded-xl bg-primary text-primary-foreground font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all text-sm sm:text-base"
               >
-                Browse Gigs
+                Browse Leads
               </Link>
               <Link
                 href="/gigs"
@@ -171,7 +171,7 @@ export default function Hero() {
             transition={{ duration: 0.6, delay: 0.6 }}
           >
             <h2 className="text-2xl font-bold text-foreground mb-6 text-center lg:text-left">
-              Explore Popular Categories
+              Browse Leads by Category
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 items-stretch">
               {categories.map((cat, i) => (
@@ -183,7 +183,7 @@ export default function Hero() {
                     <h3 className="font-semibold text-foreground text-sm mb-1">
                       {cat.title}
                     </h3>
-                    <p className="text-xs text-muted-foreground">{cat.count} gigs</p>
+                    <p className="text-xs text-muted-foreground">{cat.count} leads</p>
                   </Card>
                 </Link>
               ))}

@@ -51,7 +51,7 @@ export default function StatsSection() {
             icon: Briefcase,
             value: 0, // Will be updated from API
             suffix: '+',
-            label: 'Jobs Posted',
+            label: 'Verified Leads',
             color: 'secondary',
             description: 'Quality opportunities'
           },
@@ -148,7 +148,7 @@ export default function StatsSection() {
             Trusted by <span className="text-primary">Thousands</span>
           </h2>
           <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-            Join our growing community of freelancers and employers making success happen
+            Join our growing community of freelancers connecting with verified clients across industries
           </p>
           <div className="mt-8 h-px w-24 mx-auto bg-divider-gradient" />
         </div>

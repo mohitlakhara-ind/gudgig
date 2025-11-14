@@ -108,3 +108,62 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.text();
+    const base = getBackendUrl(false);
+
+    const endpoints = [
+      '/api/gigs',
+      '/gigs',
+      '/api/jobs',
+      '/jobs'
+    ];
+
+    // Forward auth header if present (required for admin)
+    let authHeader = request.headers.get('authorization');
+    if (!authHeader) {
+      const tokenCookie = request.cookies.get('token')?.value;
+      if (tokenCookie) authHeader = `Bearer ${tokenCookie}`;
+    }
+
+    for (const ep of endpoints) {
+      const url = new URL(ep, base).toString();
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 12000);
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(authHeader ? { authorization: authHeader } : {}),
+          },
+          body,
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+        if (res.ok) {
+          const data = await res.json().catch(() => ({}));
+          return NextResponse.json(data);
+        }
+        if (res.status === 401) return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
+        if (res.status >= 500) continue; // try next
+        // For 4xx (other than 401), return response content
+        const err = await res.json().catch(() => ({ success: false, message: res.statusText }));
+        return NextResponse.json(err, { status: res.status });
+      } catch (e: any) {
+        clearTimeout(timeoutId);
+        if (e?.name === 'AbortError') {
+          continue;
+        }
+        // try next endpoint
+        continue;
+      }
+    }
+
+    return NextResponse.json({ success: false, message: 'Failed to create gig' }, { status: 502 });
+  } catch (error) {
+    return NextResponse.json({ success: false, message: 'Error creating gig' }, { status: 500 });
+  }
+}

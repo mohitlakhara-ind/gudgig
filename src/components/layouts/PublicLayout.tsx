@@ -56,7 +56,7 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
                 <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
                   <span className="text-primary-foreground font-bold text-sm">GM</span>
                 </div>
-                <span className="font-semibold text-lg text-foreground">Gigs Mint</span>
+                <span className="font-semibold text-lg text-foreground">Gigsmint</span>
               </Link>
             </div>
 
@@ -205,11 +205,10 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
                 <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
                   <span className="text-primary-foreground font-bold text-sm">GM</span>
                 </div>
-                <span className="font-semibold text-lg">Gigs Mint</span>
+                <span className="font-semibold text-lg">Gigsmint</span>
               </div>
               <p className="text-muted-foreground mb-4 max-w-md">
-                Connect with top freelancers and find the perfect opportunities for your projects. 
-                Join thousands of professionals who trust Gigs Mint.
+                Where opportunities meet talent, one lead at a time. A simple, transparent, and affordable platform connecting clients with freelancers.
               </p>
             </div>
 
@@ -230,12 +229,14 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
                 <li><Link href="/faq" className="hover:text-foreground transition-colors">FAQ</Link></li>
                 <li><Link href="/terms" className="hover:text-foreground transition-colors">Terms of Service</Link></li>
                 <li><Link href="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link></li>
+                <li><Link href="/refund" className="hover:text-foreground transition-colors">Refund Policy</Link></li>
+                <li><Link href="/shipping" className="hover:text-foreground transition-colors">Shipping Policy</Link></li>
               </ul>
             </div>
           </div>
 
           <div className="border-t border-border mt-8 pt-8 text-center text-sm text-muted-foreground">
-            <p>&copy; 2024 Gigs Mint. All rights reserved.</p>
+            <p>&copy; 2024 Gigsmint.com. All rights reserved.</p>
           </div>
         </div>
       </footer>

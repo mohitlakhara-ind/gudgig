@@ -22,10 +22,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const { isMobile, isTablet, isDesktop } = useResponsive();
 
   // Check if we're on admin pages
-  const isAdminPage = pathname.startsWith('/admin');
+  const isAdminPage = pathname.includes('/admin');
   const actualUser = (user as any)?.data || user;
   const userRole = actualUser?.role;
-  const isAdmin = userRole === 'admin';
+  const isAdmin = String(userRole || '').trim().toLowerCase() === 'admin';
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -39,6 +39,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       setSidebarOpen(false);
     }
   }, [pathname, isMobile]);
+
+  // Enforce admin access to admin pages only
+  useEffect(() => {
+    if (isAdmin && !isAdminPage) {
+      router.replace('/admin');
+    }
+  }, [isAdmin, isAdminPage, router]);
 
   // Close sidebar when switching to desktop
   useEffect(() => {

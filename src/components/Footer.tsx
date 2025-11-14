@@ -30,8 +30,10 @@ const footerLinks = {
   support: [
     { name: 'FAQ', href: '/faq' },
     { name: 'Help Center', href: '/help-center' },
-    { name: 'Privacy Policy', href: '/privacy-policy' },
-    { name: 'Terms of Service', href: '/terms-of-service' }
+    { name: 'Privacy Policy', href: '/privacy' },
+    { name: 'Terms of Service', href: '/terms' },
+    { name: 'Refund Policy', href: '/refund' },
+    { name: 'Shipping Policy', href: '/shipping' }
   ]
 };
 
@@ -56,10 +58,10 @@ export default function Footer() {
               <div className="w-8 h-8 bg-primary rounded-2xl flex items-center justify-center shadow-strong">
                 <span className="text-primary-foreground font-bold text-sm">GM</span>
               </div>
-              <span className="text-xl font-bold">Gigs Mint</span>
+              <span className="text-xl font-bold">Gigsmint</span>
             </div>
             <p className="text-muted-foreground mb-6 leading-relaxed">
-              A futuristic freelancer marketplace with professional LinkedIn-blue aesthetics. Browse jobs, post a job, and bid with confidence.
+              Where opportunities meet talent, one lead at a time. A simple, transparent, and affordable platform connecting clients with freelancers.
             </p>
 
             {/* Contact Info */}
@@ -138,7 +140,7 @@ export default function Footer() {
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-6">
               <p className="text-muted-foreground text-sm">
-                © 2024 Gigs Mint. All rights reserved.
+                © 2024 Gigsmint.com. All rights reserved.
               </p>
               <div className="flex space-x-4">
                 {footerLinks.support.map((link) => (

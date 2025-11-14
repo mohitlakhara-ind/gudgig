@@ -25,10 +25,10 @@ export default function AppLayout({ children }: AppLayoutProps) {
   const [socket, setSocket] = useState<any | null>(null);
 
   // Check if we're on admin pages
-  const isAdminPage = pathname.startsWith('/admin');
+  const isAdminPage = pathname.includes('/admin');
   const actualUser = (user as any)?.data || user;
   const userRole = actualUser?.role;
-  const isAdmin = userRole === 'admin';
+  const isAdmin = String(userRole || '').trim().toLowerCase() === 'admin';
 
   // Detect gigs routes
   const isGigsRoute = pathname === '/gigs' || pathname.startsWith('/gigs/');
@@ -117,6 +117,13 @@ export default function AppLayout({ children }: AppLayoutProps) {
       setSidebarOpen(false);
     }
   }, [pathname, isMobile]);
+
+  // Enforce admin access to admin pages only
+  useEffect(() => {
+    if (isAdmin && !isAdminPage) {
+      router.replace('/admin');
+    }
+  }, [isAdmin, isAdminPage, router]);
 
   // Close sidebar when switching to desktop
   useEffect(() => {

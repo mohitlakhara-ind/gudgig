@@ -2,8 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, RefreshCw, CreditCard, Clock, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, RefreshCw, CreditCard } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -11,265 +10,125 @@ export default function RefundPage() {
   const router = useRouter();
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+      <div className="container mx-auto px-4 py-12">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
-          <div className="mb-8">
+          <div className="mb-10">
             <Button 
               variant="ghost" 
               onClick={() => router.back()}
-              className="mb-6"
+              className="mb-6 hover:bg-muted"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back
             </Button>
             
-            <div className="text-center">
-              <div className="inline-flex items-center gap-2 mb-4">
-                <RefreshCw className="h-8 w-8 text-primary" />
-                <h1 className="text-4xl font-bold">Refund Policy</h1>
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center justify-center gap-3 mb-6 p-4 bg-primary/10 rounded-2xl">
+                <div className="p-2 bg-primary/20 rounded-lg">
+                  <RefreshCw className="h-8 w-8 text-primary" />
+                </div>
+                <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                  Refund Policy
+                </h1>
               </div>
-              <p className="text-muted-foreground text-lg">
-                Last updated: {new Date().toLocaleDateString()}
+              <p className="text-muted-foreground text-base">
+                Last Updated: [Insert Date]
               </p>
             </div>
           </div>
 
           {/* Refund Content */}
-          <Card className="shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CreditCard className="h-5 w-5" />
+          <Card className="shadow-xl border-2">
+            <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/10 border-b">
+              <CardTitle className="flex items-center gap-3 text-2xl">
+                <div className="p-2 bg-primary/20 rounded-lg">
+                  <CreditCard className="h-6 w-6 text-primary" />
+                </div>
                 Refund Terms and Conditions
               </CardTitle>
             </CardHeader>
-            <CardContent className="prose prose-gray max-w-none">
-              <div className="space-y-8">
+            <CardContent className="p-8">
+              <div className="space-y-6">
                 {/* Introduction */}
                 <section>
-                  <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
-                    <AlertTriangle className="h-6 w-6 text-amber-500" />
-                    Important Notice
-                  </h2>
-                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
-                    <p className="text-amber-800 font-medium">
-                      Bid fees are generally non-refundable. Please read this policy carefully before placing any bids.
+                  <div className="bg-amber-50 dark:bg-amber-950/20 border-2 border-amber-200 dark:border-amber-800 rounded-lg p-6 mb-6">
+                    <p className="text-amber-900 dark:text-amber-100 font-semibold text-lg mb-3">
+                      ⚠️ Important Notice
+                    </p>
+                    <p className="text-amber-800 dark:text-amber-200 leading-relaxed text-base">
+                      All payments made to unlock lead contact details are non-refundable.
                     </p>
                   </div>
-                  <p className="text-muted-foreground leading-relaxed">
-                    This Refund Policy outlines the circumstances under which refunds may be considered for 
-                    services provided through the Gigs Mint platform. By using our platform, you agree to 
-                    the terms outlined in this policy.
+                  
+                  <p className="text-muted-foreground leading-relaxed text-base mb-4">
+                    Since leads are digital and instantly accessible once unlocked, we cannot issue refunds for:
                   </p>
-                </section>
-
-                {/* General Policy */}
-                <section>
-                  <h2 className="text-2xl font-semibold mb-4">1. General Refund Policy</h2>
-                  <div className="space-y-4">
-                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                      <h3 className="text-lg font-medium mb-2 flex items-center gap-2 text-red-800">
-                        <XCircle className="h-5 w-5" />
-                        Non-Refundable Items
-                      </h3>
-                      <ul className="list-disc list-inside text-red-700 space-y-1">
-                        <li>Bid fees paid to place bids on projects</li>
-                        <li>Platform usage fees</li>
-                        <li>Processing fees charged by payment gateways</li>
-                        <li>Services already rendered or completed</li>
-                      </ul>
-                    </div>
-                    
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                      <h3 className="text-lg font-medium mb-2 flex items-center gap-2 text-green-800">
-                        <CheckCircle className="h-5 w-5" />
-                        Refundable Circumstances
-                      </h3>
-                      <ul className="list-disc list-inside text-green-700 space-y-1">
-                        <li>Technical errors on our platform that prevent bid placement</li>
-                        <li>Duplicate payments due to system errors</li>
-                        <li>Project cancellation by the client before bid review</li>
-                        <li>Fraudulent transactions (subject to investigation)</li>
+                  
+                  <div className="bg-muted/50 rounded-lg p-5 border border-border/50 mb-6">
+                    <ul className="list-disc list-inside text-muted-foreground space-y-2 text-base ml-2">
+                      <li>Accidental purchases.</li>
+                      <li>Leads that do not respond or convert.</li>
+                      <li>Change of mind after purchase.</li>
+                    </ul>
+                  </div>
+                  
+                  <div className="bg-primary/5 rounded-lg p-5 border border-primary/20">
+                    <p className="text-foreground leading-relaxed text-base mb-3">
+                      <span className="font-semibold">Exception:</span> If a lead contains invalid or incorrect contact information, please report it within 24 hours of purchase at <a href="mailto:support@gigsmint.com" className="text-primary hover:underline font-medium">support@gigsmint.com</a>. Upon verification, we may offer a replacement lead or credit.
+                    </p>
+                    <div className="bg-muted/50 rounded-lg p-4 border border-border/50 mt-3">
+                      <p className="text-sm font-semibold text-foreground mb-2">To Report Invalid Lead Information:</p>
+                      <ul className="list-disc list-inside text-muted-foreground space-y-1 text-sm ml-2">
+                        <li>Contact us within 24 hours of unlocking the lead</li>
+                        <li>Provide your transaction ID and the lead details</li>
+                        <li>Explain why the contact information is invalid (e.g., wrong number, email bounced, non-existent company)</li>
+                        <li>Our team will verify the issue within 2-3 business days</li>
+                        <li>If verified, we will provide a replacement lead or credit to your account</li>
                       </ul>
                     </div>
                   </div>
                 </section>
 
-                {/* Bid Fee Refunds */}
-                <section>
-                  <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
-                    <Clock className="h-6 w-6 text-primary" />
-                    2. Bid Fee Refund Policy
-                  </h2>
+                {/* Additional Information */}
+                <section className="pt-6 border-t border-border/50">
+                  <h2 className="text-2xl font-bold mb-3 text-foreground">Understanding Our Policy</h2>
                   <div className="space-y-4">
-                    <p className="text-muted-foreground leading-relaxed">
-                      Bid fees are charged to ensure serious participation and maintain platform quality. 
-                      These fees are generally non-refundable, except in the following specific circumstances:
-                    </p>
-                    
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div className="border rounded-lg p-4">
-                        <h3 className="font-semibold mb-2 text-green-700">Eligible for Refund</h3>
-                        <ul className="text-sm text-muted-foreground space-y-1">
-                          <li>• System error preventing bid submission</li>
-                          <li>• Project removed within 24 hours of bid</li>
-                          <li>• Duplicate payment due to technical issue</li>
-                          <li>• Client account suspended after bid placement</li>
-                        </ul>
-                      </div>
-                      
-                      <div className="border rounded-lg p-4">
-                        <h3 className="font-semibold mb-2 text-red-700">Not Eligible for Refund</h3>
-                        <ul className="text-sm text-muted-foreground space-y-1">
-                          <li>• Bid not selected by client</li>
-                          <li>• Change of mind after bid placement</li>
-                          <li>• Project requirements changed</li>
-                          <li>• Client communication issues</li>
-                        </ul>
-                      </div>
+                    <div className="bg-muted/50 rounded-lg p-4 border border-border/50">
+                      <p className="text-sm font-semibold text-foreground mb-2">Why Are Payments Non-Refundable?</p>
+                      <p className="text-muted-foreground leading-relaxed text-sm">
+                        Lead contact details are digital products that become immediately accessible upon payment. Once you unlock a lead, you have instant access to the contact information, making it impossible to "return" the product. This policy helps us maintain platform integrity and ensures fair access for all users.
+                      </p>
+                    </div>
+                    <div className="bg-blue-50 dark:bg-blue-950/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
+                      <p className="text-sm font-semibold text-foreground mb-2">Tips for Successful Lead Usage:</p>
+                      <ul className="list-disc list-inside text-muted-foreground space-y-1 text-sm ml-2">
+                        <li>Review lead details carefully before unlocking</li>
+                        <li>Contact clients promptly after unlocking (within 24-48 hours)</li>
+                        <li>Be professional and prepared when reaching out</li>
+                        <li>Follow up appropriately if you don't receive an immediate response</li>
+                        <li>Report any issues with contact information immediately</li>
+                      </ul>
                     </div>
                   </div>
-                </section>
-
-                {/* Refund Process */}
-                <section>
-                  <h2 className="text-2xl font-semibold mb-4">3. Refund Request Process</h2>
-                  <div className="space-y-4">
-                    <p className="text-muted-foreground leading-relaxed">
-                      To request a refund, follow these steps:
-                    </p>
-                    
-                    <div className="space-y-3">
-                      <div className="flex items-start gap-3">
-                        <Badge variant="outline" className="mt-1">1</Badge>
-                        <div>
-                          <h3 className="font-medium">Submit Request</h3>
-                          <p className="text-sm text-muted-foreground">
-                            Contact our support team within 7 days of the transaction with your transaction ID and reason for refund.
-                          </p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-start gap-3">
-                        <Badge variant="outline" className="mt-1">2</Badge>
-                        <div>
-                          <h3 className="font-medium">Review Process</h3>
-                          <p className="text-sm text-muted-foreground">
-                            Our team will review your request within 3-5 business days and verify the circumstances.
-                          </p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-start gap-3">
-                        <Badge variant="outline" className="mt-1">3</Badge>
-                        <div>
-                          <h3 className="font-medium">Processing</h3>
-                          <p className="text-sm text-muted-foreground">
-                            If approved, refunds will be processed within 5-10 business days to your original payment method.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </section>
-
-                {/* Processing Times */}
-                <section>
-                  <h2 className="text-2xl font-semibold mb-4">4. Refund Processing Times</h2>
-                  <div className="bg-muted rounded-lg p-4">
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div>
-                        <h3 className="font-semibold mb-2">Approval Time</h3>
-                        <p className="text-sm text-muted-foreground">3-5 business days</p>
-                      </div>
-                      <div>
-                        <h3 className="font-semibold mb-2">Processing Time</h3>
-                        <p className="text-sm text-muted-foreground">5-10 business days</p>
-                      </div>
-                    </div>
-                  </div>
-                </section>
-
-                {/* Dispute Resolution */}
-                <section>
-                  <h2 className="text-2xl font-semibold mb-4">5. Dispute Resolution</h2>
-                  <p className="text-muted-foreground leading-relaxed">
-                    If you disagree with our refund decision, you may:
-                  </p>
-                  <ul className="list-disc list-inside text-muted-foreground mt-4 space-y-2">
-                    <li>Request a second review with additional documentation</li>
-                    <li>Contact our customer service team for further assistance</li>
-                    <li>Escalate the matter to our management team</li>
-                  </ul>
-                </section>
-
-                {/* Payment Method Refunds */}
-                <section>
-                  <h2 className="text-2xl font-semibold mb-4">6. Payment Method Refunds</h2>
-                  <p className="text-muted-foreground leading-relaxed">
-                    Refunds will be processed to the original payment method used for the transaction. 
-                    Processing times may vary depending on your payment provider:
-                  </p>
-                  <div className="mt-4 grid md:grid-cols-3 gap-4">
-                    <div className="text-center p-4 border rounded-lg">
-                      <CreditCard className="h-8 w-8 mx-auto mb-2 text-primary" />
-                      <h3 className="font-medium">Credit/Debit Cards</h3>
-                      <p className="text-sm text-muted-foreground">5-10 business days</p>
-                    </div>
-                    <div className="text-center p-4 border rounded-lg">
-                      <div className="h-8 w-8 mx-auto mb-2 bg-green-100 rounded flex items-center justify-center">
-                        <span className="text-green-600 font-bold text-sm">UPI</span>
-                      </div>
-                      <h3 className="font-medium">UPI</h3>
-                      <p className="text-sm text-muted-foreground">1-3 business days</p>
-                    </div>
-                    <div className="text-center p-4 border rounded-lg">
-                      <div className="h-8 w-8 mx-auto mb-2 bg-blue-100 rounded flex items-center justify-center">
-                        <span className="text-blue-600 font-bold text-sm">NB</span>
-                      </div>
-                      <h3 className="font-medium">Net Banking</h3>
-                      <p className="text-sm text-muted-foreground">3-7 business days</p>
-                    </div>
-                  </div>
-                </section>
-
-                {/* Contact Information */}
-                <section>
-                  <h2 className="text-2xl font-semibold mb-4">7. Contact for Refunds</h2>
-                  <p className="text-muted-foreground leading-relaxed">
-                    For refund requests or questions about this policy, contact us:
-                  </p>
-                  <div className="mt-4 p-4 bg-muted rounded-lg">
-                    <p className="font-medium">Gigs Mint Support Team</p>
-                    <p>Email: refunds@gigsmint.com</p>
-                    <p>Phone: +91-XXXX-XXXX</p>
-                    <p>Response Time: Within 24 hours</p>
-                  </div>
-                </section>
-
-                {/* Policy Updates */}
-                <section>
-                  <h2 className="text-2xl font-semibold mb-4">8. Policy Updates</h2>
-                  <p className="text-muted-foreground leading-relaxed">
-                    We reserve the right to update this Refund Policy at any time. Changes will be posted 
-                    on this page with an updated "Last updated" date. Continued use of our platform 
-                    constitutes acceptance of the updated policy.
-                  </p>
                 </section>
               </div>
             </CardContent>
           </Card>
 
           {/* Footer Actions */}
-          <div className="mt-8 flex justify-center gap-4">
-            <Button variant="outline" asChild>
+          <div className="mt-12 flex flex-wrap justify-center gap-4">
+            <Button variant="outline" className="min-w-[140px]" asChild>
               <Link href="/terms">Terms of Service</Link>
             </Button>
-            <Button variant="outline" asChild>
+            <Button variant="outline" className="min-w-[140px]" asChild>
               <Link href="/privacy">Privacy Policy</Link>
             </Button>
-            <Button asChild>
+            <Button variant="outline" className="min-w-[140px]" asChild>
+              <Link href="/shipping">Shipping Policy</Link>
+            </Button>
+            <Button className="min-w-[140px]" asChild>
               <Link href="/">Back to Home</Link>
             </Button>
           </div>

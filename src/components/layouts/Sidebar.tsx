@@ -54,10 +54,10 @@ export default function Sidebar({ isOpen, onToggle, isMobile = false }: SidebarP
   const userAvatar = actualUser?.avatar || actualUser?.profileImage || undefined;
   const userRole = actualUser?.role;
 
-  const isAdmin = userRole === 'admin';
+  const isAdmin = String(userRole || '').trim().toLowerCase() === 'admin';
 
   // Check if we're on admin pages
-  const isAdminPage = pathname.startsWith('/admin');
+  const isAdminPage = pathname.includes('/admin');
 
   // Fetch unread notification count
   useEffect(() => {

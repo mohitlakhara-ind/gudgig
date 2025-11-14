@@ -3,17 +3,17 @@ import ContactForm from '@/components/ContactForm';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Contact Us | Gigs Mint',
-  description: "Get in touch with Gigs Mint support and admin team.",
-  openGraph: { title: 'Contact Us | Gigs Mint', description: 'Contact Gigs Mint for support and inquiries', type: 'website' },
-  twitter: { card: 'summary_large_image', title: 'Contact Us | Gigs Mint', description: 'Contact Gigs Mint support team' },
+  title: 'Contact Us | Gigsmint.com',
+  description: "Get in touch with Gigsmint.com support and admin team. Contact us to post leads or for support.",
+  openGraph: { title: 'Contact Us | Gigsmint.com', description: 'Contact Gigsmint.com admin to post leads or for support', type: 'website' },
+  twitter: { card: 'summary_large_image', title: 'Contact Us | Gigsmint.com', description: 'Contact Gigsmint.com admin team' },
 };
 
 export default function Contact() {
   const contactJsonLd = {
     "@context": "https://schema.org",
     "@type": "Organization",
-    "name": "Gigs Mint",
+    "name": "Gigsmint.com",
     "contactPoint": [
       {
         "@type": "ContactPoint",
@@ -54,8 +54,9 @@ export default function Contact() {
                       </div>
                       <div>
                         <h3 className="font-semibold text-foreground mb-1">Email</h3>
-                        <p className="text-muted-foreground">kapiketu@gmail.com</p>
+                        <p className="text-muted-foreground">support@gigsmint.com</p>
                         <p className="text-sm text-muted-foreground">We&apos;ll get back to you within 24 hours</p>
+                        <p className="text-sm text-primary font-medium mt-1">For posting leads, please mention "Post Lead" in subject</p>
                       </div>
                     </div>
 
@@ -103,6 +104,17 @@ export default function Contact() {
                       → Privacy Policy
                     </Link>
                   </div>
+                </div>
+
+                <div className="bg-primary/5 border border-primary/20 p-6 rounded-lg">
+                  <h3 className="font-semibold text-foreground mb-3">Want to Post a Lead?</h3>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Clients and businesses can contact our admin team to post verified leads on the platform. Our team will review your requirements and create a lead listing.
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    <strong className="text-foreground">Email:</strong> support@gigsmint.com<br />
+                    <strong className="text-foreground">Subject:</strong> Post Lead Request
+                  </p>
                 </div>
               </div>
 

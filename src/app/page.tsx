@@ -7,17 +7,17 @@ import Footer from '@/components/Footer';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Gigs Mint — Find & Bid on Projects That Match Your Skills',
-  description: 'Browse freelance projects, place bids, and win work. Clean, minimal LinkedIn-style experience for freelancers.',
+  title: 'Gigsmint.com — Where Opportunities Meet Talent, One Lead at a Time',
+  description: 'Browse verified client leads for free. Pay just ₹5 to unlock contact details and connect directly. Simple, transparent, and affordable.',
   openGraph: {
-    title: 'Gigs Mint — Find & Bid on Projects',
-    description: 'Find projects that match your skills. Place bids and connect with admins.',
+    title: 'Gigsmint.com — Connect with Verified Client Leads',
+    description: 'Browse leads for free, unlock contact details for ₹5. No bidding, no subscriptions - just real opportunities.',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Gigs Mint — Browse and Bid on Projects',
-    description: 'A focused freelancer experience without subscription complexity.',
+    title: 'Gigsmint.com — Verified Client Leads',
+    description: 'Simple, transparent, and affordable lead access for freelancers.',
   },
 };
 
@@ -25,13 +25,13 @@ export default function Home() {
   const pageJsonLd = {
     "@context": "https://schema.org",
     "@type": "WebPage",
-    "name": "Gigs Mint — Freelancer Projects",
-    "description": "Find and bid on freelance projects. Clean, minimal experience for freelancers.",
-    "url": "https://gigs-mint.example",
+    "name": "Gigsmint.com — Verified Client Leads",
+    "description": "Browse verified client leads for free. Unlock contact details for ₹5 and connect directly with clients.",
+    "url": "https://gigsmint.com",
     "mainEntity": {
       "@type": "ItemList",
-      "name": "Freelance Project Categories",
-      "description": "Browse projects by category and place bids"
+      "name": "Client Lead Categories",
+      "description": "Browse verified leads across multiple categories"
     }
   };
   return (

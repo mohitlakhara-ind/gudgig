@@ -96,8 +96,8 @@ export default function LatestGigs() {
       <section className="py-16 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-foreground mb-4">Latest Gigs</h2>
-            <p className="text-muted-foreground text-lg">Discover the newest opportunities</p>
+            <h2 className="text-3xl font-bold text-foreground mb-4">Latest Leads</h2>
+            <p className="text-muted-foreground text-lg">Discover the newest verified client opportunities</p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -135,14 +135,14 @@ export default function LatestGigs() {
       <section className="py-16 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-foreground mb-4">Latest Gigs</h2>
-            <p className="text-muted-foreground text-lg">Discover the newest opportunities</p>
+            <h2 className="text-3xl font-bold text-foreground mb-4">Latest Leads</h2>
+            <p className="text-muted-foreground text-lg">Discover the newest verified client opportunities</p>
           </div>
           
           <Card className="text-center py-12">
             <CardContent>
               <AlertCircle className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Unable to Load Gigs</h3>
+              <h3 className="text-xl font-semibold mb-2">Unable to Load Leads</h3>
               <p className="text-muted-foreground mb-6">{error}</p>
               <Button onClick={() => window.location.reload()}>
                 Try Again
@@ -208,7 +208,7 @@ export default function LatestGigs() {
                   <div className="flex items-center gap-2">
                     <Users className="h-4 w-4 text-muted-foreground" />
                     <span className="text-muted-foreground">
-                      {gig.applicationsCount || 0} applications
+                      {gig.applicationsCount || 0} unlocks
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -244,7 +244,7 @@ export default function LatestGigs() {
                   onClick={() => handleViewGig(gig._id)}
                 >
                   <Briefcase className="h-4 w-4 mr-2" />
-                  View Details
+                  View Lead
                   <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
               </CardContent>
