@@ -41,6 +41,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
     pathname.startsWith('/terms') || 
     pathname.startsWith('/privacy') || 
     pathname.startsWith('/refund') ||
+    pathname.startsWith('/shipping') ||
     pathname.startsWith('/login') ||
     pathname.startsWith('/register') ||
     pathname.startsWith('/forgot-password') ||

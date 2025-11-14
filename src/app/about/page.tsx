@@ -1,12 +1,13 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { 
-  Target, 
-  Zap, 
-  Shield, 
+import {
+  Target,
+  Zap,
+  Shield,
   Heart
 } from 'lucide-react';
+import Image from 'next/image';
 
 export const metadata: Metadata = {
   title: 'About Us - Gigsmint.com | Connecting Freelancers with Opportunities',
@@ -28,8 +29,8 @@ export default function AboutPage() {
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
             <div className="inline-flex items-center justify-center gap-3 mb-8 p-4 bg-primary/10 rounded-2xl">
-              <div className="p-2 bg-primary/20 rounded-lg">
-                <Target className="h-8 w-8 text-primary" />
+              <div className="w-14 h-14 dark:bg-accent-foreground rounded-lg flex items-center justify-center">
+                <Image src="/logo.png" height={100} width={100} alt='gigsmint logo' />
               </div>
               <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
                 About Gigsmint
@@ -217,14 +218,14 @@ export default function AboutPage() {
               Whether you're a freelancer searching for new clients or a business looking for skilled professionals, Gigsmint makes the connection simple, fast, and fair. Start browsing leads, connect directly, and grow your work — one gig at a time.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link 
-                href="/gigs" 
+              <Link
+                href="/gigs"
                 className="inline-flex items-center justify-center px-8 py-4 bg-primary-foreground text-primary font-semibold rounded-lg hover:bg-primary-foreground/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
               >
                 Browse Leads
               </Link>
-              <Link 
-                href="/register" 
+              <Link
+                href="/register"
                 className="inline-flex items-center justify-center px-8 py-4 border-2 border-primary-foreground text-primary-foreground font-semibold rounded-lg hover:bg-primary-foreground/10 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
               >
                 Get Started

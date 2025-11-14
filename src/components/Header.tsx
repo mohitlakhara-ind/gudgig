@@ -12,7 +12,7 @@ import MobileMenu from '@/components/ui/mobile-menu';
 import DarkModeToggle from '@/components/ui/dark-mode-toggle';
 import ProfileDropdown from '@/components/ProfileDropdown';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
-
+import Image from 'next/image';
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -38,8 +38,8 @@ export default function Header() {
           <div className="flex h-14 items-center justify-between">
             {/* Professional Logo */}
             <div className="flex items-center space-x-2">
-              <div className="w-9 h-9 bg-primary rounded-lg flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm">GM</span>
+              <div className="w-9 h-9 dark:bg-accent-foreground rounded-lg flex items-center justify-center">
+                <Image src="/logo.png" height={36} width={36} alt='gigsmint logo' />
               </div>
               <span className="text-base sm:text-lg font-semibold text-foreground">Gigs Mint</span>
             </div>

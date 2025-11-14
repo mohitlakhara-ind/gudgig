@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge, NotificationBadge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { apiClient } from '@/lib/api';
+import Image from 'next/image';
 import {
   Home,
   Search,
@@ -265,11 +266,11 @@ export default function Sidebar({ isOpen, onToggle, isMobile = false }: SidebarP
         // Profile hidden on admin pages
         ...(!isAdminPage
           ? [{
-              name: 'Profile',
-              href: '/profile',
-              icon: User,
-              description: 'Your profile'
-            }]
+            name: 'Profile',
+            href: '/profile',
+            icon: User,
+            description: 'Your profile'
+          }]
           : []),
         {
           name: 'Settings',
@@ -277,7 +278,7 @@ export default function Sidebar({ isOpen, onToggle, isMobile = false }: SidebarP
           icon: Settings,
           description: 'Preferences'
         },
-          // Removed Help & Support as the route is nested under dashboard
+        // Removed Help & Support as the route is nested under dashboard
       ]
     });
 
@@ -325,13 +326,13 @@ export default function Sidebar({ isOpen, onToggle, isMobile = false }: SidebarP
       <div className="flex items-center justify-between p-2 sm:p-3">
         {!isCollapsed && (
           <div className="flex items-center gap-2 min-w-0">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
-              <span className="text-primary-foreground font-bold text-sm">GM</span>
+            <div className="w-9 h-9 dark:bg-accent-foreground rounded-lg flex items-center justify-center">
+              <Image src="/logo.png" height={36} width={36} alt='gigsmint logo' />
             </div>
             <span className="font-semibold text-base sm:text-lg truncate">Gigs Mint</span>
           </div>
         )}
-        
+
         <div className="flex items-center gap-2 flex-shrink-0">
           {!isMobile && !responsiveMobile && (
             <Button
@@ -343,7 +344,7 @@ export default function Sidebar({ isOpen, onToggle, isMobile = false }: SidebarP
               {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
             </Button>
           )}
-          
+
           {(isMobile || responsiveMobile) && (
             <Button
               variant="ghost"
@@ -372,7 +373,7 @@ export default function Sidebar({ isOpen, onToggle, isMobile = false }: SidebarP
                 {userName.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
-            
+
             {!isCollapsed && (
               <div className="flex-1 min-w-0">
                 <div className="font-medium text-xs sm:text-sm truncate">{userName}</div>
@@ -401,7 +402,7 @@ export default function Sidebar({ isOpen, onToggle, isMobile = false }: SidebarP
                   {section.title}
                 </h3>
               )}
-              
+
               <div className="space-y-1">
                 {section.items.map((item) => {
                   const isActive = isActiveLink(item.href);
@@ -426,7 +427,7 @@ export default function Sidebar({ isOpen, onToggle, isMobile = false }: SidebarP
                           <NotificationBadge count={unreadCount} className="absolute -top-2 -right-2 min-w-[18px] h-5 px-1.5 text-[10px]" />
                         )}
                       </div>
-                      
+
                       {!isCollapsed && (
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
@@ -440,7 +441,7 @@ export default function Sidebar({ isOpen, onToggle, isMobile = false }: SidebarP
                           </div>
                         </div>
                       )}
-                      
+
                       {isActive && !isCollapsed && (
                         <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0" />
                       )}
@@ -482,7 +483,7 @@ export default function Sidebar({ isOpen, onToggle, isMobile = false }: SidebarP
             onClick={onToggle}
           />
         )}
-        
+
         {/* Mobile Sidebar */}
         <div
           className={cn(

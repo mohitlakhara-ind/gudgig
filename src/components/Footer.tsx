@@ -11,6 +11,7 @@ import {
   Phone,
   MapPin
 } from 'lucide-react';
+import Image from 'next/image';
 
 const footerLinks = {
   company: [
@@ -29,7 +30,6 @@ const footerLinks = {
   ],
   support: [
     { name: 'FAQ', href: '/faq' },
-    { name: 'Help Center', href: '/help-center' },
     { name: 'Privacy Policy', href: '/privacy' },
     { name: 'Terms of Service', href: '/terms' },
     { name: 'Refund Policy', href: '/refund' },
@@ -55,8 +55,8 @@ export default function Footer() {
           {/* Company Info */}
           <div className="lg:col-span-2">
             <div className="flex items-center space-x-2 mb-4">
-              <div className="w-8 h-8 bg-primary rounded-2xl flex items-center justify-center shadow-strong">
-                <span className="text-primary-foreground font-bold text-sm">GM</span>
+              <div className="w-9 h-9 dark:bg-accent-foreground rounded-lg flex items-center justify-center">
+                <Image src="/logo.png" height={36} width={36} alt='gigsmint footer logo' />
               </div>
               <span className="text-xl font-bold">Gigsmint</span>
             </div>
@@ -83,20 +83,20 @@ export default function Footer() {
 
           {/* Company Links */}
           <div>
-           <h3 className="text-lg font-semibold mb-4">Company</h3>
-           <ul className="space-y-2">
-             {footerLinks.company.map((link) => (
-               <li key={link.name}>
-                 <Link
-                   href={link.href}
-                   className="text-muted-foreground hover:text-foreground transition-colors"
-                 >
-                   {link.name}
-                 </Link>
-               </li>
-             ))}
-           </ul>
-         </div>
+            <h3 className="text-lg font-semibold mb-4">Company</h3>
+            <ul className="space-y-2">
+              {footerLinks.company.map((link) => (
+                <li key={link.name}>
+                  <Link
+                    href={link.href}
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
 
           {/* Candidates Links */}
           <div>
