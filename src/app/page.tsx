@@ -42,9 +42,9 @@ export default function Home() {
       />
       <main>
         <Hero />
+        <LatestGigs />
         <StatsSection />
         <HowItWorks />
-        <LatestGigs />
         <CTASection />
       </main>
       <Footer />
