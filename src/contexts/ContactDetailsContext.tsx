@@ -76,15 +76,17 @@ export const ContactDetailsProvider: React.FC<ContactDetailsProviderProps> = ({ 
       setError(null);
       const response = await apiClient.createContactDetails(data as any);
       
-      if (response.success) {
-        setContactDetails(prev => [...prev, response.data]);
+      const newContact = response.data;
+      if (response.success && newContact) {
+        setContactDetails(prev => [...prev, newContact]);
         toast.success(response.message || 'Contact details created successfully');
-        return response.data;
-      } else {
-        setError(response.message || 'Failed to create contact details');
-        toast.error(response.message || 'Failed to create contact details');
-        return null;
+        return newContact;
       }
+      
+      const failureMessage = response.message || 'Failed to create contact details';
+      setError(failureMessage);
+      toast.error(failureMessage);
+      return null;
     } catch (err: any) {
       const errorMessage = err.message || 'Failed to create contact details';
       setError(errorMessage);
@@ -102,17 +104,19 @@ export const ContactDetailsProvider: React.FC<ContactDetailsProviderProps> = ({ 
       setError(null);
       const response = await apiClient.updateContactDetails(id, data as any);
       
-      if (response.success) {
+      const updatedContact = response.data;
+      if (response.success && updatedContact) {
         setContactDetails(prev => prev.map(contact => 
-          contact._id === id ? response.data : contact
+          contact._id === id ? updatedContact : contact
         ));
         toast.success(response.message || 'Contact details updated successfully');
-        return response.data;
-      } else {
-        setError(response.message || 'Failed to update contact details');
-        toast.error(response.message || 'Failed to update contact details');
-        return null;
+        return updatedContact;
       }
+      
+      const failureMessage = response.message || 'Failed to update contact details';
+      setError(failureMessage);
+      toast.error(failureMessage);
+      return null;
     } catch (err: any) {
       const errorMessage = err.message || 'Failed to update contact details';
       setError(errorMessage);

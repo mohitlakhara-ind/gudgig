@@ -51,18 +51,25 @@ type GigsAction =
   | { type: 'DELETE_SAVED_SEARCH'; payload: string }
   | { type: 'APPLY_PRESET'; payload: string };
 
+const defaultFilters: GigsState['filters'] = {
+  category: 'all',
+  budgetRange: null,
+  skills: [],
+  location: '',
+  experienceLevel: '',
+  jobType: '',
+  remote: null
+};
+
 const initialState: GigsState = {
   savedGigs: [],
   recentSearches: [],
   favoriteCategories: [],
   viewMode: 'grid',
   sortBy: 'recent',
-  filters: {
-    category: 'all',
-    budgetRange: null,
-    skills: [],
-    location: ''
-  }
+  filters: { ...defaultFilters },
+  savedSearches: [],
+  filterPresets: []
 };
 
 function gigsReducer(state: GigsState, action: GigsAction): GigsState {
@@ -101,7 +108,7 @@ function gigsReducer(state: GigsState, action: GigsAction): GigsState {
       return { ...state, filters: { ...state.filters, ...action.payload } };
     
     case 'RESET_FILTERS':
-      return { ...state, filters: initialState.filters };
+      return { ...state, filters: { ...defaultFilters } };
     
     case 'SAVE_SEARCH':
       const newSavedSearch = {
@@ -132,7 +139,8 @@ function gigsReducer(state: GigsState, action: GigsAction): GigsState {
         const favoriteCategories = JSON.parse(localStorage.getItem('favoriteCategories') || '[]');
         const viewMode = localStorage.getItem('viewMode') as 'grid' | 'list' || 'grid';
         const sortBy = localStorage.getItem('sortBy') || 'recent';
-        const filters = JSON.parse(localStorage.getItem('gigsFilters') || JSON.stringify(initialState.filters));
+        const savedFilters = JSON.parse(localStorage.getItem('gigsFilters') || JSON.stringify(defaultFilters));
+        const filters = { ...defaultFilters, ...savedFilters };
         const savedSearches = JSON.parse(localStorage.getItem('savedSearches') || '[]');
 
         return {

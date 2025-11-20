@@ -284,19 +284,27 @@ export default function PaymentsPage() {
       }
     });
 
-  // Use stats from fake service if available, otherwise calculate from current payments
-  const calculatedStats = stats || {
+  const fallbackStats = {
     totalSpent: payments.filter(p => p.status === 'success').reduce((sum, p) => sum + p.amount, 0),
     totalPayments: payments.length,
     successfulPayments: payments.filter(p => p.status === 'success').length,
     failedPayments: payments.filter(p => p.status === 'failed').length
   };
 
+  const normalizedStats = stats
+    ? {
+        totalSpent: stats.totalSpent ?? stats.successfulAmount ?? stats.totalAmount ?? fallbackStats.totalSpent,
+        totalPayments: stats.totalPayments ?? stats.count ?? fallbackStats.totalPayments,
+        successfulPayments: stats.successfulPayments ?? stats.success ?? fallbackStats.successfulPayments,
+        failedPayments: stats.failedPayments ?? stats.failed ?? fallbackStats.failedPayments,
+      }
+    : fallbackStats;
+
   const safeStats = {
-    totalSpent: Number(calculatedStats.totalSpent) || 0,
-    totalPayments: Number(calculatedStats.totalPayments) || 0,
-    successfulPayments: Number(calculatedStats.successfulPayments) || 0,
-    failedPayments: Number(calculatedStats.failedPayments) || 0,
+    totalSpent: Number(normalizedStats.totalSpent) || 0,
+    totalPayments: Number(normalizedStats.totalPayments) || 0,
+    successfulPayments: Number(normalizedStats.successfulPayments) || 0,
+    failedPayments: Number(normalizedStats.failedPayments) || 0,
   };
 
   if (loading) {

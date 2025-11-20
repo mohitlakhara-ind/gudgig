@@ -9,7 +9,7 @@ type VapidState = {
 
 declare global {
   // eslint-disable-next-line no-var
-  var __GIGSMINT_VAPID_STATE__?: VapidState;
+  var __GIGSMINT_VAPID_STATE__: VapidState | undefined;
 }
 
 const PLACEHOLDER_SNIPPETS = ['...', 'abc', 'xyz', 'yourdomain'];
