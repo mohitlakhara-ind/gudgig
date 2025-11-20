@@ -4,6 +4,7 @@ import User from '../models/User.js';
 import Bid from '../models/Bid.js';
 import Gig from '../models/Gig.js';
 import { createOrder, verifySignature, getRazorpayClient } from '../services/paymentService.js';
+import automationService from '../services/automationService.js';
 
 const router = express.Router();
 
@@ -192,6 +193,12 @@ router.post('/verify', async (req, res) => {
             paymentStatus: 'succeeded',
             contactDetails: { bidderContact, posterContact }
           });
+          // Automation: notify buyer and gig creator about unlock
+          try {
+            await automationService.onGigUnlocked(gigId, user._id);
+          } catch (e) {
+            console.warn('[automation] onGigUnlocked failed in payment-verify', e?.message || e);
+          }
         }
       }
     } catch (e) {

@@ -5,6 +5,7 @@ import User from '../models/User.js';
 import AdminSettings from '../models/AdminSettings.js';
 import { createPaymentIntent, confirmPaymentIntent } from '../services/gmPaymentService.js';
 import notificationService from '../services/notificationService.js';
+import automationService from '../services/automationService.js';
 
 // Helpers
 const GM_CATEGORIES = [
@@ -77,6 +78,15 @@ export const adminCreateJob = async (req, res, next) => {
       // Non-blocking
       console.warn('[notifications] job post notify failed:', notifyErr?.message || notifyErr);
     }
+
+    // Automation: notify matching freelancers
+    (async () => {
+      try {
+        await automationService.onNewGigPosted(gig);
+      } catch (e) {
+        console.warn('[automation] new gig automation failed', e?.message || e);
+      }
+    })();
 
     return res.status(201).json({ success: true, data: gig });
   } catch (err) {
@@ -302,6 +312,12 @@ export const submitBid = async (req, res, next) => {
             ['inApp']
           );
         }
+        // Automation: treat bid creation as an unlock/payment event
+        try {
+          await automationService.onGigUnlocked(gig._id, req.user._id);
+        } catch (e) {
+          console.warn('[automation] onGigUnlocked failed for submitBid', e?.message || e);
+        }
       } catch (notifyErr) {
         console.warn('[notifications] bid submit notify failed:', notifyErr?.message || notifyErr);
       }
@@ -511,6 +527,14 @@ export const updateJob = async (req, res, next) => {
     if (!gig) {
       return res.status(404).json({ success: false, message: 'Gig not found' });
     }
+    // Automation: notify savers/followers about update
+    (async () => {
+      try {
+        await automationService.onGigUpdated(gig);
+      } catch (e) {
+        console.warn('[automation] onGigUpdated failed', e?.message || e);
+      }
+    })();
     return res.status(200).json({ success: true, data: gig });
   } catch (err) {
     next(err);
@@ -552,6 +576,15 @@ export const toggleJobVisibility = async (req, res, next) => {
     if (!gig) {
       return res.status(404).json({ success: false, message: 'Gig not found' });
     }
+
+    // Automation: notify creator about visibility change
+    (async () => {
+      try {
+        await automationService.onGigVisibilityChanged(gig, isHidden);
+      } catch (e) {
+        console.warn('[automation] onGigVisibilityChanged failed', e?.message || e);
+      }
+    })();
     
     return res.status(200).json({ 
       success: true, 

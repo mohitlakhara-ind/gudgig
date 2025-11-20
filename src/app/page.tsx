@@ -3,8 +3,10 @@ import StatsSection from '@/components/StatsSection';
 import HowItWorks from '@/components/HowItWorks';
 import LatestGigs from '@/components/gigs/LatestGigs';
 import CTASection from '@/components/CTASection';
+import { ProfessionalTestimonials } from '@/components/Testimonials';
 import Footer from '@/components/Footer';
 import type { Metadata } from 'next';
+import CategorySub from '@/components/category-sub';
 
 export const metadata: Metadata = {
   title: 'Gigsmint.com — Where Opportunities Meet Talent, One Lead at a Time',
@@ -43,8 +45,10 @@ export default function Home() {
       <main>
         <Hero />
         <LatestGigs />
+        <CategorySub />
         <StatsSection />
         <HowItWorks />
+        <ProfessionalTestimonials />
         <CTASection />
       </main>
       <Footer />

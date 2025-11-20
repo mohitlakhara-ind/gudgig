@@ -1,6 +1,7 @@
 import User from '../models/User.js';
 import Job from '../models/Job.js';
 import Notification from '../models/Notification.js';
+import NotificationQueue from '../models/NotificationQueue.js';
 
 class NotificationService {
   constructor() {
@@ -11,9 +12,15 @@ class NotificationService {
 
     this.templates = {
       jobApplicationReceived: this.jobApplicationReceivedTemplate,
+      newGigPosted: this.newGigPostedTemplate,
       interviewScheduled: this.interviewScheduledTemplate,
       applicationStatusUpdate: this.applicationStatusUpdateTemplate,
       jobPostedConfirmation: this.jobPostedConfirmationTemplate,
+      gigUnlocked: this.gigUnlockedTemplate,
+      contactUnlocked: this.contactUnlockedTemplate,
+      gigUpdated: this.gigUpdatedTemplate,
+      gigHidden: this.gigHiddenTemplate,
+      gigUnhidden: this.gigUnhiddenTemplate,
       subscriptionActivated: this.subscriptionActivatedTemplate,
       subscriptionPaymentFailed: this.subscriptionPaymentFailedTemplate,
       subscriptionCancelled: this.subscriptionCancelledTemplate,
@@ -512,6 +519,70 @@ You can manage your microjob in the employer dashboard.`
     };
   }
 
+  newGigPostedTemplate(data) {
+    return {
+      subject: `New Gig: ${data.jobTitle}`,
+      html: `
+        <h2>New Gig Posted</h2>
+        <p>A new gig matching your preferences has been posted: <strong>${data.jobTitle}</strong></p>
+        <p>Category: ${data.category}</p>
+        <p><a href="/gigs/${data.gigId}">View gig</a></p>
+      `,
+      text: `New gig posted: ${data.jobTitle} - category: ${data.category} - view: /gigs/${data.gigId}`
+    };
+  }
+
+  gigUnlockedTemplate(data) {
+    return {
+      subject: `Gig Unlocked: ${data.jobTitle}`,
+      html: `
+        <h2>Gig Unlocked</h2>
+        <p>You have successfully unlocked contact details for <strong>${data.jobTitle}</strong>.</p>
+        <p>You can now contact the poster directly.</p>
+      `,
+      text: `You unlocked contact details for ${data.jobTitle}.`
+    };
+  }
+
+  contactUnlockedTemplate(data) {
+    return {
+      subject: `Contact Unlocked for Your Gig: ${data.jobTitle}`,
+      html: `
+        <h2>Contact Unlocked</h2>
+        <p>A user has unlocked contact details for your gig <strong>${data.jobTitle}</strong>.</p>
+        <p>User ID: ${data.buyerId}</p>
+      `,
+      text: `A user unlocked contact details for ${data.jobTitle}. User ID: ${data.buyerId}`
+    };
+  }
+
+  gigUpdatedTemplate(data) {
+    return {
+      subject: `Gig Updated: ${data.jobTitle}`,
+      html: `
+        <h2>Gig Updated</h2>
+        <p>The gig <strong>${data.jobTitle}</strong> has been updated. Check changes in your saved gigs.</p>
+      `,
+      text: `Gig updated: ${data.jobTitle}`
+    };
+  }
+
+  gigHiddenTemplate(data) {
+    return {
+      subject: `Gig Hidden: ${data.jobTitle}`,
+      html: `<h2>Your gig has been hidden</h2><p>${data.jobTitle} is now hidden.</p>`,
+      text: `Your gig ${data.jobTitle} is now hidden.`
+    };
+  }
+
+  gigUnhiddenTemplate(data) {
+    return {
+      subject: `Gig Visible: ${data.jobTitle}`,
+      html: `<h2>Your gig is visible</h2><p>${data.jobTitle} is now visible to freelancers.</p>`,
+      text: `Your gig ${data.jobTitle} is now visible.`
+    };
+  }
+
   passwordResetTemplate(data) {
     return {
       subject: 'Password Reset Request',
@@ -578,45 +649,103 @@ If this wasn't you, change your password immediately.`
   }
 
   // Notification queuing and retry logic
-  async queueNotification(userId, type, data, channels, delay = 0) {
-    // In production, use a queue system like Bull or Redis
-    const notification = {
-      userId,
-      type,
-      data,
-      channels,
-      scheduledFor: new Date(Date.now() + delay),
-      status: 'queued',
-      retries: 0
-    };
-
-    // Store in queue
-    setTimeout(() => {
-      this.processQueuedNotification(notification);
-    }, delay);
-
-    return notification;
+  async queueNotification(userId, type, data, channels = ['email'], delay = 0) {
+    // Persist queued notification to DB so a cron job can process reliably
+    try {
+      const scheduledFor = new Date(Date.now() + Math.max(0, delay));
+      const doc = await NotificationQueue.create({
+        userId,
+        type,
+        data,
+        channels,
+        scheduledFor,
+        status: 'queued',
+        retries: 0
+      });
+      return doc;
+    } catch (err) {
+      console.error('[notificationService] queueNotification persist error', err);
+      // Fallback to in-memory processing if DB persist fails
+      const notification = {
+        userId,
+        type,
+        data,
+        channels,
+        scheduledFor: new Date(Date.now() + delay),
+        status: 'queued',
+        retries: 0
+      };
+      setTimeout(() => {
+        this.processQueuedNotification(notification);
+      }, delay);
+      return notification;
+    }
   }
 
-  async processQueuedNotification(notification) {
+  // Process a queued notification object or DB record
+  async processQueuedNotification(notificationRecord) {
+    // notificationRecord can be a plain object or a mongoose document from NotificationQueue
+    const isDoc = notificationRecord && typeof notificationRecord.save === 'function';
+    let id;
     try {
-      await this.sendNotification(
-        notification.userId,
-        notification.type,
-        notification.data,
-        notification.channels
-      );
-      notification.status = 'sent';
-    } catch (error) {
-      notification.retries++;
-      if (notification.retries < 3) {
-        // Retry with exponential backoff
-        setTimeout(() => {
-          this.processQueuedNotification(notification);
-        }, Math.pow(2, notification.retries) * 1000);
-      } else {
-        notification.status = 'failed';
+      if (isDoc) {
+        id = notificationRecord._id;
+        notificationRecord.status = 'processing';
+        await notificationRecord.save();
       }
+
+      await this.sendNotification(
+        notificationRecord.userId || notificationRecord.user,
+        notificationRecord.type,
+        notificationRecord.data,
+        notificationRecord.channels
+      );
+
+      if (isDoc) {
+        notificationRecord.status = 'sent';
+        notificationRecord.lastError = null;
+        await notificationRecord.save();
+      }
+    } catch (error) {
+      console.error('[notificationService] processQueuedNotification error', error?.message || error);
+      if (isDoc) {
+        notificationRecord.retries = (notificationRecord.retries || 0) + 1;
+        notificationRecord.lastError = String(error?.message || error);
+        if (notificationRecord.retries >= 3) {
+          notificationRecord.status = 'failed';
+        } else {
+          notificationRecord.status = 'queued';
+          // Exponential backoff: reschedule
+          const backoffMs = Math.pow(2, notificationRecord.retries) * 1000 * 60; // minutes
+          notificationRecord.scheduledFor = new Date(Date.now() + backoffMs);
+        }
+        await notificationRecord.save();
+      } else {
+        // plain object fallback retry
+        notificationRecord.retries = (notificationRecord.retries || 0) + 1;
+        if (notificationRecord.retries < 3) {
+          setTimeout(() => this.processQueuedNotification(notificationRecord), Math.pow(2, notificationRecord.retries) * 1000);
+        }
+      }
+    }
+  }
+
+  // Process pending queue (used by cron job)
+  async processPendingQueue(limit = 50) {
+    try {
+      const now = new Date();
+      const items = await NotificationQueue.find({ status: 'queued', scheduledFor: { $lte: now } }).sort({ scheduledFor: 1 }).limit(limit);
+      for (const item of items) {
+        try {
+          await this.processQueuedNotification(item);
+        } catch (err) {
+          console.error('[notificationService] processing item failed', item._id, err?.message || err);
+        }
+      }
+      return items.length;
+    } catch (err) {
+      console.error('[notificationService] processPendingQueue error', err?.message || err);
+      throw err;
     }
   }
 

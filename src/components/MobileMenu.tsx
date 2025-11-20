@@ -53,34 +53,34 @@ export default function MobileMenu({
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', stiffness: 260, damping: 24 }}
-            className="absolute right-0 top-0 h-full w-[86%] max-w-[360px] bg-white border-l border-border backdrop-blur-md shadow-2xl flex flex-col"
+            className="absolute right-0 top-0 h-full w-[min(90vw,360px)] bg-white dark:bg-background border-l border-border backdrop-blur-md shadow-2xl flex flex-col"
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-              <div className="text-sm font-semibold text-muted-foreground tracking-wide">
+            <div className="flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 border-b border-border bg-muted/30 sticky top-0 z-10">
+              <div className="text-xs sm:text-sm font-semibold text-muted-foreground tracking-wide uppercase">
                 MENU
               </div>
               <button
                 onClick={onClose}
                 aria-label="Close menu"
-                className="p-2 rounded-lg hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring transition-all"
+                className="p-2 rounded-lg hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring transition-all tap-target"
               >
-                <X className="h-6 w-6" />
+                <X className="h-5 w-5 sm:h-6 sm:w-6" />
               </button>
             </div>
 
             {/* Navigation */}
-            <nav className="flex-1 overflow-y-auto p-4" aria-label="Primary">
+            <nav className="flex-1 overflow-y-auto p-3 sm:p-4" aria-label="Primary">
               <ul className="flex flex-col gap-1">
                 {navigation.map((item) => (
                   <li key={`${item.href}:${item.name}`}>
                     <Link
                       href={item.href}
                       onClick={onClose}
-                      className="flex items-center space-x-3 block px-4 py-3 rounded-xl hover:bg-muted/60 text-sm font-medium transition-all hover:translate-x-1"
+                      className="flex items-center gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg hover:bg-muted/60 text-sm sm:text-base font-medium transition-all hover:translate-x-1 min-h-[44px] touch-friendly"
                     >
-                      {item.icon && <item.icon className="h-4 w-4" />}
-                      <span>{item.name}</span>
+                      {item.icon && <item.icon className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />}
+                      <span className="flex-1">{item.name}</span>
                     </Link>
                   </li>
                 ))}
@@ -89,7 +89,7 @@ export default function MobileMenu({
 
             {/* Footer */}
             {footer && (
-              <div className="p-4 border-t border-border bg-gradient-to-t from-muted/10 to-transparent">
+              <div className="p-3 sm:p-4 border-t border-border bg-gradient-to-t from-muted/10 to-transparent sticky bottom-0 z-10 max-h-fit">
                 {footer}
               </div>
             )}

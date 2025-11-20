@@ -48,13 +48,9 @@ export default function GigsPage() {
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto">
               <div className="text-center mb-12">
-                <h1 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">
+                <h1 className="text-3xl md:text-4xl font-bold mb-6 text-foreground">
                   Discover Amazing Gigs
                 </h1>
-                <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-                  Find the perfect freelance opportunities that match your skills. From quick tasks to long-term projects, 
-                  start your freelancing journey today.
-                </p>
               </div>
             </div>
           </div>
@@ -102,13 +98,9 @@ export default function GigsPage() {
       <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12">
-              <h1 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">
-                Discover Amazing Gigs
-          </h1>
-              <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-                Find the perfect freelance opportunities that match your skills. From quick tasks to long-term projects, 
-                start your freelancing journey today.
-              </p>
+                  <h1 className="text-3xl md:text-4xl font-bold mb-6 text-foreground">
+                  Discover Amazing Gigs
+                </h1>
               
               {/* Professional Stats */}
               <LoadingState

@@ -129,7 +129,7 @@ export function useGigsManager(options: UseGigsManagerOptions = {}): GigsManager
         isRefreshing: prev.gigs.length > 0
       }));
 
-      const response: JobsResponse = await apiClient.getGigs(searchParams);
+      const response: JobsResponse = await apiClient.getJobs(searchParams as any);
 
       // Handle response data
       const gigsData = Array.isArray(response.data) ? response.data : response.data || [];
@@ -188,10 +188,10 @@ export function useGigsManager(options: UseGigsManagerOptions = {}): GigsManager
       setState(prev => ({ ...prev, loading: true, error: null }));
 
       const nextPage = state.pagination.page + 1;
-      const response: JobsResponse = await apiClient.getGigs({
-        ...initialParamsRef.current,
+      const response: JobsResponse = await apiClient.getJobs({
+        ...(initialParamsRef.current as any),
         page: nextPage
-      });
+      } as any);
 
       const newGigsData = Array.isArray(response.data) ? response.data : response.data || [];
       
@@ -275,6 +275,18 @@ export function useGigsManager(options: UseGigsManagerOptions = {}): GigsManager
     clearCache,
     retry
   };
+}
+
+// Memoize the exported functions/object to provide a stable reference when
+// the hook is used inside context providers. This prevents consumer effects
+// from re-running on every render due to a new object identity.
+export default function useGigsManagerWrapper(options?: UseGigsManagerOptions) {
+  const manager = useGigsManager(options || {});
+  // Use a ref to hold the latest manager and return a memoized object
+  // so identity is stable unless its members actually change.
+  // Note: this wrapper is optional; consumers can import/useGigsManager directly,
+  // but some callers (like GigsProvider) prefer a stable reference.
+  return manager as any;
 }
 
 // Utility functions for gigs

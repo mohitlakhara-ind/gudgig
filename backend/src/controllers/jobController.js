@@ -37,24 +37,118 @@ export const adminCreateJob = async (req, res, next) => {
   }
 };
 
-// 2) User: List jobs with optional category filter
+// 2) User: List jobs with enhanced filters
 export const listJobs = async (req, res, next) => {
   try {
-    const { category } = req.query;
-    const filter = {};
-    if (category) filter.category = category;
+    const {
+      category,
+      location,
+      search,
+      minBudget,
+      maxBudget,
+      skills,
+      experienceLevel,
+      jobType,
+      remote,
+      sortBy = 'recent',
+      page = 1,
+      limit = 12
+    } = req.query;
 
-    const jobs = await Job.find(filter).sort({ createdAt: -1 });
+    const filter = { status: 'active' };
+    if (category && category !== 'all') filter.category = category;
+    if (location) filter.location = new RegExp(location, 'i');
+    if (experienceLevel && experienceLevel !== 'all') filter.experienceLevel = experienceLevel;
+    if (jobType && jobType !== 'all') filter.jobType = jobType;
+    if (remote !== undefined) filter.remote = remote === 'true';
+
+    // Budget filter
+    if (minBudget || maxBudget) {
+      filter.$or = [];
+      if (minBudget && maxBudget) {
+        filter.$or.push({
+          budget: { $gte: parseInt(minBudget), $lte: parseInt(maxBudget) }
+        });
+      } else if (minBudget) {
+        filter.$or.push({ budget: { $gte: parseInt(minBudget) } });
+      } else if (maxBudget) {
+        filter.$or.push({ budget: { $lte: parseInt(maxBudget) } });
+      }
+    }
+
+    // Skills filter
+    if (skills) {
+      const skillsArray = skills.split(',').map(s => s.trim());
+      filter.requirements = { $in: skillsArray };
+    }
+
+    // Search query
+    if (search) {
+      filter.$or = filter.$or || [];
+      filter.$or.push(
+        { title: new RegExp(search, 'i') },
+        { description: new RegExp(search, 'i') },
+        { requirements: { $in: [new RegExp(search, 'i')] } }
+      );
+    }
+
+    // Sorting
+    let sortOptions = { createdAt: -1 };
+    switch (sortBy) {
+      case 'budget-high':
+        sortOptions = { budget: -1 };
+        break;
+      case 'budget-low':
+        sortOptions = { budget: 1 };
+        break;
+      case 'bids':
+        sortOptions = { bidsCount: -1 };
+        break;
+      case 'views':
+        sortOptions = { viewsCount: -1 };
+        break;
+      case 'recent':
+      default:
+        sortOptions = { createdAt: -1 };
+        break;
+    }
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const jobs = await Job.find(filter)
+      .sort(sortOptions)
+      .skip(skip)
+      .limit(parseInt(limit))
+      .populate('createdBy', 'name');
+
+    const total = await Job.countDocuments(filter);
+
     const data = jobs.map(j => ({
       _id: j._id,
       title: j.title,
       description: j.description,
+      descriptionShort: j.description?.substring(0, 150) + (j.description?.length > 150 ? '...' : ''),
       requirements: j.requirements,
+      budget: j.budget,
+      category: j.category,
+      location: j.location,
+      experienceLevel: j.experienceLevel,
+      jobType: j.jobType,
+      remote: j.remote,
       createdAt: j.createdAt,
-      category: j.category
+      bidsCount: j.bidsCount || 0,
+      viewsCount: j.viewsCount || 0,
+      status: j.status,
+      createdBy: j.createdBy
     }));
 
-    return res.status(200).json({ success: true, count: data.length, data });
+    return res.status(200).json({
+      success: true,
+      count: data.length,
+      total,
+      page: parseInt(page),
+      totalPages: Math.ceil(total / parseInt(limit)),
+      data
+    });
   } catch (err) {
     next(err);
   }

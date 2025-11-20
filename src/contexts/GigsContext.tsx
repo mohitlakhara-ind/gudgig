@@ -17,7 +17,23 @@ interface GigsState {
     budgetRange: [number, number] | null;
     skills: string[];
     location: string;
+    experienceLevel: string;
+    jobType: string;
+    remote: boolean | null;
   };
+  savedSearches: Array<{
+    id: string;
+    name: string;
+    query: string;
+    filters: Partial<GigsState['filters']>;
+    createdAt: string;
+  }>;
+  filterPresets: Array<{
+    id: string;
+    name: string;
+    filters: Partial<GigsState['filters']>;
+    icon: string;
+  }>;
 }
 
 type GigsAction =
@@ -30,7 +46,10 @@ type GigsAction =
   | { type: 'SET_SORT_BY'; payload: string }
   | { type: 'SET_FILTERS'; payload: Partial<GigsState['filters']> }
   | { type: 'RESET_FILTERS' }
-  | { type: 'LOAD_FROM_STORAGE' };
+  | { type: 'LOAD_FROM_STORAGE' }
+  | { type: 'SAVE_SEARCH'; payload: { name: string; query: string; filters: Partial<GigsState['filters']> } }
+  | { type: 'DELETE_SAVED_SEARCH'; payload: string }
+  | { type: 'APPLY_PRESET'; payload: string };
 
 const initialState: GigsState = {
   savedGigs: [],
@@ -84,9 +103,29 @@ function gigsReducer(state: GigsState, action: GigsAction): GigsState {
     case 'RESET_FILTERS':
       return { ...state, filters: initialState.filters };
     
+    case 'SAVE_SEARCH':
+      const newSavedSearch = {
+        id: Date.now().toString(),
+        name: action.payload.name,
+        query: action.payload.query,
+        filters: action.payload.filters,
+        createdAt: new Date().toISOString()
+      };
+      return { ...state, savedSearches: [newSavedSearch, ...state.savedSearches] };
+
+    case 'DELETE_SAVED_SEARCH':
+      return { ...state, savedSearches: state.savedSearches.filter(s => s.id !== action.payload) };
+
+    case 'APPLY_PRESET':
+      const preset = state.filterPresets.find(p => p.id === action.payload);
+      if (preset) {
+        return { ...state, filters: { ...state.filters, ...preset.filters } };
+      }
+      return state;
+
     case 'LOAD_FROM_STORAGE':
       if (typeof window === 'undefined') return state;
-      
+
       try {
         const savedGigs = JSON.parse(localStorage.getItem('savedGigs') || '[]');
         const recentSearches = JSON.parse(localStorage.getItem('recentSearches') || '[]');
@@ -94,7 +133,8 @@ function gigsReducer(state: GigsState, action: GigsAction): GigsState {
         const viewMode = localStorage.getItem('viewMode') as 'grid' | 'list' || 'grid';
         const sortBy = localStorage.getItem('sortBy') || 'recent';
         const filters = JSON.parse(localStorage.getItem('gigsFilters') || JSON.stringify(initialState.filters));
-        
+        const savedSearches = JSON.parse(localStorage.getItem('savedSearches') || '[]');
+
         return {
           ...state,
           savedGigs,
@@ -102,7 +142,8 @@ function gigsReducer(state: GigsState, action: GigsAction): GigsState {
           favoriteCategories,
           viewMode,
           sortBy,
-          filters
+          filters,
+          savedSearches
         };
       } catch (error) {
         console.error('Error loading gigs state from storage:', error);
@@ -145,6 +186,12 @@ export function GigsProvider({ children }: { children: React.ReactNode }) {
     autoFetch: true,
     enableCache: true
   });
+
+  // Store fetchGigs in a ref to avoid dependency issues
+  const fetchGigsRef = React.useRef(gigsManager.fetchGigs);
+  React.useEffect(() => {
+    fetchGigsRef.current = gigsManager.fetchGigs;
+  }, [gigsManager.fetchGigs]);
 
   // Load saved gigs from backend when user is authenticated
   useEffect(() => {
@@ -220,12 +267,22 @@ export function GigsProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: 'RESET_FILTERS' });
   }, []);
 
-  // Refetch gigs when filters change
+  // Refetch gigs when filters or sorting change.
+  // Sends full filter/sort params to the gigs manager so the backend can apply them.
   useEffect(() => {
-    gigsManager.fetchGigs({
-      category: state.filters.category !== 'all' ? state.filters.category as any : undefined,
-    });
-  }, [state.filters.category]); // Remove gigsManager.fetchGigs to prevent infinite loop
+    const params: any = {};
+    if (state.filters.category && state.filters.category !== 'all') params.category = state.filters.category;
+    if (state.sortBy) params.sortBy = state.sortBy;
+    if (state.filters.location) params.location = state.filters.location;
+    if (state.filters.skills && state.filters.skills.length > 0) params.skills = state.filters.skills.join(',');
+    if (state.filters.budgetRange && Array.isArray(state.filters.budgetRange)) {
+      const [min, max] = state.filters.budgetRange;
+      if (typeof min === 'number') params.minBudget = min;
+      if (typeof max === 'number') params.maxBudget = max;
+    }
+
+    fetchGigsRef.current(params);
+  }, [state.filters.category, state.filters.location, state.filters.skills, state.filters.budgetRange, state.sortBy]);
 
   const contextValue: GigsContextType = {
     state,

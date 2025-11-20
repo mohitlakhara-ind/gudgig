@@ -10,6 +10,8 @@ import dotenv from 'dotenv';
 import { v2 as cloudinary } from 'cloudinary';
 import notificationService from './services/notificationService.js';
 import automationService from './services/automationService.js';
+import { startSubscriptionCron } from './jobs/subscriptionCron.js';
+import { startNotificationCron } from './jobs/notificationCron.js';
 import * as Sentry from '@sentry/node';
 import logger from './utils/logger.js';
 import { securityHeaders } from './middleware/security.js';
@@ -45,6 +47,7 @@ import uploadsRoutes from './routes/uploads.js';
 import analyticsRoutes from './routes/analytics.js';
 import razorpayWebhookRoutes from './routes/razorpay-webhook.js';
 import contactDetailsRoutes from './routes/contactDetails.js';
+import testimonialsRoutes from './routes/testimonials.js';
 import paymentGuestRoutes from './routes/payment-guest.js';
 import requestId from './middleware/requestId.js';
 
@@ -296,6 +299,7 @@ app.use('/api/support', supportRoutes);
 app.use('/api/uploads', uploadsRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/contact-details', contactDetailsRoutes);
+app.use('/api/testimonials', testimonialsRoutes);
 app.use('/app-api', appApiRoutes);
 
 // Cache debugging endpoints
@@ -479,6 +483,14 @@ if (process.env.NODE_ENV !== 'test') {
       notificationService.verifySMTP().catch((err) => {
         logger.warn('[notificationService] SMTP verification failed', { error: err?.message || String(err) });
       });
+    }
+    // Start background jobs
+    try {
+      startSubscriptionCron();
+      startNotificationCron();
+      logger.info('[jobs] subscription and notification crons started');
+    } catch (e) {
+      logger.warn('[jobs] failed to start crons', { error: e?.message || String(e) });
     }
   });
 }

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Input, InputGroup, InputPrefix, InputSuffix } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import FakeGigPayment from '@/components/payment/FakeGigPayment';
@@ -91,25 +91,31 @@ export default function EnhancedGigsListing() {
   const [payerEmail, setPayerEmail] = useState<string>('');
   const [payerContact, setPayerContact] = useState<string>('');
 
-  // Debounced search
+  // Store fetchGigs in a ref to avoid dependency issues
+  const fetchGigsRef = useRef(gigsManager.fetchGigs);
+  useEffect(() => {
+    fetchGigsRef.current = gigsManager.fetchGigs;
+  }, [gigsManager.fetchGigs]);
+
+  // Debounced search - only handle search query changes
+  // The GigsContext already handles filter changes, so we don't need to fetch here for category changes
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       if (searchQuery !== '') {
         actions.addRecentSearch(searchQuery);
         setIsSearching(true);
-        gigsManager.fetchGigs({
+        fetchGigsRef.current({
           category: state.filters.category !== 'all' ? state.filters.category as any : undefined,
           query: searchQuery
         }).finally(() => setIsSearching(false));
-      } else {
-        gigsManager.fetchGigs({
-          category: state.filters.category !== 'all' ? state.filters.category as any : undefined,
-        });
+      } else if (searchQuery === '') {
+        // Only fetch when clearing search, let context handle other filter changes
+        setIsSearching(false);
       }
     }, 300);
 
     return () => clearTimeout(timeoutId);
-  }, [searchQuery, state.filters.category]); // Remove actions and gigsManager to prevent infinite loop
+  }, [searchQuery, state.filters.category, actions]); // Include necessary dependencies
 
   // Fetch user's applied gigs (bids) to filter them out
   useEffect(() => {
@@ -476,18 +482,22 @@ export default function EnhancedGigsListing() {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
             <div className="lg:col-span-2">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <InputGroup className="professional-input">
+                <InputPrefix>
+                  <Search className="h-4 w-4 text-muted-foreground" />
+                </InputPrefix>
                 <Input
                   placeholder="Search gigs, skills, or keywords..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 professional-input"
+                  className="pl-10"
                 />
-                {isSearching && (
-                  <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
-                )}
-              </div>
+                <InputSuffix>
+                  {isSearching && (
+                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                  )}
+                </InputSuffix>
+              </InputGroup>
             </div>
             
             <Select 
@@ -495,9 +505,9 @@ export default function EnhancedGigsListing() {
               onValueChange={(value) => actions.setFilters({ category: value })}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Category" />
-              </SelectTrigger>
-              <SelectContent>
+                  <SelectValue placeholder="Category" />
+                </SelectTrigger>
+                <SelectContent className="z-[9999]">
                 {categories.map(category => (
                   <SelectItem key={category.value} value={category.value}>
                     <div className="flex items-center gap-2">
@@ -514,9 +524,9 @@ export default function EnhancedGigsListing() {
               onValueChange={actions.setSortBy}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Sort by" />
-              </SelectTrigger>
-              <SelectContent>
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent className="z-[9999]">
                 {sortOptions.map(option => (
                   <SelectItem key={option.value} value={option.value}>
                     {option.label}

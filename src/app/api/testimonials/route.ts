@@ -1,19 +1,97 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { promises as fs } from 'fs';
+import path from 'path';
 
-export async function GET() {
+const DATA_DIR = path.join(process.cwd(), 'data');
+const FILE = path.join(DATA_DIR, 'testimonials.json');
+
+function validatePayload(body: any) {
+  if (!body) return false;
+  const name = typeof body.name === 'string' && body.name.trim().length > 0;
+  const content = typeof body.content === 'string' && body.content.trim().length > 10;
+  const rating = body.rating === undefined || (typeof body.rating === 'number' && body.rating >= 1 && body.rating <= 5);
+  return name && content && rating;
+}
+
+async function readFileList() {
   try {
-    // TODO: Implement testimonials API endpoint in backend
-    // For now, return empty array as testimonials feature is not yet implemented
-    const testimonials: any[] = [];
-
-    return NextResponse.json(testimonials);
-  } catch (error) {
-    console.error('Error fetching testimonials:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch testimonials' },
-      { status: 500 }
-    );
+    const raw = await fs.readFile(FILE, 'utf-8');
+    const list = JSON.parse(raw);
+    if (!Array.isArray(list)) return [];
+    return list;
+  } catch (e) {
+    return [];
   }
 }
+
+export async function GET() {
+  // If BACKEND_URL is set, proxy to backend public endpoint
+  const backendUrl = process.env.BACKEND_URL;
+  if (backendUrl) {
+    try {
+      const resp = await fetch(`${backendUrl.replace(/\/$/, '')}/api/testimonials/public`);
+      const data = await resp.json();
+      return NextResponse.json(data, { status: resp.status });
+    } catch (e) {
+      console.error('Testimonials proxy GET failed', e);
+      // fallback to file
+    }
+  }
+
+  const list = await readFileList();
+  // Return only approved testimonials for public consumption
+  const approved = list.filter((t: any) => t.approved === true).sort((a: any, b: any) => (new Date(b.createdAt)).getTime() - (new Date(a.createdAt)).getTime());
+  return NextResponse.json({ success: true, data: approved });
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json().catch(() => ({}));
+
+    if (!validatePayload(body)) {
+      return NextResponse.json({ success: false, message: 'Invalid payload. Provide name and content (min 10 chars).' }, { status: 400 });
+    }
+
+    const backendUrl = process.env.BACKEND_URL;
+    if (backendUrl) {
+      // Proxy submission to backend
+      try {
+        const resp = await fetch(`${backendUrl.replace(/\/$/, '')}/api/testimonials`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const data = await resp.json();
+        return NextResponse.json(data, { status: resp.status });
+      } catch (e) {
+        console.error('Testimonials proxy POST failed', e);
+        // fallback to file-based storage
+      }
+    }
+
+    await fs.mkdir(DATA_DIR, { recursive: true });
+    const list = await readFileList();
+
+    const entry = {
+      id: `${Date.now()}-${Math.floor(Math.random() * 10000)}`,
+      name: String(body.name).trim(),
+      role: body.role ? String(body.role).trim() : undefined,
+      company: body.company ? String(body.company).trim() : undefined,
+      content: String(body.content).trim(),
+      rating: typeof body.rating === 'number' ? Math.max(1, Math.min(5, body.rating)) : 5,
+      approved: false,
+      createdAt: new Date().toISOString()
+    };
+
+    list.push(entry);
+    await fs.writeFile(FILE, JSON.stringify(list, null, 2), 'utf-8');
+
+    return NextResponse.json({ success: true, message: 'Submitted for review' }, { status: 201 });
+  } catch (error) {
+    console.error('Testimonials API error', error);
+    return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 });
+  }
+}
+
 
 

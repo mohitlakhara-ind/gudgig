@@ -151,7 +151,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
   // For public pages, render with header but without sidebar
   if (isPublicPage) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen max-w-screen bg-background">
         <Header />
         <main>
           {children}
@@ -164,7 +164,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
   if (isGigsRoute) {
     if (!isAuthenticated) {
       return (
-        <div className="min-h-screen bg-background">
+        <div className="min-h-screen max-w-screen bg-background">
           <Header />
           <main>
             {children}
@@ -208,7 +208,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen  bg-background">
       <Header />
       <div className="flex h-[calc(100vh-80px)]">
         {/* Sidebar */}

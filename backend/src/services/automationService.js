@@ -3,6 +3,8 @@ import User from '../models/User.js';
 import Bid from '../models/Bid.js';
 import Notification from '../models/Notification.js';
 import notificationService from './notificationService.js';
+import Gig from '../models/Gig.js';
+
 
 const DAYS = 24 * 60 * 60 * 1000;
 
@@ -79,6 +81,98 @@ class AutomationService {
       }
     }
     return count;
+  }
+
+  // Notify freelancers who match category/skills or have saved searches
+  async onNewGigPosted(gig) {
+    try {
+      // Find freelancers who have opted in for job alerts in this category
+      const candidates = await User.find({ role: 'freelancer', 'preferences.jobAlerts': { $in: [gig.category] } }).select('_id notificationPreferences');
+
+      const notificationPayload = {
+        jobTitle: gig.title,
+        gigId: gig._id.toString(),
+        category: gig.category,
+        postedDate: gig.createdAt ? gig.createdAt.toISOString() : new Date().toISOString()
+      };
+
+      for (const c of candidates) {
+        try {
+          await notificationService.queueNotification(
+            c._id,
+            'newGigPosted',
+            notificationPayload,
+            ['inApp', 'email']
+          );
+        } catch (e) {
+          console.warn('[automation] failed to queue newGigPosted for', c._id, e?.message || e);
+        }
+      }
+      return candidates.length;
+    } catch (err) {
+      console.error('[automation] onNewGigPosted error', err?.message || err);
+      return 0;
+    }
+  }
+
+  // Notify poster and buyer when a gig is unlocked (guest purchase or bid created)
+  async onGigUnlocked(gigId, buyerId) {
+    try {
+      const gig = await Gig.findById(gigId).select('title createdBy');
+      if (!gig) return 0;
+
+      // Notify buyer (confirmation)
+      try {
+        await notificationService.queueNotification(
+          buyerId,
+          'gigUnlocked',
+          { gigId: gig._id.toString(), jobTitle: gig.title },
+          ['email', 'inApp']
+        );
+      } catch (e) { console.warn('[automation] queue buyer gigUnlocked failed', e?.message || e); }
+
+      // Notify gig creator that their contact was unlocked
+      try {
+        await notificationService.queueNotification(
+          gig.createdBy,
+          'contactUnlocked',
+          { gigId: gig._id.toString(), jobTitle: gig.title, buyerId: String(buyerId) },
+          ['inApp', 'email']
+        );
+      } catch (e) { console.warn('[automation] queue creator contactUnlocked failed', e?.message || e); }
+
+      return 1;
+    } catch (err) {
+      console.error('[automation] onGigUnlocked error', err?.message || err);
+      return 0;
+    }
+  }
+
+  async onGigUpdated(gig) {
+    try {
+      // Notify followers/savers of this gig about the update
+      const savers = await User.find({ 'savedGigs': gig._id }).select('_id');
+      for (const s of savers) {
+        try {
+          await notificationService.queueNotification(s._id, 'gigUpdated', { gigId: gig._id.toString(), jobTitle: gig.title }, ['inApp']);
+        } catch (e) {}
+      }
+      return savers.length;
+    } catch (err) {
+      console.error('[automation] onGigUpdated error', err?.message || err);
+      return 0;
+    }
+  }
+
+  async onGigVisibilityChanged(gig, hidden) {
+    try {
+      // Notify creator that their gig was hidden/unhidden
+      await notificationService.queueNotification(gig.createdBy, hidden ? 'gigHidden' : 'gigUnhidden', { gigId: gig._id.toString(), jobTitle: gig.title }, ['inApp', 'email']);
+      return 1;
+    } catch (err) {
+      console.error('[automation] onGigVisibilityChanged error', err?.message || err);
+      return 0;
+    }
   }
 }
 

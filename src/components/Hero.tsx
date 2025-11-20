@@ -55,7 +55,7 @@ export default function Hero() {
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,hsl(var(--primary)/0.10),transparent_50%)]" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_60%,hsl(var(--secondary)/0.08),transparent_50%)]" />
 
-      <div className="relative container mx-auto pl-6 pr-0 lg:pl-12 lg:pr-0">
+      <div className="relative w-full px-3 sm:px-4 md:px-6 lg:px-8">
         {/* TOP SECTION - Hero Content + Marquees */}
         <div className="flex flex-col lg:flex-row items-center gap-12  mb-20">
           {/* LEFT - Hero Content */}
@@ -79,7 +79,7 @@ export default function Hero() {
             </h1>
 
             <p className="text-base sm:text-lg md:text-xl text-muted-foreground mb-6 sm:mb-8 leading-relaxed px-4 lg:px-0">
-              Where opportunities meet talent, one lead at a time. 
+              Where opportunities meet talent, one lead at a time.
               Browse verified client leads for free, unlock contact details for just ₹5, and connect directly.
             </p>
 
@@ -91,7 +91,7 @@ export default function Hero() {
                 Browse Leads
               </Link>
               <Link
-                href="/gigs"
+                href="/categories"
                 className="px-6 sm:px-8 py-3 sm:py-4 rounded-xl border-2 border-input bg-background text-foreground font-semibold hover:border-primary hover:shadow-lg transition-all text-sm sm:text-base"
               >
                 View Categories
@@ -104,7 +104,7 @@ export default function Hero() {
             initial={{ opacity: 0, x: 40 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="flex-1 w-full max-w-md relative"
+            className="hidden lg:flex flex-1 w-full max-w-md relative"
           >
             <div className="overlay absolute inset-0 bg-overlay-fade-b h-[520px] z-10"></div>
             <div className="flex gap-2 h-[520px]">
@@ -137,55 +137,6 @@ export default function Hero() {
                     ))}
                   </motion.div>
                 </div>
-              ))}
-            </div>
-          </motion.div>
-        </div>
-
-        {/* BOTTOM SECTION - Stats + Categories */}
-        <div className="space-y-12">
-          {/* Stats */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="grid grid-cols-2 md:grid-cols-4 gap-6"
-          >
-            {stats.map((stat, i) => (
-              <Card
-                key={i}
-                className="p-6 text-center bg-card border border-border hover:border-primary hover:shadow-lg transition-all"
-              >
-                <div className="text-3xl font-bold text-primary">
-                  {stat.value}
-                </div>
-                <div className="text-sm text-muted-foreground mt-1">{stat.label}</div>
-              </Card>
-            ))}
-          </motion.div>
-
-          {/* Categories */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
-          >
-            <h2 className="text-2xl font-bold text-foreground mb-6 text-center lg:text-left">
-              Browse Leads by Category
-            </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 items-stretch">
-              {categories.map((cat, i) => (
-                <Link href={`/gigs?category=${cat.title.toLowerCase().replace(' ', '-')}`} key={i} className="h-full">
-                  <Card className="h-full p-5 text-center bg-card border border-border hover:border-primary hover:shadow-lg hover:scale-105 transition-all cursor-pointer group flex flex-col justify-between">
-                    <div className="text-3xl mb-2 group-hover:scale-110 transition-transform">
-                      {cat.icon}
-                    </div>
-                    <h3 className="font-semibold text-foreground text-sm mb-1">
-                      {cat.title}
-                    </h3>
-                    <p className="text-xs text-muted-foreground">{cat.count} leads</p>
-                  </Card>
-                </Link>
               ))}
             </div>
           </motion.div>
