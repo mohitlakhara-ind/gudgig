@@ -9,7 +9,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { 
   User, 
-  Settings, 
   LogOut, 
   Bell, 
   CreditCard, 
@@ -100,7 +99,6 @@ export default function ProfileDropdown() {
     { label: 'Payments', href: '/payments', icon: CreditCard },
     { label: 'Saved Gigs', href: '/saved-gigs', icon: Bookmark },
     { label: 'Notifications', href: '/notifications', icon: Bell },
-    { label: 'Settings', href: '/settings', icon: Settings },
   ];
 
   const adminItems = [

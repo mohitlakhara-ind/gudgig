@@ -12,7 +12,6 @@ import {
   Heart,
   Package,
   Search,
-  Settings,
 } from 'lucide-react';
 
 export interface NavigationItem {
@@ -165,13 +164,6 @@ export const adminNavigation: NavigationItem[] = [
     icon: Users,
     section: 'manage',
     ariaLabel: 'Manage users',
-  },
-  {
-    name: 'Settings',
-    href: '/admin/settings',
-    icon: Settings,
-    section: 'manage',
-    ariaLabel: 'Platform settings',
   },
   {
     name: 'Payment Settings',

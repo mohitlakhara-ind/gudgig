@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Menu, X } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigation } from '@/hooks/useNavigation';
@@ -11,13 +10,14 @@ import { cn } from '@/lib/utils';
 import MobileMenu from '@/components/ui/mobile-menu';
 import DarkModeToggle from '@/components/ui/dark-mode-toggle';
 import ProfileDropdown from '@/components/ProfileDropdown';
-import { NotificationBell } from '@/components/notifications/NotificationBell';
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const { isAuthenticated, user } = useAuth();
   const { isActiveLink, getPrimaryNavigation } = useNavigation();
+  const pathname = usePathname();
 
   const navigation = getPrimaryNavigation();
 
@@ -37,16 +37,15 @@ export default function Header() {
         <div className="w-full px-3 sm:px-4 md:px-6 lg:px-8">
           <div className="flex h-12 sm:h-12 md:h-14 items-center justify-between gap-2">
             {/* Professional Logo */}
-            <div className="flex items-center gap-1 sm:gap-2 min-w-0 flex-shrink-0">
+            <Link href="/" className="flex items-center gap-1 sm:gap-2 min-w-0 flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg px-1">
               <div className="w-7 h-7 sm:w-8 sm:h-8 dark:bg-accent-foreground rounded-lg flex items-center justify-center flex-shrink-0">
                 <Image src="/logo.png" height={32} width={32} alt='gigsmint logo' />
               </div>
               <span className="text-sm sm:text-sm lg:text-base font-semibold text-foreground truncate">Gigs Mint</span>
-            </div>
+            </Link>
 
             {/* Right utilities (minimal) */}
             <div className="hidden md:flex items-center gap-1 sm:gap-2 flex-shrink-0">
-              {isAuthenticated && <NotificationBell />}
               <DarkModeToggle />
               {isAuthenticated ? (
                 <ProfileDropdown />
@@ -113,7 +112,6 @@ export default function Header() {
           </div>
         </div>
       </div>
-
       {/* Mobile drawer - rendered at header level to avoid overflow clipping */}
       <MobileMenu
         open={isMenuOpen}

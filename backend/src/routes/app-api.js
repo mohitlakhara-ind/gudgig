@@ -168,23 +168,36 @@ router.get('/payments', async (req, res) => {
     const docs = await Bid.find(query)
       .sort({ createdAt: -1 })
       .limit(Math.min(200, Number(limit) || 50))
-      .populate('jobId', 'title category createdAt');
-    const payments = docs.map(b => ({
-      _id: String(b._id),
-      amount: Number(b.bidFeePaid) || 0,
-      currency: 'INR',
-      status: b.paymentStatus === 'succeeded' ? 'success' : b.paymentStatus,
-      paymentId: `bid_${b._id}`,
-      orderId: `job_${b.jobId?._id || b.jobId}`,
-      method: 'bid_fee',
-      description: `Bid fee for ${b.jobId && typeof b.jobId === 'object' ? b.jobId.title : 'Job'}`,
-      createdAt: b.createdAt,
-      updatedAt: b.updatedAt,
-      bid: {
-        _id: b._id,
-        job: b.jobId && typeof b.jobId === 'object' ? { _id: b.jobId._id, title: b.jobId.title } : { _id: b.jobId, title: 'Job' }
-      }
-    }));
+      .populate({
+        path: 'gigId',
+        select: 'title category createdAt budget',
+        model: 'Gig'
+      });
+    const payments = docs.map(b => {
+      const gig = b.gigId && typeof b.gigId === 'object'
+        ? { _id: b.gigId._id, title: b.gigId.title }
+        : b.gigId
+          ? { _id: b.gigId, title: 'Gig' }
+          : { _id: null, title: 'Gig' };
+
+      return {
+        _id: String(b._id),
+        amount: Number(b.bidFeePaid) || 0,
+        currency: 'INR',
+        status: b.paymentStatus === 'succeeded' ? 'success' : b.paymentStatus,
+        paymentId: `bid_${b._id}`,
+        orderId: `gig_${gig._id || b._id}`,
+        method: 'bid_fee',
+        description: `Bid fee for ${gig.title || 'Gig'}`,
+        createdAt: b.createdAt,
+        updatedAt: b.updatedAt,
+        bid: {
+          _id: b._id,
+          job: gig,
+          gig
+        }
+      };
+    });
     // Stats
     const totalSpent = payments.filter(p => p.status === 'success').reduce((sum, p) => sum + p.amount, 0);
     const successfulPayments = payments.filter(p => p.status === 'success').length;

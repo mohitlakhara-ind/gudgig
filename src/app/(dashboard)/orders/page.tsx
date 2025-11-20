@@ -194,12 +194,12 @@ export default function OrdersPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-foreground mb-2">
-          Your Orders Dashboard
+      <div className="space-y-1">
+        <h1 className="text-2xl sm:text-3xl font-semibold text-foreground">
+          Your Orders
         </h1>
-        <p className="text-muted-foreground">
-          Track your orders and manage your freelance purchases
+        <p className="text-sm sm:text-base text-muted-foreground max-w-2xl">
+          Quick snapshot of every gig you’ve unlocked. Smaller cards keep things readable on any screen.
         </p>
       </div>
 
@@ -207,13 +207,13 @@ export default function OrdersPage() {
 
       {/* Bids List */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+        <CardHeader className="py-4">
+          <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
             <MessageCircle className="h-5 w-5 text-primary" />
-            Your Orders
+            Recent unlocks
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           {bids.length === 0 ? (
             <div className="text-center py-12">
               <MessageCircle className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
@@ -226,66 +226,64 @@ export default function OrdersPage() {
               </Button>
             </div>
       ) : (
-        <div className="space-y-4">
+            <div className="space-y-3">
               {bids.map((bid) => (
-                <div key={bid._id} className="border rounded-lg p-4 space-y-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Badge 
-                          variant="outline" 
-                          className={`${getStatusColor(bid.status)} flex items-center gap-1`}
+                <div
+                  key={bid._id}
+                  className="border rounded-lg p-3 sm:p-4 space-y-3 text-sm bg-card/50"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                    <div className="flex-1 space-y-2">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge
+                          variant="outline"
+                          className={`${getStatusColor(bid.status)} flex items-center gap-1 text-[11px] sm:text-xs`}
                         >
                           {getStatusIcon(bid.status)}
                           {(bid.status || 'pending').charAt(0).toUpperCase() + (bid.status || 'pending').slice(1)}
                         </Badge>
-                        <Badge variant="secondary" className="text-xs">
+                        <Badge variant="secondary" className="text-[11px] sm:text-xs">
                           {(bid as any).job?.category || (bid as any).jobId?.category || 'General'}
                         </Badge>
                       </div>
-                      
-                      <h3 className="font-semibold text-foreground mb-1">
+                      <h3 className="font-medium text-base sm:text-lg line-clamp-2">
                         {(bid as any).job?.title || (bid as any).jobId?.title || 'Gig Title'}
                       </h3>
-                      
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <div className="flex items-center gap-1">
-                          <Calendar className="h-4 w-4" />
+                      <div className="flex flex-wrap items-center gap-3 text-xs sm:text-sm text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="h-3.5 w-3.5" />
                           {formatDate(bid.createdAt)}
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Shield className="h-4 w-4" />
-                          Fee: {formatCurrency(bid.bidFeePaid)}
-                        </div>
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Shield className="h-3.5 w-3.5" />
+                          Fee {formatCurrency(bid.bidFeePaid)}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <DollarSign className="h-3.5 w-3.5" />
+                          {bid.paymentStatus === 'succeeded' ? 'Paid' : 'Pending'}
+                        </span>
                       </div>
                     </div>
-                    
-                    <div className="flex items-center gap-2">
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => router.push(`/gigs/${(bid as any).job?._id || (bid as any).jobId?._id}`)}
-                      >
-                        <Eye className="h-4 w-4 mr-1" />
-                        View Gig
-                      </Button>
-                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full sm:w-auto text-xs sm:text-sm"
+                      onClick={() => router.push(`/gigs/${(bid as any).job?._id || (bid as any).jobId?._id}`)}
+                    >
+                      <Eye className="h-4 w-4 mr-1" />
+                      View gig
+                    </Button>
                   </div>
-                  
-                  <div className="flex items-center justify-between pt-2 border-t">
-                    <div className="text-xs text-muted-foreground">
-                      Bid ID: {bid._id}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      Payment: {bid.paymentStatus === 'succeeded' ? 'Completed' : 'Pending'}
-                    </div>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-t pt-2 text-[11px] sm:text-xs text-muted-foreground gap-1">
+                    <span>Reference: {bid._id}</span>
+                    <span>Payment {bid.paymentStatus === 'succeeded' ? 'completed' : 'waiting'}</span>
                   </div>
                 </div>
               ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -84,9 +84,7 @@ export function useGigs(options: UseGigsOptions = {}) {
     error,
     pagination,
     fetchGigs,
-    loadMoreGigs,
-    refresh,
-    hasMore: pagination.page < pagination.totalPages
+    refresh
   };
 }
 

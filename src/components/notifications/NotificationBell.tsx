@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Bell, BellOff, Settings } from 'lucide-react';
+import React, { useState } from 'react';
+import { Bell, BellOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -9,7 +9,6 @@ import { useNotifications } from '@/contexts/NotificationContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { NotificationCenter } from './NotificationCenter';
 import { useRouter } from 'next/navigation';
-import toast from 'react-hot-toast';
 
 interface NotificationBellProps {
   className?: string;
@@ -40,11 +39,6 @@ export function NotificationBell({ className = '' }: NotificationBellProps) {
   const handleViewAllNotifications = () => {
     setIsOpen(false);
     router.push('/notifications');
-  };
-
-  const handleNotificationSettings = () => {
-    setIsOpen(false);
-    router.push('/settings/notifications');
   };
 
   if (!user) {
@@ -92,15 +86,6 @@ export function NotificationBell({ className = '' }: NotificationBellProps) {
                     )}
                   </Button>
                 )}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleNotificationSettings}
-                  className="h-8 w-8 p-0"
-                  title="Notification settings"
-                >
-                  <Settings className="h-4 w-4" />
-                </Button>
               </div>
             </div>
             

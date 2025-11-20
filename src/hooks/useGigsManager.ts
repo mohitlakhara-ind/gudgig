@@ -22,6 +22,7 @@ interface GigsManagerState {
   };
   hasMore: boolean;
   isRefreshing: boolean;
+  isLoadingMore: boolean;
   lastFetchTime: number | null;
 }
 
@@ -49,12 +50,13 @@ export function useGigsManager(options: UseGigsManagerOptions = {}): GigsManager
     error: null,
     pagination: {
       page: 1,
-      limit: 12,
+      limit: 10,
       total: 0,
       totalPages: 0
     },
     hasMore: false,
     isRefreshing: false,
+    isLoadingMore: false,
     lastFetchTime: null
   });
 
@@ -106,11 +108,10 @@ export function useGigsManager(options: UseGigsManagerOptions = {}): GigsManager
           gigs: Array.isArray(cached.data.data) ? cached.data.data : cached.data.data || [],
           pagination: {
             page: cached.data.pagination?.page || 1,
-            limit: cached.data.pagination?.limit || 12,
+            limit: cached.data.pagination?.limit || 10,
             total: cached.data.total || 0,
             totalPages: cached.data.pagination?.totalPages || 1
           },
-          hasMore: (cached.data.pagination?.page || 1) < (cached.data.pagination?.totalPages || 1),
           error: null,
           lastFetchTime: cached.timestamp
         }));
@@ -147,13 +148,14 @@ export function useGigsManager(options: UseGigsManagerOptions = {}): GigsManager
         gigs: gigsData,
         pagination: {
           page: response.pagination?.page || 1,
-          limit: response.pagination?.limit || 12,
+          limit: response.pagination?.limit || 10,
           total: response.total || gigsData.length,
           totalPages: response.pagination?.totalPages || 1
         },
         hasMore: (response.pagination?.page || 1) < (response.pagination?.totalPages || 1),
         loading: false,
         isRefreshing: false,
+        isLoadingMore: false,
         error: null,
         lastFetchTime: Date.now()
       }));
@@ -180,29 +182,42 @@ export function useGigsManager(options: UseGigsManagerOptions = {}): GigsManager
 
   // Load more gigs
   const loadMoreGigs = useCallback(async () => {
-    if (state.pagination.page >= state.pagination.totalPages || state.loading) {
+    if (state.pagination.page >= state.pagination.totalPages || state.isLoadingMore || state.loading) {
       return;
     }
 
     try {
-      setState(prev => ({ ...prev, loading: true, error: null }));
+      setState(prev => ({ ...prev, isLoadingMore: true, error: null }));
 
       const nextPage = state.pagination.page + 1;
       const response: JobsResponse = await apiClient.getJobs({
         ...(initialParamsRef.current as any),
-        page: nextPage
+        page: nextPage,
+        limit: state.pagination.limit || 10
       } as any);
 
       const newGigsData = Array.isArray(response.data) ? response.data : response.data || [];
+      const newGigIds = new Set<string>();
+      newGigsData.forEach((gig: any) => {
+        if (gig && gig._id) {
+          newGigIds.add(String(gig._id));
+        }
+      });
       
       setState(prev => ({
         ...prev,
-        gigs: [...prev.gigs, ...newGigsData],
+        gigs: [
+          ...prev.gigs,
+          ...newGigsData.filter((gig: any) => {
+            if (!gig || !gig._id) return true;
+            return !prev.gigs.some(existing => existing._id === gig._id);
+          })
+        ],
         pagination: {
           ...prev.pagination,
           page: nextPage
         },
-        loading: false,
+        isLoadingMore: false,
         hasMore: nextPage < (response.pagination?.totalPages || 1)
       }));
 
@@ -211,13 +226,13 @@ export function useGigsManager(options: UseGigsManagerOptions = {}): GigsManager
       
       setState(prev => ({
         ...prev,
-        loading: false,
+        isLoadingMore: false,
         error: errorMessage
       }));
 
       toast.error(errorMessage);
     }
-  }, [state.pagination.page, state.pagination.totalPages, state.loading]); // Remove initialParams
+  }, [state.pagination.page, state.pagination.totalPages, state.isLoadingMore, state.loading]); // Remove initialParams
 
   // Refresh data
   const refresh = useCallback(async () => {

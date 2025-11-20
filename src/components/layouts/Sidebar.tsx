@@ -18,7 +18,6 @@ import {
   Bookmark,
   CreditCard,
   MessageSquare,
-  Settings,
   Bell,
   User,
   LogOut,
@@ -152,12 +151,6 @@ export default function Sidebar({ isOpen, onToggle, isMobile = false }: SidebarP
               description: 'Transaction history'
             },
             // Chat removed
-            {
-              name: 'Settings',
-              href: '/admin/settings',
-              icon: Settings,
-              description: 'Admin settings'
-            }
           ]
         },
         {
@@ -273,12 +266,11 @@ export default function Sidebar({ isOpen, onToggle, isMobile = false }: SidebarP
           }]
           : []),
         {
-          name: 'Settings',
-          href: '/settings',
-          icon: Settings,
-          description: 'Preferences'
-        },
-        // Removed Help & Support as the route is nested under dashboard
+          name: 'Help & Support',
+          href: '/help',
+          icon: HelpCircle,
+          description: 'Get help'
+        }
       ]
     });
 
@@ -295,7 +287,6 @@ export default function Sidebar({ isOpen, onToggle, isMobile = false }: SidebarP
     // Known nested routes that should highlight on subpaths
     if (href === '/gigs') return pathname === '/gigs' || pathname.startsWith('/gigs/');
     if (href === '/notifications') return pathname === '/notifications' || pathname === '/dashboard/notifications';
-    if (href === '/settings') return pathname === '/settings' || pathname === '/dashboard/settings';
     if (href === '/help') return pathname === '/help' || pathname === '/support';
     if (href === '/orders') return pathname === '/orders' || pathname === '/dashboard/orders';
     if (href === '/payments') return pathname === '/payments' || pathname === '/dashboard/payments';
@@ -325,12 +316,12 @@ export default function Sidebar({ isOpen, onToggle, isMobile = false }: SidebarP
       {/* Header */}
       <div className="flex items-center justify-between p-2 sm:p-3">
         {!isCollapsed && (
-          <div className="flex items-center gap-2 min-w-0">
+          <Link href="/" className="flex items-center gap-2 min-w-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg">
             <div className="w-9 h-9 dark:bg-accent-foreground rounded-lg flex items-center justify-center">
               <Image src="/logo.png" height={36} width={36} alt='gigsmint logo' />
             </div>
             <span className="font-semibold text-base sm:text-lg truncate">Gigs Mint</span>
-          </div>
+          </Link>
         )}
 
         <div className="flex items-center gap-2 flex-shrink-0">

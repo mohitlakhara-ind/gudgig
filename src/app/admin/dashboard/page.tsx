@@ -156,12 +156,6 @@ export default function AdminDashboardPage() {
               </Link>
             </Button>
 
-            <Button asChild variant="outline" className="w-full justify-start">
-              <Link href="/admin/settings">
-                <Settings className="h-4 w-4 mr-2" />
-                Platform Settings
-              </Link>
-            </Button>
           </CardContent>
         </Card>
       </div>

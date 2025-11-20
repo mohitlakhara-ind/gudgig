@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import EnhancedGigsListing from '@/components/gigs/EnhancedGigsListing';
+import { ProfessionalTestimonials } from '@/components/Testimonials';
 import { GigsProvider } from '@/contexts/GigsContext';
 import { ContactDetailsProvider } from '@/contexts/ContactDetailsContext';
 import { dataService, type ServerStats } from '@/services/dataService';
@@ -94,7 +95,7 @@ export default function GigsPage() {
       <ContactDetailsProvider>
       <div className="min-h-screen bg-background">
       {/* Professional Header */}
-      <section className="bg-muted py-16">
+      <section className="bg-muted py-8 md:py-16 lg:py-16">
       <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12">
@@ -147,7 +148,7 @@ export default function GigsPage() {
         </div>
       </div>
     </section>
-  </div>
+      </div>
       </ContactDetailsProvider>
       </GigsProvider>
     );

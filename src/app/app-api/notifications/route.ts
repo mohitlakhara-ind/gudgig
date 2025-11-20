@@ -101,3 +101,43 @@ export async function PUT(request: NextRequest) {
     );
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const backendUrl = getBackendUrl(false);
+    const notificationsUrl = `${backendUrl}/api/notifications`;
+
+    const response = await fetch(notificationsUrl, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(request.headers.get('authorization') && {
+          'authorization': request.headers.get('authorization')!
+        }),
+      },
+    });
+
+    if (!response.ok) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Backend server error',
+          status: response.status
+        },
+        { status: response.status }
+      );
+    }
+
+    const data = await response.json();
+    return NextResponse.json(data);
+  } catch (error: any) {
+    console.error('Error clearing notifications:', error);
+    return NextResponse.json(
+      {
+        success: false,
+        message: 'Failed to clear notifications'
+      },
+      { status: 500 }
+    );
+  }
+}

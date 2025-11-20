@@ -1,36 +1,35 @@
 'use client';
 
 import { useState, useEffect, useContext } from 'react';
+import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   ArrowLeft,
   Calendar,
   DollarSign,
   Users,
-  Eye,
   Heart,
-  MessageCircle,
   MapPin,
   Clock,
-  Award,
   CreditCard,
-  Zap,
-  Shield,
   Mail,
   Phone,
   Lock,
-  ArrowRight
+  ArrowRight,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import CustomLoader from '@/components/CustomLoader';
 import { ContactDetailsCard } from '@/components/gigs';
+import Testimonials from '@/components/Testimonials';
 import { apiClient } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Job } from '@/types/api';
-import FakeGigPayment from '@/components/payment/FakeGigPayment';
 import RazorpayPayment from '@/components/payment/RazorpayPayment';
 import GuestCheckout from '@/components/payment/GuestCheckout';
 import ContactDetailsContext from '@/contexts/ContactDetailsContext';
@@ -56,8 +55,23 @@ export default function GigDetailPage() {
   const [creatingOrder, setCreatingOrder] = useState(false);
   const [rzpOrderId, setRzpOrderId] = useState<string | null>(null);
   const [rzpKeyId, setRzpKeyId] = useState<string | undefined>(undefined);
-  const [payerEmail, setPayerEmail] = useState<string>('');
-  const [payerContact, setPayerContact] = useState<string>('');
+  const [paymentMode, setPaymentMode] = useState<'authenticated' | 'guest' | null>(null);
+  const [paymentEmail, setPaymentEmail] = useState<string>('');
+  const [paymentPhone, setPaymentPhone] = useState<string>('');
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const [isTestimonialsExpanded, setIsTestimonialsExpanded] = useState(false);
+
+  const closePaymentModal = () => {
+    setShowPayment(false);
+    setPaymentMode(null);
+    setRzpOrderId(null);
+    setRzpKeyId(undefined);
+  };
+
+  const openPaymentModal = () => {
+    setPaymentMode(user ? 'authenticated' : 'guest');
+    setShowPayment(true);
+  };
 
   useEffect(() => {
     const fetchGig = async () => {
@@ -79,6 +93,15 @@ export default function GigDetailPage() {
   }, [gigId]);
 
   useEffect(() => {
+    if (!showPayment || paymentMode !== 'authenticated' || !user) return;
+    const defaultContact = contactCtx && typeof contactCtx.getDefaultContactDetails === 'function'
+      ? contactCtx.getDefaultContactDetails()
+      : null;
+    setPaymentEmail(prev => prev || defaultContact?.email || user?.email || '');
+    setPaymentPhone(prev => prev || defaultContact?.phone || (user as any)?.phone || '');
+  }, [showPayment, paymentMode, contactCtx, user]);
+
+  useEffect(() => {
     const saved = localStorage.getItem('savedGigs');
     if (saved) {
       setSavedGigs(JSON.parse(saved));
@@ -92,7 +115,7 @@ export default function GigDetailPage() {
       if (res?.success) {
         setBidCount(res.data?.count || 0);
       }
-    } catch {}
+    } catch { }
   };
   useEffect(() => {
     if (gigId) fetchBidCount();
@@ -168,45 +191,26 @@ export default function GigDetailPage() {
     }
   };
 
-  const handlePlaceBid = () => {
-    if (!user) {
-      toast.error('Please login to place a bid');
-      return;
-    }
-    setShowPayment(true);
-  };
-
-  const handleGuestBidPrompt = () => {
-    setShowPayment(true);
-  };
-
   const handlePaymentSuccess = async (paymentId: string, orderId: string) => {
     try {
       setPaymentLoading(true);
 
-      // Prepare bidder contact details (required by backend)
       const defaultContact = contactCtx && typeof contactCtx.getDefaultContactDetails === 'function'
         ? contactCtx.getDefaultContactDetails()
         : null;
-      const bidderContact = defaultContact ? {
-        name: defaultContact.name,
-        email: defaultContact.email,
-        phone: defaultContact.phone,
-        countryCode: defaultContact.countryCode || 'US',
-        company: defaultContact.company || '',
-        position: defaultContact.position || ''
-      } : {
-        name: user?.name || '',
-        email: user?.email || '',
-        phone: (user as any)?.phone || '',
-        countryCode: (user as any)?.countryCode || 'US',
-        company: '',
-        position: ''
+
+      const bidderContact = {
+        name: (defaultContact?.name || user?.name || '').trim(),
+        email: (paymentEmail || defaultContact?.email || user?.email || '').trim(),
+        phone: (paymentPhone || defaultContact?.phone || (user as any)?.phone || '').trim(),
+        countryCode: defaultContact?.countryCode || (user as any)?.countryCode || 'US',
+        company: defaultContact?.company || '',
+        position: defaultContact?.position || ''
       };
 
       if (!bidderContact.name || !bidderContact.email || !bidderContact.phone) {
         toast.error('Please add your contact details (name, email, phone) before bidding.');
-        setShowPayment(false);
+        closePaymentModal();
         return;
       }
 
@@ -214,7 +218,7 @@ export default function GigDetailPage() {
       const payload = {
         quotation: 0,
         proposal: 'Bid submitted',
-        bidFeePaid: 10,
+        bidFeePaid: 5,
         contactDetails: { bidderContact }
       } as any;
 
@@ -251,7 +255,7 @@ export default function GigDetailPage() {
       }
 
       toast.success('Access unlocked. Contact details will be shown.');
-      setShowPayment(false);
+      closePaymentModal();
 
       // Refresh user bids to show contact details
       const fetchUserBidsAndContacts = async () => {
@@ -306,7 +310,7 @@ export default function GigDetailPage() {
   const handlePaymentError = (error: string) => {
     console.error('Payment error:', error);
     toast.error(error);
-    setShowPayment(false);
+    closePaymentModal();
   };
 
   const verifyAndSubmitAfterRzp = async (paymentId: string, signature: string) => {
@@ -329,17 +333,17 @@ export default function GigDetailPage() {
 
   const startRazorpayCheckout = async () => {
     try {
-      const def = contactCtx && typeof contactCtx.getDefaultContactDetails === 'function' 
-        ? contactCtx.getDefaultContactDetails() 
+      const def = contactCtx && typeof contactCtx.getDefaultContactDetails === 'function'
+        ? contactCtx.getDefaultContactDetails()
         : null;
-      const email = def?.email || user?.email || '';
-      const contact = def?.phone || (user as any)?.phone || '';
+      const email = (paymentEmail || def?.email || user?.email || '').trim();
+      const contact = (paymentPhone || def?.phone || (user as any)?.phone || '').trim();
       if (!email || !contact) {
         toast.error('Please add your contact details (email, phone) in your profile before paying.');
         return;
       }
-      setPayerEmail(email);
-      setPayerContact(contact);
+      setPaymentEmail(email);
+      setPaymentPhone(contact);
 
       setCreatingOrder(true);
       const base = (process.env.NEXT_PUBLIC_BACKEND_URL || '').replace(/\/$/, '');
@@ -358,6 +362,19 @@ export default function GigDetailPage() {
       setCreatingOrder(false);
     }
   };
+
+  useEffect(() => {
+    if (
+      showPayment &&
+      paymentMode === 'authenticated' &&
+      !rzpOrderId &&
+      !creatingOrder &&
+      paymentEmail &&
+      paymentPhone
+    ) {
+      startRazorpayCheckout();
+    }
+  }, [showPayment, paymentMode, rzpOrderId, creatingOrder, paymentEmail, paymentPhone]);
 
 
   const formatBudget = (budget: number) => {
@@ -381,7 +398,8 @@ export default function GigDetailPage() {
   const hasUserBid = userBids.length > 0;
 
   // Show payment modal if payment is in progress
-  if (showPayment && user) {
+  if (showPayment) {
+    const isAuthenticatedFlow = paymentMode === 'authenticated' && !!user;
     return (
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8">
@@ -389,52 +407,112 @@ export default function GigDetailPage() {
             {/* Back Button */}
             <Button
               variant="ghost"
-              onClick={() => setShowPayment(false)}
+              onClick={closePaymentModal}
               className="mb-6"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Gig
             </Button>
 
-            {/* Payment Modal - Logged-in flow uses Razorpay */}
-            <Card className="max-w-md mx-auto">
-              <CardHeader>
-                <CardTitle className="text-2xl font-bold">Place Your Bid</CardTitle>
+            <Card className="max-w-xl mx-auto shadow-xl border-border/60">
+              <CardHeader className="space-y-3">
+                <CardTitle className="text-2xl font-bold">
+                  {isAuthenticatedFlow ? 'Confirm unlock' : 'Unlock without logging in'}
+                </CardTitle>
                 <p className="text-muted-foreground">
-                  Submit your bid for: <strong>{gig?.title}</strong>
+                  Pay a small one-time fee to reveal the full brief and verified contact details for <strong>{gig?.title}</strong>.
                 </p>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
-                  {/* Bid Fee Information */}
-                  <div className="bg-muted p-4 rounded-lg">
-                    <div className="flex items-center gap-2 mb-2">
-                      <CreditCard className="h-5 w-5 text-primary" />
-                      <span className="font-medium">Bid Fee</span>
+                {isAuthenticatedFlow ? (
+                  <div className="space-y-6">
+                    <div className="bg-muted p-4 rounded-lg border border-dashed border-border/60">
+                      <div className="flex items-center gap-2 mb-2">
+                        <CreditCard className="h-5 w-5 text-primary" />
+                        <span className="font-medium">Bid Fee — ₹5</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        This lightweight fee keeps the marketplace spam-free and instantly unlocks employer contact details.
+                      </p>
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      A small fee of ₹5 is required to place your bid. This helps maintain quality and reduces spam.
-                    </p>
-                  </div>
 
-                  {/* Razorpay Payment */}
-                  {!rzpOrderId ? (
-                    <Button onClick={startRazorpayCheckout} disabled={creatingOrder} className="w-full h-11">
-                      {creatingOrder ? 'Preparing…' : 'Proceed to secure payment'}
-                    </Button>
-                  ) : (
+                    <div className="space-y-4">
+                      <div>
+                        <label className="text-sm font-medium text-foreground">Email</label>
+                        <Input
+                          type="email"
+                          value={paymentEmail}
+                          onChange={(e) => setPaymentEmail(e.target.value)}
+                          placeholder="you@example.com"
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-foreground">Phone</label>
+                        <Input
+                          type="tel"
+                          value={paymentPhone}
+                          onChange={(e) => setPaymentPhone(e.target.value)}
+                          placeholder="+91 98765 43210"
+                          className="mt-1"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 flex items-center gap-3">
+                      <Image
+                        src="/razorpay-secure.svg"
+                        width={120}
+                        height={36}
+                        alt="Razorpay secure badge"
+                        className="h-10 w-auto"
+                      />
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">Secure Razorpay checkout</p>
+                        <p className="text-xs text-muted-foreground">UPI · Cards · Netbanking supported</p>
+                      </div>
+                    </div>
+
                     <RazorpayPayment
                       amount={500}
                       description={`Bid fee for gig: ${gig?.title}`}
-                      orderId={rzpOrderId}
+                      orderId={rzpOrderId || ''}
                       keyId={rzpKeyId}
-                      prefillEmail={payerEmail}
-                      prefillContact={payerContact}
+                      prefillEmail={paymentEmail}
+                      prefillContact={paymentPhone}
                       onSuccess={verifyAndSubmitAfterRzp}
                       onError={handlePaymentError}
+                      disabled={!paymentEmail || !paymentPhone}
+                      preparing={!rzpOrderId || creatingOrder}
                     />
-                  )}
-                </div>
+                  </div>
+                ) : (
+                  <div className="space-y-5">
+                    <div className="bg-muted p-4 rounded-lg border border-dashed border-border/60">
+                      <p className="text-sm text-muted-foreground">
+                        No account? No problem. Complete a secure Razorpay checkout and we&apos;ll automatically create a guest session for you.
+                      </p>
+                    </div>
+                    <GuestCheckout
+                      gigId={gigId}
+                      amountInPaise={500}
+                      description={`Bid fee for gig: ${gig?.title}`}
+                    />
+                    <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 flex items-center gap-3">
+                      <Image
+                        src="/razorpay-secure.svg"
+                        width={120}
+                        height={36}
+                        alt="Razorpay secure badge"
+                        className="h-10 w-auto"
+                      />
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">Trusted payments</p>
+                        <p className="text-xs text-muted-foreground">PCI DSS compliant · 256-bit SSL encryption</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -484,7 +562,7 @@ export default function GigDetailPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Main Content */}
-            <div className="lg:col-span-2 space-y-6">
+            <div id="overview" className="lg:col-span-2 space-y-6 scroll-mt-24">
               {/* Gig Header */}
               <Card>
                 <CardHeader>
@@ -579,8 +657,23 @@ export default function GigDetailPage() {
               </Card>
 
               <Card>
-                <CardHeader>
+                <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <CardTitle>Full Description</CardTitle>
+                  {!bidsLoading && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIsDescriptionExpanded((prev) => !prev)}
+                      className="self-start sm:self-auto"
+                    >
+                      {isDescriptionExpanded ? 'Collapse' : 'Expand'}
+                      {isDescriptionExpanded ? (
+                        <ChevronUp className="h-4 w-4 ml-2" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4 ml-2" />
+                      )}
+                    </Button>
+                  )}
                 </CardHeader>
                 <CardContent>
                   {bidsLoading ? (
@@ -592,20 +685,23 @@ export default function GigDetailPage() {
                       <div className="h-4 bg-muted rounded w-1/2"></div>
                     </div>
                   ) : hasUserBid ? (
-                    <p className="text-foreground leading-relaxed whitespace-pre-line">
+                    <div className={`text-foreground leading-relaxed whitespace-pre-line transition-all ${isDescriptionExpanded ? '' : 'max-h-64 overflow-hidden'}`}>
                       {(gig as any).descriptionFull || gig.description}
-                    </p>
+                    </div>
                   ) : (
                     <div className="relative">
-                      <div className="select-none pointer-events-none filter blur-sm opacity-70">
+                      <div className={`select-none filter blur-sm opacity-80 transition-all ${isDescriptionExpanded ? '' : 'max-h-48 overflow-hidden'}`}>
                         <p className="leading-relaxed whitespace-pre-line">
                           {(gig as any).descriptionShort || (gig as any).descriptionPreview || 'Unlock to view the complete project description, deliverables, and guidelines.'}
                         </p>
                       </div>
+                      {!isDescriptionExpanded && (
+                        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-background via-background/60 to-transparent"></div>
+                      )}
                       <div className="absolute inset-0 flex items-center justify-center">
                         <Button
                           className="h-10 px-6 bg-gradient-to-r from-primary to-primary/90 text-white shadow-md hover:shadow-lg"
-                          onClick={() => setShowPayment(true)}
+                          onClick={openPaymentModal}
                         >
                           <Lock className="h-4 w-4 mr-2" />
                           Unlock full description
@@ -613,8 +709,14 @@ export default function GigDetailPage() {
                       </div>
                     </div>
                   )}
+                  {!bidsLoading && !isDescriptionExpanded && (
+                    <p className="mt-4 text-sm text-muted-foreground">
+                      Expand to read the entire project brief.
+                    </p>
+                  )}
                 </CardContent>
               </Card>
+
 
             </div>
 
@@ -643,24 +745,27 @@ export default function GigDetailPage() {
                       </Button>
                     ) : (
                       <Button
-                        onClick={handlePlaceBid}
+                        onClick={openPaymentModal}
                         className="w-full h-11 font-medium bg-gradient-to-r from-primary to-primary/90 text-white shadow-md hover:shadow-lg hover:from-primary/90 hover:to-primary active:scale-[0.99] transition-all"
                         size="lg"
                       >
                         <Lock className="h-4 w-4 mr-2" />
-                        Unlock more details
+                        Unlock full details
                         <ArrowRight className="h-4 w-4 ml-2" />
                       </Button>
                     )
                   ) : (
                     <div className="space-y-3">
-                      <GuestCheckout
-                        gigId={gigId}
-                        amountInPaise={500}
-                        description={`Bid fee for gig: ${gig?.title}`}
-                      />
+                      <Button
+                        onClick={openPaymentModal}
+                        className="w-full h-11 font-medium bg-gradient-to-r from-primary to-primary/90 text-white shadow-md hover:shadow-lg"
+                      >
+                        <Lock className="h-4 w-4 mr-2" />
+                        Unlock instantly
+                        <ArrowRight className="h-4 w-4 ml-2" />
+                      </Button>
                       <p className="text-xs text-muted-foreground text-center">
-                        No login needed. Pay securely to unlock contact details.
+                        No login required. We&apos;ll walk you through a secure Razorpay checkout.
                       </p>
                     </div>
                   )}
@@ -733,7 +838,7 @@ export default function GigDetailPage() {
                   <CardTitle>Gig Statistics</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
+                  <div className="space-y-3 mb-10 md:mb-0 lg:mb-0">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Bids</span>
                       <span className="font-medium">{bidCount}</span>
@@ -745,11 +850,62 @@ export default function GigDetailPage() {
                   </div>
                 </CardContent>
               </Card>
+
             </div>
+
           </div>
+          {user && hasUserBid && (
+            <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-6 pb-3">
+                <div>
+                  <h3 className="text-2xl font-semibold leading-none tracking-tight">
+                    Testimonials
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Real feedback from community members you unlocked.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setIsTestimonialsExpanded((prev) => !prev)}
+                  className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground h-9 px-3 self-start sm:self-auto"
+                  aria-expanded={isTestimonialsExpanded}
+                  aria-controls="testimonials-content"
+                >
+                  {isTestimonialsExpanded ? 'Hide' : 'Show'}
+                  {isTestimonialsExpanded ? (
+                    <ChevronUp className="h-4 w-4 ml-2" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4 ml-2" />
+                  )}
+                </button>
+              </div>
+              <div
+                id="testimonials-content"
+                className={`p-6 pt-0 transition-all duration-300 ease-in-out ${isTestimonialsExpanded ? 'opacity-100' : 'max-h-[420px] overflow-hidden relative'
+                  }`}
+              >
+                {!isTestimonialsExpanded && (
+                  <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background via-background/80 to-transparent pointer-events-none z-10" />
+                )}
+                <Testimonials />
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
+      {!hasUserBid && !showPayment && (
+        <div className="fixed inset-x-0 bottom-0 z-40 bg-gradient-to-t from-background via-background/95 to-transparent px-4 pb-4 pt-6 md:hidden">
+          <Button
+            className="w-full h-13 rounded-2xl shadow-xl bg-primary text-primary-foreground hover:shadow-2xl hover:scale-[1.01] transition-all"
+            onClick={openPaymentModal}
+            aria-label="Unlock Full details"
+          >
+            <Lock className="h-4 w-4 mr-2" />
+            Unlock Full details
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

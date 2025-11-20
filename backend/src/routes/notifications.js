@@ -7,7 +7,8 @@ import {
   markAsRead,
   markAllAsRead,
   deleteNotification,
-  createNotification
+  createNotification,
+  clearNotifications
 } from '../controllers/notificationController.js';
 
 const router = express.Router();
@@ -85,6 +86,11 @@ router.put('/read-all',
 router.delete('/:notificationId',
   notificationIdValidation,
   deleteNotification
+);
+
+// Delete all notifications
+router.delete('/',
+  clearNotifications
 );
 
 // Create notification (for admin or internal use)

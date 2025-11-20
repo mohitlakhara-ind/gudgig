@@ -5,8 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useRouter, usePathname } from 'next/navigation';
 import Sidebar from './Sidebar';
 import { Button } from '@/components/ui/button';
-import { Menu, Bell, Search, Shield } from 'lucide-react';
-import { Input } from '@/components/ui/input';
+import { Menu, Shield } from 'lucide-react';
 import { useResponsive } from '@/hooks/useResponsive';
 
 interface DashboardLayoutProps {
@@ -18,7 +17,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const { isMobile, isTablet, isDesktop } = useResponsive();
 
   // Check if we're on admin pages
@@ -66,13 +64,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     return null;
   }
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      router.push(`/gigs?search=${encodeURIComponent(searchQuery.trim())}`);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-background">
       <div className="flex h-screen">
@@ -109,19 +100,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   </h1>
                 </div>
 
-                {/* Search - Hidden on very small screens */}
-                <form onSubmit={handleSearch} className="hidden sm:flex flex-1 max-w-md">
-                  <div className="relative w-full">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      type="search"
-                      placeholder={isAdminPage ? "Search users, gigs, or bids..." : "Search gigs, skills, or keywords..."}
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10 pr-4"
-                    />
-                  </div>
-                </form>
               </div>
 
               <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
@@ -133,30 +111,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   </div>
                 )}
 
-                {/* Search button for mobile */}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => {/* TODO: Implement mobile search modal */}}
-                  className="sm:hidden"
-                >
-                  <Search className="h-5 w-5" />
-                </Button>
-
-                {/* Notifications */}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="relative"
-                  aria-label="Notifications"
-                  onClick={() => router.push('/notifications')}
-                >
-                  <Bell className="h-5 w-5" />
-                  {/* TODO: Add real notification count from API */}
-                  {/* <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full text-xs text-white flex items-center justify-center">
-                    {unreadCount}
-                  </span> */}
-                </Button>
               </div>
             </div>
           </header>

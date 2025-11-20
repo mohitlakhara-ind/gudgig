@@ -17,7 +17,8 @@ const bidSchema = new mongoose.Schema({
       email: { type: String, required: true },
       phone: { type: String, required: true },
       name: { type: String, required: true },
-      alternateContact: { type: String, default: '' }
+      alternateContact: { type: String, default: '' },
+      location: { type: String, default: 'Remote' }
     }
   },
   bidFeePaid: { type: Number, required: true, min: 0 },

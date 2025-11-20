@@ -99,12 +99,19 @@ self.addEventListener('push', (event) => {
 
   console.log('Showing notification with data:', notificationData);
 
-  const promiseChain = self.registration.showNotification(
-    notificationData.title,
-    notificationData
-  );
-
-  event.waitUntil(promiseChain);
+  event.waitUntil((async () => {
+    try {
+      await self.registration.showNotification(
+        notificationData.title,
+        notificationData
+      );
+    } finally {
+      await broadcastMessageToClients({
+        type: 'PUSH_NOTIFICATION',
+        payload: notificationData
+      });
+    }
+  })());
 });
 
 // Notification click event
@@ -121,25 +128,25 @@ self.addEventListener('notificationclick', (event) => {
   // Default action or 'view' action
   const urlToOpen = event.notification.data?.url || '/notifications';
   
-  event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true })
-      .then((clientList) => {
-        // Check if there's already a window/tab open with the target URL
-        for (const client of clientList) {
-          if (client.url.includes(urlToOpen) && 'focus' in client) {
-            return client.focus();
-          }
+  event.waitUntil((async () => {
+    try {
+      const clientList = await clients.matchAll({ type: 'window', includeUncontrolled: true });
+      for (const client of clientList) {
+        if (client.url.includes(urlToOpen) && 'focus' in client) {
+          await client.focus();
+          return;
         }
-        
-        // If no existing window, open a new one
-        if (clients.openWindow) {
-          return clients.openWindow(urlToOpen);
-        }
-      })
-      .catch((error) => {
-        console.error('Error handling notification click:', error);
-      })
-  );
+      }
+
+      if (clients.openWindow) {
+        await clients.openWindow(urlToOpen);
+      }
+    } catch (error) {
+      console.error('Error handling notification click:', error);
+    } finally {
+      await broadcastMessageToClients({ type: 'NOTIFICATION_REFRESH' });
+    }
+  })());
 });
 
 // Background sync event (for future use)
@@ -161,6 +168,17 @@ async function syncNotifications() {
     console.log('Syncing notifications in background...');
   } catch (error) {
     console.error('Background sync failed:', error);
+  }
+}
+
+async function broadcastMessageToClients(message) {
+  try {
+    const clientList = await clients.matchAll({ type: 'window', includeUncontrolled: true });
+    for (const client of clientList) {
+      client.postMessage(message);
+    }
+  } catch (error) {
+    console.error('Failed to broadcast message to clients:', error);
   }
 }
 

@@ -17,7 +17,6 @@ Pages and Routes
 | /admin/bids | Bid Management | ✅ Complete | View and manage all bids |
 | /admin/bid-fees | Bid Fee Config | ✅ Complete | Configure bid fee options |
 | /admin/analytics | Analytics | ✅ Complete | Detailed analytics dashboard |
-| /admin/settings | Settings | ✅ Complete | General admin settings |
 | /admin/chat | Messages | ✅ Complete | Admin messaging interface |
 | /admin/login | Admin Login | ✅ Complete | Admin authentication page |
 

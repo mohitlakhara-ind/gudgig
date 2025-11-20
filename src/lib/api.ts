@@ -356,7 +356,16 @@ class ApiClient {
     if (params?.query) qs.set('search', params.query);
     if (params?.minBudget) qs.set('minBudget', String(params.minBudget));
     if (params?.maxBudget) qs.set('maxBudget', String(params.maxBudget));
+    // Normalize and forward sort options used by the UI directly to backend
     if (params?.sortBy) qs.set('sort', params.sortBy);
+    // Forward skills filter (array or comma-separated string) to backend
+    if (params?.skills) {
+      const skills =
+        Array.isArray(params.skills) ? params.skills.join(',') : params.skills;
+      if (skills.trim().length > 0) {
+        qs.set('skills', skills);
+      }
+    }
     const query = qs.toString();
     // Alias to gigs endpoint for now
     return this.request<JobsResponse>(`/gigs${query ? `?${query}` : ''}`);
@@ -431,7 +440,7 @@ class ApiClient {
   async createBid(payload: CreateBidRequest): Promise<BidResponse> {
     return this.request<BidResponse>('/bids', { method: 'POST', body: JSON.stringify(payload) });
   }
-  async getGigBidContacts(gigId: string, bidId: string): Promise<ApiResponse<{ bidderContact: { email: string; phone: string; name: string }; posterContact: { email: string; phone: string; alternateContact?: string } }>> {
+  async getGigBidContacts(gigId: string, bidId: string): Promise<ApiResponse<{ bidderContact: { email: string; phone: string; name: string }; posterContact: { email: string; phone: string; alternateContact?: string; location?: string } }>> {
     // Backend route: GET /api/gigs/:gigId/bids/:bidId/contacts
     return this.request(`/gigs/${gigId}/bids/${bidId}/contacts`);
   }
@@ -840,6 +849,15 @@ class ApiClient {
     }
   }
 
+  async clearNotifications(): Promise<ApiResponse> {
+    try {
+      return await this.request<ApiResponse>('/app-api/notifications', { method: 'DELETE' });
+    } catch (error) {
+      console.warn('Clear notifications API not available');
+      return { success: false, message: 'API not available' };
+    }
+  }
+
   // Auth methods (CSRF endpoint removed)
 
   async forgotPassword(email: string): Promise<ApiResponse> {
@@ -917,7 +935,7 @@ class ApiClient {
     return this.request<OrderResponse>(`/orders/${orderId}`);
   }
 
-  async createOrder(orderData: { serviceId: string; packageType: string; requirements?: any; buyerInstructions?: any; contactDetails?: any; paymentMethod?: 'stripe' | 'paypal' | 'razorpay' }): Promise<OrderResponse> {
+  async createOrder(orderData: { serviceId: string; packageType: string; requirements: any }): Promise<OrderResponse> {
     return this.request<OrderResponse>('/orders', { 
       method: 'POST', 
       body: JSON.stringify(orderData) 
@@ -1066,13 +1084,13 @@ class ApiClient {
   }
 
   // Real Payments Service Methods
-  async getPayments(params?: { 
-    status?: string; 
-    method?: string; 
-    dateFrom?: string; 
-    dateTo?: string; 
-    limit?: number; 
-    page?: number 
+  async getPayments(params?: {
+    status?: string;
+    method?: string;
+    dateFrom?: string;
+    dateTo?: string;
+    limit?: number;
+    page?: number
   }): Promise<ApiResponse<any[]>> {
     const qs = new URLSearchParams();
     if (params?.status) qs.set('status', params.status);
@@ -1082,11 +1100,11 @@ class ApiClient {
     if (params?.method) qs.set('method', params.method);
     if (params?.page) qs.set('page', String(params.page));
     const query = qs.toString();
-    return this.request<ApiResponse<any[]>>(`/api/payments${query ? `?${query}` : ''}`);
+    return this.request<ApiResponse<any[]>>(`/app-api/payments${query ? `?${query}` : ''}`);
   }
 
   async getPaymentStats(): Promise<ApiResponse<any>> {
-    return this.request<any>('/api/payments/stats');
+    return this.request<any>('/app-api/payments/stats');
   }
 
   async getPaymentById(id: string): Promise<ApiResponse<any>> {
@@ -1109,19 +1127,19 @@ class ApiClient {
   }
 
   // Contact Details API
-  async getContactDetails(): Promise<ApiResponse<any[]>> {
-    return this.request<ApiResponse<any[]>>('/contact-details');
+  async getContactDetails(): Promise<ApiResponse<ContactDetails[]>> {
+    return this.request<ApiResponse<ContactDetails[]>>('/contact-details');
   }
 
-  async createContactDetails(data: Partial<any>): Promise<ApiResponse<any>> {
-    return this.request<ApiResponse<any>>('/contact-details', {
+  async createContactDetails(data: Partial<ContactDetails>): Promise<ApiResponse<ContactDetails>> {
+    return this.request<ApiResponse<ContactDetails>>('/contact-details', {
       method: 'POST',
       body: JSON.stringify(data)
     });
   }
 
-  async updateContactDetails(id: string, data: Partial<any>): Promise<ApiResponse<any>> {
-    return this.request<ApiResponse<any>>(`/contact-details/${id}`, {
+  async updateContactDetails(id: string, data: Partial<ContactDetails>): Promise<ApiResponse<ContactDetails>> {
+    return this.request<ApiResponse<ContactDetails>>(`/contact-details/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data)
     });
@@ -1131,8 +1149,8 @@ class ApiClient {
     return this.request<ApiResponse>(`/contact-details/${id}`, { method: 'DELETE' });
   }
 
-  async setDefaultContactDetails(id: string): Promise<ApiResponse<any>> {
-    return this.request<ApiResponse<any>>(`/contact-details/${id}/default`, {
+  async setDefaultContactDetails(id: string): Promise<ApiResponse<ContactDetails>> {
+    return this.request<ApiResponse<ContactDetails>>(`/contact-details/${id}/default`, {
       method: 'PATCH'
     });
   }
@@ -1143,7 +1161,7 @@ class ApiClient {
     limit?: number;
     userId?: string;
     search?: string;
-  }): Promise<ApiResponse<any[]>> {
+  }): Promise<ApiResponse<ContactDetails[]>> {
     const searchParams = new URLSearchParams();
     if (params?.page) searchParams.append('page', params.page.toString());
     if (params?.limit) searchParams.append('limit', params.limit.toString());
@@ -1153,18 +1171,18 @@ class ApiClient {
     const queryString = searchParams.toString();
     const url = `/contact-details/admin/all${queryString ? `?${queryString}` : ''}`;
     
-    return this.request<ApiResponse<any[]>>(url);
+    return this.request<ApiResponse<ContactDetails[]>>(url);
   }
 
-  async adminCreateContactDetails(data: Partial<any> & { userId: string }): Promise<ApiResponse<any>> {
-    return this.request<ApiResponse<any>>('/contact-details/admin', {
+  async adminCreateContactDetails(data: Partial<ContactDetails> & { userId: string }): Promise<ApiResponse<ContactDetails>> {
+    return this.request<ApiResponse<ContactDetails>>('/contact-details/admin', {
       method: 'POST',
       body: JSON.stringify(data)
     });
   }
 
-  async adminUpdateContactDetails(id: string, data: Partial<any>): Promise<ApiResponse<any>> {
-    return this.request<ApiResponse<any>>(`/contact-details/admin/${id}`, {
+  async adminUpdateContactDetails(id: string, data: Partial<ContactDetails>): Promise<ApiResponse<ContactDetails>> {
+    return this.request<ApiResponse<ContactDetails>>(`/contact-details/admin/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data)
     });

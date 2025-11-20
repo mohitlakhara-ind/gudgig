@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Menu, Bell, Search, Shield } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useResponsive } from '@/hooks/useResponsive';
+import DashboardLayout from './DashboardLayout';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -51,7 +52,6 @@ export default function AppLayout({ children }: AppLayoutProps) {
   // Check if we're on dashboard pages that have their own layout
   const isDashboardPage = pathname.startsWith('/dashboard') || 
     pathname.startsWith('/profile') || 
-    pathname.startsWith('/settings') || 
     pathname.startsWith('/notifications') ||
     pathname.startsWith('/saved-gigs') ||
     pathname.startsWith('/bids') ||
@@ -172,25 +172,8 @@ export default function AppLayout({ children }: AppLayoutProps) {
         </div>
       );
     }
-    // Authenticated user on gigs -> show sidebar layout
-    return (
-      <div className="min-h-screen bg-background">
-        <div className="flex h-screen">
-          <Sidebar 
-            isOpen={sidebarOpen} 
-            onToggle={() => setSidebarOpen(!sidebarOpen)}
-            isMobile={isMobile}
-          />
-          <div className="flex-1 flex flex-col overflow-hidden">
-            <main className="flex-1 overflow-auto">
-              <div className="container mx-auto px-3 py-4 sm:px-4 sm:py-6 lg:px-6">
-                {children}
-              </div>
-            </main>
-          </div>
-        </div>
-      </div>
-    );
+    // Authenticated user on gigs -> use dashboard layout for consistent navigation
+    return <DashboardLayout>{children}</DashboardLayout>;
   }
 
   // For dashboard pages, let their own layout handle the sidebar

@@ -9,7 +9,6 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   Search, 
-  Download, 
   CreditCard, 
   Calendar, 
   DollarSign,
@@ -17,12 +16,9 @@ import {
   XCircle,
   Clock,
   Loader2,
-  Filter,
-  TrendingUp,
   BarChart3,
   Receipt,
-  AlertTriangle,
-  Plus
+  Download,
 } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 import toast from 'react-hot-toast';
@@ -78,6 +74,10 @@ export default function PaymentsPage() {
       
       if (response.success && response.data) {
         setPayments(response.data);
+        const statsFromResponse = (response as any)?.stats || (response.data as any)?.stats;
+        if (statsFromResponse) {
+          setStats(statsFromResponse);
+        }
       } else {
         setPayments([]);
       }
@@ -98,65 +98,6 @@ export default function PaymentsPage() {
       }
     } catch (error) {
       console.error('Error fetching payment stats:', error);
-    }
-  };
-
-  const handleCreateTestPayment = async () => {
-    try {
-      const testPayment = {
-        amount: Math.floor(Math.random() * 2000) + 500,
-        currency: 'INR',
-        status: 'pending',
-        paymentId: `pay_test_${Date.now()}`,
-        orderId: `order_test_${Date.now()}`,
-        method: ['card', 'upi', 'netbanking', 'wallet'][Math.floor(Math.random() * 4)],
-        description: `Test payment for: ${['Website Design', 'Mobile App', 'Logo Design', 'Content Writing'][Math.floor(Math.random() * 4)]}`,
-        bid: {
-          _id: `bid_test_${Date.now()}`,
-          job: {
-            _id: `job_test_${Date.now()}`,
-            title: 'Test Project'
-          }
-        }
-      };
-
-      const response = await apiClient.createFakePayment(testPayment);
-      if (response.success) {
-        toast.success('Test payment created successfully');
-        fetchPayments();
-        fetchStats();
-      }
-    } catch (error) {
-      console.error('Error creating test payment:', error);
-      toast.error('Failed to create test payment');
-    }
-  };
-
-  const handleUpdatePaymentStatus = async (id: string, status: string) => {
-    try {
-      const response = await apiClient.updateFakePaymentStatus(id, status);
-      if (response.success) {
-        toast.success('Payment status updated successfully');
-        fetchPayments();
-        fetchStats();
-      }
-    } catch (error) {
-      console.error('Error updating payment status:', error);
-      toast.error('Failed to update payment status');
-    }
-  };
-
-  const handleDeletePayment = async (id: string) => {
-    try {
-      const response = await apiClient.deleteFakePayment(id);
-      if (response.success) {
-        toast.success('Payment deleted successfully');
-        fetchPayments();
-        fetchStats();
-      }
-    } catch (error) {
-      console.error('Error deleting payment:', error);
-      toast.error('Failed to delete payment');
     }
   };
 
@@ -186,12 +127,13 @@ export default function PaymentsPage() {
     }
   };
 
-  const formatAmount = (amount: number) => {
+  const formatAmount = (amount?: number) => {
+    const safeAmount = typeof amount === 'number' && Number.isFinite(amount) ? amount : 0;
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
       currency: 'INR',
       minimumFractionDigits: 0,
-    }).format(amount);
+    }).format(safeAmount);
   };
 
   const formatDate = (dateString: string) => {
@@ -350,6 +292,13 @@ export default function PaymentsPage() {
     failedPayments: payments.filter(p => p.status === 'failed').length
   };
 
+  const safeStats = {
+    totalSpent: Number(calculatedStats.totalSpent) || 0,
+    totalPayments: Number(calculatedStats.totalPayments) || 0,
+    successfulPayments: Number(calculatedStats.successfulPayments) || 0,
+    failedPayments: Number(calculatedStats.failedPayments) || 0,
+  };
+
   if (loading) {
     return (
       <div className="space-y-6">
@@ -371,21 +320,12 @@ export default function PaymentsPage() {
           <h1 className="text-2xl sm:text-3xl font-bold">Payment History</h1>
           <p className="text-muted-foreground">Track all your bid payments and transactions</p>
         </div>
-        <div className="flex gap-2">
-          <Button 
-            variant="outline"
-            onClick={handleCreateTestPayment}
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Create Test Payment
-          </Button>
-          <Button asChild>
-            <Link href="/gigs">
-              <CreditCard className="h-4 w-4 mr-2" />
-              Browse Gigs
-            </Link>
-          </Button>
-        </div>
+        <Button asChild>
+          <Link href="/gigs">
+            <CreditCard className="h-4 w-4 mr-2" />
+            Browse Gigs
+          </Link>
+        </Button>
       </div>
 
       {/* Summary Cards */}
@@ -395,7 +335,7 @@ export default function PaymentsPage() {
             <div className="flex items-center gap-2">
               <DollarSign className="h-4 w-4 text-primary" />
               <div>
-                <div className="text-2xl font-bold">{formatAmount(calculatedStats.totalSpent)}</div>
+                <div className="text-2xl font-bold">{formatAmount(safeStats.totalSpent)}</div>
                 <div className="text-xs text-muted-foreground">Total Spent</div>
               </div>
             </div>
@@ -407,7 +347,7 @@ export default function PaymentsPage() {
             <div className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4 text-blue-500" />
               <div>
-                <div className="text-2xl font-bold">{calculatedStats.totalPayments}</div>
+                <div className="text-2xl font-bold">{safeStats.totalPayments}</div>
                 <div className="text-xs text-muted-foreground">Total Payments</div>
               </div>
             </div>
@@ -419,7 +359,7 @@ export default function PaymentsPage() {
             <div className="flex items-center gap-2">
               <CheckCircle className="h-4 w-4 text-green-500" />
               <div>
-                <div className="text-2xl font-bold text-green-600">{calculatedStats.successfulPayments}</div>
+                <div className="text-2xl font-bold text-green-600">{safeStats.successfulPayments}</div>
                 <div className="text-xs text-muted-foreground">Successful</div>
               </div>
             </div>
@@ -431,7 +371,7 @@ export default function PaymentsPage() {
             <div className="flex items-center gap-2">
               <XCircle className="h-4 w-4 text-red-500" />
               <div>
-                <div className="text-2xl font-bold text-red-600">{calculatedStats.failedPayments}</div>
+                <div className="text-2xl font-bold text-red-600">{safeStats.failedPayments}</div>
                 <div className="text-xs text-muted-foreground">Failed</div>
               </div>
             </div>

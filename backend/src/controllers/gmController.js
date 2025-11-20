@@ -5,7 +5,6 @@ import User from '../models/User.js';
 import AdminSettings from '../models/AdminSettings.js';
 import { createPaymentIntent, confirmPaymentIntent } from '../services/gmPaymentService.js';
 import notificationService from '../services/notificationService.js';
-import automationService from '../services/automationService.js';
 
 // Helpers
 const GM_CATEGORIES = [
@@ -47,11 +46,16 @@ export const adminCreateJob = async (req, res, next) => {
       description, 
       requirements, 
       maxBids,
-      contactDetails 
+      contactDetails,
+      location
     } = req.body;
 
     // Enforce category validation
     validateCategoryOrThrow(category);
+
+    const normalizedLocation = typeof location === 'string' && location.trim().length > 0
+      ? location.trim()
+      : 'Remote';
 
     const gig = await Gig.create({
       title,
@@ -59,7 +63,8 @@ export const adminCreateJob = async (req, res, next) => {
       description,
       requirements: Array.isArray(requirements) ? requirements : [],
       maxBids,
-      createdBy: req.user._id
+      createdBy: req.user._id,
+      location: normalizedLocation
     });
 
     // Notify poster about job posted
@@ -79,39 +84,120 @@ export const adminCreateJob = async (req, res, next) => {
       console.warn('[notifications] job post notify failed:', notifyErr?.message || notifyErr);
     }
 
-    // Automation: notify matching freelancers
-    (async () => {
-      try {
-        await automationService.onNewGigPosted(gig);
-      } catch (e) {
-        console.warn('[automation] new gig automation failed', e?.message || e);
-      }
-    })();
-
     return res.status(201).json({ success: true, data: gig });
   } catch (err) {
     next(err);
   }
 };
 
-// 2) User: List jobs with optional category filter
+// 2) User: List jobs with optional filters & search
 export const listJobs = async (req, res, next) => {
   try {
-    const { category, page = 1, limit = 10 } = req.query;
+    const {
+      category,
+      page = 1,
+      limit = 5,
+      search,
+      location,
+      minBudget,
+      maxBudget,
+      sort,
+      skills,
+      type
+    } = req.query;
+
     const filter = {};
-    if (category) filter.category = category;
+
+    // Category filter
+    if (category) {
+      filter.category = category;
+    }
     
     // Filter out hidden gigs for non-admin users
     if (!req.user || req.user.role !== 'admin') {
       filter.isHidden = { $ne: true };
     }
 
+    // Text search across title/description/skills/tags (see text index on Gig model)
+    if (search && typeof search === 'string' && search.trim().length > 0) {
+      filter.$text = { $search: search.trim() };
+    }
+
+    // Location filter (case-insensitive partial match)
+    if (location && typeof location === 'string' && location.trim().length > 0) {
+      filter.location = new RegExp(location.trim(), 'i');
+    }
+
+    // Budget range filter
+    const minBudgetNum = typeof minBudget === 'string' ? parseInt(minBudget, 10) : NaN;
+    const maxBudgetNum = typeof maxBudget === 'string' ? parseInt(maxBudget, 10) : NaN;
+    if (!Number.isNaN(minBudgetNum) || !Number.isNaN(maxBudgetNum)) {
+      filter.budget = {};
+      if (!Number.isNaN(minBudgetNum)) filter.budget.$gte = minBudgetNum;
+      if (!Number.isNaN(maxBudgetNum)) filter.budget.$lte = maxBudgetNum;
+    }
+
+    // Skills filter – expect comma-separated list, match gigs that include all requested skills
+    if (skills && typeof skills === 'string' && skills.trim().length > 0) {
+      const skillList = skills
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean);
+      if (skillList.length > 0) {
+        filter.skills = { $all: skillList };
+      }
+    }
+
+    // Optional "type" filter – map to tags for now so UI "job type" presets can still work
+    if (type && typeof type === 'string' && type.trim().length > 0) {
+      filter.tags = filter.tags || {};
+      filter.tags.$in = (filter.tags.$in || []).concat(type.trim());
+    }
+
     const pageNumber = Math.max(1, parseInt(page, 10) || 1);
-    const pageSize = Math.min(100, Math.max(1, parseInt(limit, 10) || 10));
+    const pageSize = Math.min(100, Math.max(1, parseInt(limit, 10) || 5));
+
+    // Determine sort criteria
+    let sortCriteria = { createdAt: -1 };
+    if (typeof sort === 'string' && sort.trim().length > 0) {
+      switch (sort) {
+        case 'recent':
+        case 'newest':
+          sortCriteria = { createdAt: -1 };
+          break;
+        case 'budget-high':
+        case 'budget_high_to_low':
+          sortCriteria = { budget: -1 };
+          break;
+        case 'budget-low':
+        case 'budget_low_to_high':
+          sortCriteria = { budget: 1 };
+          break;
+        case 'deadline':
+          sortCriteria = { deadline: 1 };
+          break;
+        case 'views':
+          sortCriteria = { views: -1 };
+          break;
+        // "bids" sorting would require aggregation; keep default createdAt sort for now
+        default:
+          sortCriteria = { createdAt: -1 };
+      }
+    }
+
+    // Build query
+    const query = Gig.find(filter);
+
+    // If using text search, prioritize by relevance while keeping deterministic secondary sort
+    if (filter.$text) {
+      query.sort({ score: { $meta: 'textScore' }, createdAt: -1 });
+      query.select({ score: { $meta: 'textScore' } });
+    } else {
+      query.sort(sortCriteria);
+    }
 
     const [jobs, total] = await Promise.all([
-      Gig.find(filter)
-        .sort({ createdAt: -1 })
+      query
         .skip((pageNumber - 1) * pageSize)
         .limit(pageSize),
       Gig.countDocuments(filter)
@@ -125,31 +211,23 @@ export const listJobs = async (req, res, next) => {
     ]);
     const gigIdToCount = new Map(bidCountsAgg.map(r => [String(r._id), r.count]));
 
-    const data = jobs.map(j => {
-      const fullDesc = String(j.description || '');
-      const shortDesc = fullDesc.length > 160 ? `${fullDesc.slice(0, 160)}…` : fullDesc;
-      return {
-        _id: j._id,
-        title: j.title,
-        // Backward compatibility
-        description: shortDesc,
-        // New fields
-        descriptionShort: shortDesc,
-        descriptionFull: fullDesc,
-        requirements: j.requirements,
-        createdAt: j.createdAt,
-        category: j.category,
-        budget: j.budget,
-        location: j.location,
-        experienceLevel: j.experienceLevel,
-        skills: j.skills,
-        status: j.status,
-        views: j.views,
-        tags: j.tags,
-        applicationsCount: j.applicationsCount,
-        bidsCount: gigIdToCount.get(String(j._id)) || 0
-      };
-    });
+    const data = jobs.map(j => ({
+      _id: j._id,
+      title: j.title,
+      description: j.description,
+      requirements: j.requirements,
+      createdAt: j.createdAt,
+      category: j.category,
+      budget: j.budget,
+      location: j.location,
+      experienceLevel: j.experienceLevel,
+      skills: j.skills,
+      status: j.status,
+      views: j.views,
+      tags: j.tags,
+      applicationsCount: j.applicationsCount,
+      bidsCount: gigIdToCount.get(String(j._id)) || 0
+    }));
 
     return res.status(200).json({
       success: true,
@@ -157,6 +235,11 @@ export const listJobs = async (req, res, next) => {
       total,
       page: pageNumber,
       pages: Math.ceil(total / pageSize),
+      pagination: {
+        page: pageNumber,
+        limit: pageSize,
+        totalPages: Math.ceil(total / pageSize)
+      },
       data
     });
   } catch (err) {
@@ -183,22 +266,6 @@ export const submitBid = async (req, res, next) => {
     const gig = await Gig.findById(gigId);
     if (!gig) {
       return res.status(404).json({ success: false, message: 'Gig not found' });
-    }
-
-    // Enforce bid limit before attempting payment
-    try {
-      if (gig.maxBids !== null && typeof gig.maxBids === 'number') {
-        const currentSucceededCount = await Bid.countDocuments({ gigId: gig._id, paymentStatus: 'succeeded' });
-        if (currentSucceededCount >= gig.maxBids) {
-          return res.status(400).json({
-            success: false,
-            message: 'Bid limit reached for this gig'
-          });
-        }
-      }
-    } catch (countErr) {
-      // If counting fails, do not accept the bid to be safe
-      return res.status(503).json({ success: false, message: 'Temporarily unable to accept bids. Please try again later.' });
     }
 
     // Validate contact details are provided
@@ -244,7 +311,8 @@ export const submitBid = async (req, res, next) => {
         countryCode: 'US', // Default for poster
         company: '',
         position: '',
-        alternateContact: ''
+        alternateContact: '',
+        location: gig.location || 'Remote'
       }
     };
 
@@ -311,12 +379,6 @@ export const submitBid = async (req, res, next) => {
             },
             ['inApp']
           );
-        }
-        // Automation: treat bid creation as an unlock/payment event
-        try {
-          await automationService.onGigUnlocked(gig._id, req.user._id);
-        } catch (e) {
-          console.warn('[automation] onGigUnlocked failed for submitBid', e?.message || e);
         }
       } catch (notifyErr) {
         console.warn('[notifications] bid submit notify failed:', notifyErr?.message || notifyErr);
@@ -478,22 +540,16 @@ export const getJobById = async (req, res, next) => {
 
     // Shape response to hide sensitive details when locked
     const response = gig.toObject();
-    const fullDesc = String(response.description || '');
-    const shortDesc = fullDesc.length > 160 ? `${fullDesc.slice(0, 160)}…` : fullDesc;
     if (!hasUnlockedAccess) {
-      // Provide short only when locked
-      response.descriptionShort = shortDesc;
+      // Provide a short preview of description, hide full content
+      const fullDesc = String(response.description || '');
+      const preview = fullDesc.length > 160 ? `${fullDesc.slice(0, 160)}…` : fullDesc;
+      response.descriptionPreview = preview;
       response.descriptionHidden = true;
-      // For backward compatibility, set description to short for locked state
-      response.description = shortDesc;
-      // Do not include explicit full field when locked
-      delete response.descriptionFull;
+      // Do not include full description when locked
+      delete response.description;
     } else {
       response.descriptionHidden = false;
-      response.descriptionFull = fullDesc;
-      response.descriptionShort = shortDesc;
-      // Keep description as full for backward compatibility
-      response.description = fullDesc;
     }
 
     return res.status(200).json({ success: true, data: response });
@@ -512,11 +568,15 @@ export const updateJob = async (req, res, next) => {
 
     const { gigId } = req.params;
     const updates = {};
-    const allowed = ['title', 'category', 'description', 'requirements', 'maxBids'];
+    const allowed = ['title', 'category', 'description', 'requirements', 'maxBids', 'location'];
     for (const key of allowed) {
       if (req.body[key] !== undefined) {
         updates[key] = req.body[key];
       }
+    }
+
+    if (typeof updates.location === 'string') {
+      updates.location = updates.location.trim() || 'Remote';
     }
 
     if (updates.category) {
@@ -527,14 +587,6 @@ export const updateJob = async (req, res, next) => {
     if (!gig) {
       return res.status(404).json({ success: false, message: 'Gig not found' });
     }
-    // Automation: notify savers/followers about update
-    (async () => {
-      try {
-        await automationService.onGigUpdated(gig);
-      } catch (e) {
-        console.warn('[automation] onGigUpdated failed', e?.message || e);
-      }
-    })();
     return res.status(200).json({ success: true, data: gig });
   } catch (err) {
     next(err);
@@ -576,15 +628,6 @@ export const toggleJobVisibility = async (req, res, next) => {
     if (!gig) {
       return res.status(404).json({ success: false, message: 'Gig not found' });
     }
-
-    // Automation: notify creator about visibility change
-    (async () => {
-      try {
-        await automationService.onGigVisibilityChanged(gig, isHidden);
-      } catch (e) {
-        console.warn('[automation] onGigVisibilityChanged failed', e?.message || e);
-      }
-    })();
     
     return res.status(200).json({ 
       success: true, 

@@ -1,7 +1,7 @@
 import express from 'express';
 import { protect } from '../middleware/auth.js';
 import Bid from '../models/Bid.js';
-import Job from '../models/Job.js';
+import Gig from '../models/Gig.js';
 import User from '../models/User.js';
 import mongoose from 'mongoose';
 
@@ -43,12 +43,12 @@ router.get('/', async (req, res) => {
     const limitNum = Math.min(100, Math.max(1, parseInt(limit) || 50));
     const skip = (pageNum - 1) * limitNum;
 
-    // Get bids with populated job data
+    // Get bids with populated gig data
     const bids = await Bid.find(query)
       .populate({
-        path: 'jobId',
+        path: 'gigId',
         select: 'title category budget location createdAt',
-        model: 'Job'
+        model: 'Gig'
       })
       .sort({ createdAt: -1 })
       .skip(skip)
@@ -60,19 +60,19 @@ router.get('/', async (req, res) => {
       _id: bid._id,
       amount: bid.bidFeePaid,
       currency: 'INR',
-      status: bid.paymentStatus === 'succeeded' ? 'success' : 
+      status: bid.paymentStatus === 'succeeded' ? 'success' :
               bid.paymentStatus === 'failed' ? 'failed' : 'pending',
       paymentId: `bid_${bid._id}`,
       orderId: `order_${bid._id}`,
       method: 'Online Payment',
-      description: `Bid fee for "${bid.jobId?.title || 'Job'}"`,
+      description: `Bid fee for "${bid.gigId?.title || 'Gig'}"`,
       createdAt: bid.createdAt,
       updatedAt: bid.updatedAt,
       bid: {
         _id: bid._id,
-        job: {
-          _id: bid.jobId?._id,
-          title: bid.jobId?.title || 'Unknown Job'
+        gig: {
+          _id: bid.gigId?._id,
+          title: bid.gigId?.title || 'Unknown Gig'
         }
       }
     }));
@@ -95,6 +95,9 @@ router.get('/', async (req, res) => {
     });
   } catch (error) {
     console.error('❌ Error fetching payments:', error);
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
+    console.error('Error name:', error.name);
     res.status(500).json({
       success: false,
       message: 'Failed to fetch payments',
@@ -155,6 +158,7 @@ router.get('/stats', async (req, res) => {
       pendingPayments,
       totalAmount: totalAmount[0]?.total || 0,
       successfulAmount: successfulAmount[0]?.total || 0,
+      totalSpent: successfulAmount[0]?.total || 0,
       thisMonthPayments,
       thisMonthAmount: thisMonthAmount[0]?.total || 0,
       successRate: totalPayments > 0 ? Math.round((successfulPayments / totalPayments) * 100) : 0,
@@ -192,9 +196,9 @@ router.get('/:paymentId', async (req, res) => {
 
     const bid = await Bid.findOne({ _id: paymentId, userId })
       .populate({
-        path: 'jobId',
+        path: 'gigId',
         select: 'title category budget location createdAt',
-        model: 'Job'
+        model: 'Gig'
       });
 
     if (!bid) {
@@ -209,19 +213,19 @@ router.get('/:paymentId', async (req, res) => {
       _id: bid._id,
       amount: bid.bidFeePaid,
       currency: 'INR',
-      status: bid.paymentStatus === 'succeeded' ? 'success' : 
+      status: bid.paymentStatus === 'succeeded' ? 'success' :
               bid.paymentStatus === 'failed' ? 'failed' : 'pending',
       paymentId: `bid_${bid._id}`,
       orderId: `order_${bid._id}`,
       method: 'Online Payment',
-      description: `Bid fee for "${bid.jobId?.title || 'Job'}"`,
+      description: `Bid fee for "${bid.gigId?.title || 'Gig'}"`,
       createdAt: bid.createdAt,
       updatedAt: bid.updatedAt,
       bid: {
         _id: bid._id,
-        job: {
-          _id: bid.jobId?._id,
-          title: bid.jobId?.title || 'Unknown Job'
+        gig: {
+          _id: bid.gigId?._id,
+          title: bid.gigId?.title || 'Unknown Gig'
         }
       }
     };

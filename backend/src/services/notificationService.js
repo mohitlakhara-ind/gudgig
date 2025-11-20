@@ -117,6 +117,7 @@ class NotificationService {
 
       const preferences = user.notificationPreferences || {};
       const results = [];
+      let createdNotificationId = null;
 
       // Priority routing per type
       const priority = this.getPriorityForType(type);
@@ -138,6 +139,9 @@ class NotificationService {
         if (preferences[channel] !== false) { // Default to true if not set
           try {
             const result = await this.sendToChannel(channel, user, type, data);
+            if (result?.notificationId && !createdNotificationId) {
+              createdNotificationId = result.notificationId;
+            }
             results.push({ channel, success: true, result });
           } catch (error) {
             console.error(`Failed to send ${channel} notification:`, error);
@@ -155,7 +159,7 @@ class NotificationService {
         await this.queueNotification(userId, type, data, ['email'], delay);
       }
 
-      return results;
+      return { results, notificationId: createdNotificationId };
     } catch (error) {
       console.error('Notification service error:', error);
       throw error;
@@ -164,11 +168,7 @@ class NotificationService {
 
   // Send to specific channel
   async sendToChannel(channel, user, type, data) {
-    const template = this.templates[type];
-    if (!template) throw new Error(`Template ${type} not found`);
-
-    const content = template(data);
-
+    const content = this.buildContent(type, data);
     switch (channel) {
       case 'email':
         return await this.sendEmail(user.email, content.subject, content.html, content.text);
@@ -309,6 +309,17 @@ class NotificationService {
     }
 
     return { notificationId: notification._id };
+  }
+
+  buildContent(type, data = {}) {
+    const templateFn = this.templates[type];
+    const template = templateFn ? templateFn(data) : {};
+    const title = template.title || data.title || template.subject || 'Notification';
+    const subject = template.subject || title;
+    const body = template.body || data.message || template.text || 'You have a new notification.';
+    const html = template.html || `<p>${body}</p>`;
+    const text = template.text || body;
+    return { ...template, title, subject, body, html, text };
   }
 
   // Create notification and emit real-time event

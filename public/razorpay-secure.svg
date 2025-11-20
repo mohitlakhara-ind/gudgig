@@ -1,0 +1,21 @@
+<svg width="180" height="48" viewBox="0 0 180 48" xmlns="http://www.w3.org/2000/svg">
+  <rect width="180" height="48" rx="12" fill="#F4F6FB"/>
+  <g transform="translate(16 11)" fill="none" fill-rule="evenodd">
+    <path d="M20 1l-5.5 18h5.2l5.4-18H20z" fill="#072654"/>
+    <path d="M26.3 1l-5.6 18h5.2l5.7-18h-5.3z" fill="#0B72E7"/>
+    <path d="M0 21c0-4.418 3.582-8 8-8h52c4.418 0 8 3.582 8 8v4H0v-4z" fill="#072654" opacity=".08"/>
+    <rect x="6" y="14" width="56" height="18" rx="9" fill="#072654" opacity=".08"/>
+  </g>
+  <text x="64" y="22" font-family="Inter, Arial" font-size="14" font-weight="600" fill="#072654">Powered by</text>
+  <text x="64" y="38" font-family="Inter, Arial" font-size="16" font-weight="700" fill="#0B72E7">Razorpay Secure</text>
+  <g transform="translate(140 14)" fill="none" stroke="#0B72E7" stroke-width="2">
+    <circle cx="10" cy="10" r="9"/>
+    <path d="M10 6v6l3 3"/>
+  </g>
+</svg>
+
+
+
+
+
+

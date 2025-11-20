@@ -5,6 +5,9 @@ import path from 'path';
 const DATA_DIR = path.join(process.cwd(), 'data');
 const FILE = path.join(DATA_DIR, 'testimonials.json');
 
+const getBackendUrl = () =>
+  (process.env.BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL || '').replace(/\/$/, '');
+
 function validatePayload(body: any) {
   if (!body) return false;
   const name = typeof body.name === 'string' && body.name.trim().length > 0;
@@ -26,12 +29,18 @@ async function readFileList() {
 
 export async function GET() {
   // If BACKEND_URL is set, proxy to backend public endpoint
-  const backendUrl = process.env.BACKEND_URL;
+  const backendUrl = getBackendUrl();
   if (backendUrl) {
     try {
-      const resp = await fetch(`${backendUrl.replace(/\/$/, '')}/api/testimonials/public`);
-      const data = await resp.json();
-      return NextResponse.json(data, { status: resp.status });
+      const resp = await fetch(`${backendUrl}/api/testimonials/public`, {
+        headers: { 'Content-Type': 'application/json' },
+        next: { revalidate: 60 }
+      });
+      if (resp.ok) {
+        const data = await resp.json();
+        return NextResponse.json(data, { status: resp.status });
+      }
+      console.warn('Testimonials proxy GET received non-ok status', resp.status);
     } catch (e) {
       console.error('Testimonials proxy GET failed', e);
       // fallback to file
@@ -52,11 +61,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, message: 'Invalid payload. Provide name and content (min 10 chars).' }, { status: 400 });
     }
 
-    const backendUrl = process.env.BACKEND_URL;
+    const backendUrl = getBackendUrl();
     if (backendUrl) {
       // Proxy submission to backend
       try {
-        const resp = await fetch(`${backendUrl.replace(/\/$/, '')}/api/testimonials`, {
+        const resp = await fetch(`${backendUrl}/api/testimonials`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body)

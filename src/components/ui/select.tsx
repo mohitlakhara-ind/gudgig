@@ -92,7 +92,8 @@ function SelectContent({ children, className, isOpen, setIsOpen, ...props }: Sel
     <div
       data-slot="select-content"
       className={cn(
-        "absolute top-full left-0 right-0 z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md mt-1",
+        // Use very high z-index so dropdowns always appear above cards and other content
+        "absolute top-full left-0 right-0 z-[9999] min-w-[8rem] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md mt-1",
         className
       )}
       {...props}

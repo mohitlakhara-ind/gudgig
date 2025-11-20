@@ -131,10 +131,6 @@ export interface Order {
   price: number;
   status: 'pending' | 'active' | 'delivered' | 'revision' | 'completed' | 'cancelled';
   requirements: Record<string, any>;
-  contactDetails?: {
-    bidderContact?: { name?: string; email?: string; phone?: string; countryCode?: string; company?: string; position?: string };
-    posterContact?: { name?: string; email?: string; phone?: string; countryCode?: string; company?: string; position?: string; alternateContact?: string };
-  };
   deliverables: Array<{
     url: string;
     name: string;
@@ -333,6 +329,7 @@ export interface CreateJobRequest {
   category: Job['category'];
   requirements?: string[];
   maxBids?: number;
+  location?: string;
 }
 
 // Search/filter request parameters used by gigs hooks and API client
@@ -345,7 +342,12 @@ export interface SearchJobsRequest {
   type?: string;
   minBudget?: number;
   maxBudget?: number;
-  sortBy?: 'newest' | 'budget_high_to_low' | 'budget_low_to_high';
+  sortBy?: 'newest' | 'budget_high_to_low' | 'budget_low_to_high' | 'recent' | 'budget-high' | 'budget-low' | 'deadline' | 'bids' | 'views';
+  /**
+   * Optional skills filter; can be passed as a comma-separated string or array.
+   * The backend expects a comma-separated string and matches gigs that contain all skills.
+   */
+  skills?: string | string[];
 }
 
 export interface CreateBidRequest {

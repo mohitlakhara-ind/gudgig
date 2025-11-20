@@ -180,6 +180,7 @@ export function GigsProvider({ children }: { children: React.ReactNode }) {
   // Note: No authentication required for viewing gigs
   const gigsManager = useGigsManager({
     initialParams: {
+      limit: 10,
       category: state.filters.category !== 'all' ? state.filters.category as any : undefined,
       // Add other search parameters as needed
     },
@@ -271,6 +272,7 @@ export function GigsProvider({ children }: { children: React.ReactNode }) {
   // Sends full filter/sort params to the gigs manager so the backend can apply them.
   useEffect(() => {
     const params: any = {};
+    params.limit = 10;
     if (state.filters.category && state.filters.category !== 'all') params.category = state.filters.category;
     if (state.sortBy) params.sortBy = state.sortBy;
     if (state.filters.location) params.location = state.filters.location;

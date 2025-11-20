@@ -5,11 +5,10 @@ import { Badge } from '@/components/ui/badge';
 import { 
   Mail, 
   Phone, 
-  User, 
   Building2,
   Shield,
   Eye,
-  EyeOff
+  MapPin
 } from 'lucide-react';
 
 interface ContactDetails {
@@ -20,6 +19,7 @@ interface ContactDetails {
   posterContact: {
     email: string;
     phone: string;
+    location?: string;
   };
 }
 
@@ -61,7 +61,7 @@ export default function ContactDetailsCard({ contactDetails, loading = false }: 
   }
 
   return (
-    <Card className="border-primary/20 bg-primary/5">
+    <Card className="border-primary/20 bg-primary/5" id="contact-details">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Shield className="h-5 w-5 text-primary" />
@@ -73,44 +73,26 @@ export default function ContactDetailsCard({ contactDetails, loading = false }: 
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Your Contact */}
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <User className="h-4 w-4 text-primary" />
-            <h3 className="font-semibold text-foreground">Your Contact Info</h3>
-          </div>
-          <div className="pl-6 space-y-2">
-            <div className="flex items-center gap-2 text-sm">
-              <Mail className="h-4 w-4 text-muted-foreground" />
-              <span className="text-muted-foreground">Email:</span>
-              <span className="font-medium text-foreground">
-                {contactDetails.bidderContact.email || 'Not provided'}
-              </span>
-            </div>
-            <div className="flex items-center gap-2 text-sm">
-              <Phone className="h-4 w-4 text-muted-foreground" />
-              <span className="text-muted-foreground">Phone:</span>
-              <span className="font-medium text-foreground">
-                {contactDetails.bidderContact.phone || 'Not provided'}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Divider */}
-        <div className="border-t border-border/50"></div>
-
         {/* Employer / Task Provider Contact */}
         <div className="space-y-3">
           <div className="flex items-center gap-2">
             <Building2 className="h-4 w-4 text-primary" />
-            <h3 className="font-semibold text-foreground">Employer / Task Provider Contact</h3>
+            <h3 className="font-semibold text-foreground">Employer / Task Provider</h3>
           </div>
           <div className="pl-6 space-y-2">
+            {contactDetails.posterContact.location && (
+              <div className="flex items-center gap-2 text-sm">
+                <MapPin className="h-4 w-4 text-muted-foreground" />
+                <span className="text-muted-foreground">Location:</span>
+                <span className="font-medium text-foreground">
+                  {contactDetails.posterContact.location}
+                </span>
+              </div>
+            )}
             <div className="flex items-center gap-2 text-sm">
               <Mail className="h-4 w-4 text-muted-foreground" />
               <span className="text-muted-foreground">Email:</span>
-              <span className="font-medium text-foreground">
+              <span className="font-medium text-foreground break-all">
                 {contactDetails.posterContact.email || 'Not provided'}
               </span>
             </div>
@@ -131,8 +113,7 @@ export default function ContactDetailsCard({ contactDetails, loading = false }: 
             <div className="text-xs text-muted-foreground">
               <p className="font-medium mb-1">Privacy Notice</p>
               <p>
-                Contact details are only shared between parties who have submitted/accepted bids for this gig. 
-                This information is protected and should be used responsibly for project communication only.
+                Contact details are shared only after a successful unlock. Use this information responsibly and keep communications on-topic.
               </p>
             </div>
           </div>

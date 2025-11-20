@@ -1,25 +1,104 @@
 import webpush from 'web-push';
 
-// In production, set these in environment variables
-const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || 'BP...abc...';
-const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || 'kz...xyz...';
-const VAPID_SUBJECT = process.env.VAPID_SUBJECT || 'mailto:admin@yourdomain.com';
-
-// Validate VAPID keys
-const isValidVapidKey = (key: string): boolean => {
-  return !!key && key.length > 0 && !key.includes('...') && !key.includes('abc') && !key.includes('xyz');
+type VapidState = {
+  publicKey: string;
+  privateKey: string;
+  configured: boolean;
+  source: 'env' | 'generated' | 'invalid';
 };
 
-if (isValidVapidKey(VAPID_PUBLIC_KEY) && isValidVapidKey(VAPID_PRIVATE_KEY)) {
-  try {
-    webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
-    console.log('VAPID keys configured successfully');
-  } catch (error) {
-    console.error('Failed to configure VAPID keys:', error);
-  }
-} else {
-  console.warn('VAPID keys not properly configured. Please check your environment variables.');
+declare global {
+  // eslint-disable-next-line no-var
+  var __GIGSMINT_VAPID_STATE__?: VapidState;
 }
+
+const PLACEHOLDER_SNIPPETS = ['...', 'abc', 'xyz', 'yourdomain'];
+const SUBJECT =
+  process.env.VAPID_SUBJECT ||
+  (process.env.VAPID_EMAIL ? `mailto:${process.env.VAPID_EMAIL}` : undefined) ||
+  'mailto:admin@yourdomain.com';
+
+const sanitize = (value?: string | null) => (value || '').trim();
+const looksLikePlaceholder = (value: string) =>
+  !value ||
+  PLACEHOLDER_SNIPPETS.some(snippet => value.includes(snippet)) ||
+  /^bp\.\.\./i.test(value) ||
+  /^kz\.\.\./i.test(value);
+
+const isValidVapidKey = (value: string) =>
+  !!value &&
+  value.length >= 40 &&
+  /^[A-Za-z0-9_\-=]+$/.test(value) &&
+  !looksLikePlaceholder(value);
+
+function bootstrapVapidState(): VapidState {
+  if (globalThis.__GIGSMINT_VAPID_STATE__) {
+    return globalThis.__GIGSMINT_VAPID_STATE__;
+  }
+
+  let publicKey = sanitize(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY) || sanitize(process.env.VAPID_PUBLIC_KEY);
+  let privateKey = sanitize(process.env.VAPID_PRIVATE_KEY);
+  let source: VapidState['source'] = 'env';
+
+  const haveEnvKeys = isValidVapidKey(publicKey) && isValidVapidKey(privateKey);
+
+  if (!haveEnvKeys) {
+    try {
+      const generated = webpush.generateVAPIDKeys();
+      publicKey = generated.publicKey;
+      privateKey = generated.privateKey;
+      source = 'generated';
+      console.warn('[webpush] VAPID keys missing or invalid. Generated temporary keys for this runtime session.');
+    } catch (error) {
+      console.error('[webpush] Failed to generate fallback VAPID keys:', error);
+      const invalidState: VapidState = {
+        publicKey: '',
+        privateKey: '',
+        configured: false,
+        source: 'invalid',
+      };
+      globalThis.__GIGSMINT_VAPID_STATE__ = invalidState;
+      return invalidState;
+    }
+  }
+
+  const configured = isValidVapidKey(publicKey) && isValidVapidKey(privateKey);
+
+  if (configured) {
+    try {
+      webpush.setVapidDetails(SUBJECT, publicKey, privateKey);
+      console.log(
+        `[webpush] VAPID keys configured from ${source === 'env' ? 'environment variables' : 'runtime generation'}`
+      );
+    } catch (error) {
+      console.error('[webpush] Failed to configure VAPID keys:', error);
+      const invalidState: VapidState = {
+        publicKey: '',
+        privateKey: '',
+        configured: false,
+        source: 'invalid',
+      };
+      globalThis.__GIGSMINT_VAPID_STATE__ = invalidState;
+      return invalidState;
+    }
+  } else {
+    console.warn(
+      '[webpush] VAPID keys not configured. Provide NEXT_PUBLIC_VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY environment variables.'
+    );
+  }
+
+  const state: VapidState = {
+    publicKey,
+    privateKey,
+    configured,
+    source: configured ? source : 'invalid',
+  };
+
+  globalThis.__GIGSMINT_VAPID_STATE__ = state;
+  return state;
+}
+
+const vapidState = bootstrapVapidState();
 
 // In-memory store for demo; replace with DB in production
 type PushSubscription = {
@@ -29,8 +108,12 @@ type PushSubscription = {
 
 const userIdToSubscriptions = new Map<string, PushSubscription[]>();
 
-export function getVapidPublicKey(): string {
-  return VAPID_PUBLIC_KEY;
+export function getVapidPublicKey(): string | null {
+  return vapidState.configured ? vapidState.publicKey : null;
+}
+
+export function isPushConfigured(): boolean {
+  return vapidState.configured;
 }
 
 export function saveSubscription(userId: string, subscription: PushSubscription): void {
@@ -61,6 +144,10 @@ export function removeSubscription(userId: string, endpoint: string): boolean {
 }
 
 export async function sendPushToUser(userId: string, payload: any): Promise<{ sent: number; failed: number }>{
+  if (!isPushConfigured()) {
+    console.warn('Push notifications are disabled because VAPID keys are not configured.');
+    return { sent: 0, failed: 0 };
+  }
   const subs = userIdToSubscriptions.get(userId) || [];
   let sent = 0;
   let failed = 0;

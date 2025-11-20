@@ -19,6 +19,7 @@ type EditableGig = Pick<Gig, '_id' | 'title' | 'category' | 'createdAt'> & {
   bidsCount?: number; 
   maxBids?: number; 
   isHidden?: boolean; 
+  location?: string;
 };
 
 export default function AdminGigsPage() {
@@ -34,6 +35,7 @@ export default function AdminGigsPage() {
     category: Gig['category']; 
     requirements: string[]; 
     maxBids: number;
+    location: string;
     contactDetails: {
       email: string;
       phone: string;
@@ -46,6 +48,7 @@ export default function AdminGigsPage() {
     category: 'website development', 
     requirements: [''], 
     maxBids: 10,
+    location: 'Remote',
     contactDetails: {
       email: '',
       phone: '',
@@ -68,7 +71,8 @@ export default function AdminGigsPage() {
         createdAt: j.createdAt, 
         bidsCount: (j as any).bidsCount,
         maxBids: (j as any).maxBids,
-        isHidden: (j as any).isHidden
+        isHidden: (j as any).isHidden,
+        location: j.location
       })));
     } catch (e: any) {
       setError(e?.message || 'Failed to load gigs');
@@ -86,6 +90,7 @@ export default function AdminGigsPage() {
       category: 'website development', 
       requirements: [''], 
       maxBids: 10,
+      location: 'Remote',
       contactDetails: {
         email: '',
         phone: '',
@@ -106,6 +111,7 @@ export default function AdminGigsPage() {
         category: j.category,
         requirements: Array.isArray(j.requirements) && j.requirements.length > 0 ? j.requirements : [''],
         maxBids: Number((j as any).maxBids ?? 10),
+        location: j.location || 'Remote',
         contactDetails: {
           email: (j as any)?.contactDetails?.bidderContact?.email || (j as any)?.contactDetails?.email || '',
           phone: (j as any)?.contactDetails?.bidderContact?.phone || (j as any)?.contactDetails?.phone || '',
@@ -161,7 +167,8 @@ export default function AdminGigsPage() {
         description: form.description.trim(), 
         category: form.category, 
         requirements: form.requirements.filter(Boolean), 
-        maxBids: form.maxBids
+        maxBids: form.maxBids,
+        location: form.location.trim() || 'Remote'
       });
       setCreating(false);
       toast.success('Gig created');
@@ -188,7 +195,14 @@ export default function AdminGigsPage() {
     setIsLoading(true);
     setError(null);
     try {
-      await apiClient.updateGig(editing._id, { title: form.title.trim(), description: form.description.trim(), category: form.category, requirements: form.requirements.filter(Boolean), maxBids: form.maxBids });
+      await apiClient.updateGig(editing._id, { 
+        title: form.title.trim(), 
+        description: form.description.trim(), 
+        category: form.category, 
+        requirements: form.requirements.filter(Boolean), 
+        maxBids: form.maxBids,
+        location: form.location.trim() || 'Remote'
+      });
       setEditing(null);
       toast.success('Gig updated');
       await load();
@@ -426,6 +440,18 @@ export default function AdminGigsPage() {
                   />
                   <div className="text-xs text-muted-foreground mt-1">
                     Set the maximum number of bids allowed for this gig. Leave empty for unlimited.
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm mb-1">Primary Location</label>
+                  <input
+                    className="w-full border border-input bg-background rounded px-3 py-2 text-sm"
+                    value={form.location}
+                    placeholder="e.g., Remote, Mumbai, Hybrid"
+                    onChange={e => setForm({ ...form, location: e.target.value })}
+                  />
+                  <div className="text-xs text-muted-foreground mt-1">
+                    Displayed to freelancers once they unlock the gig.
                   </div>
                 </div>
                 

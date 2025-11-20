@@ -1,22 +1,23 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input, InputGroup, InputPrefix, InputSuffix } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import FakeGigPayment from '@/components/payment/FakeGigPayment';
 import RazorpayPayment from '@/components/payment/RazorpayPayment';
 import ContactDetailsCard from './ContactDetailsCard';
-import { 
-  Search, 
-  Filter, 
-  MapPin, 
-  Clock, 
-  DollarSign, 
+import {
+  Search,
+  Filter,
+  MapPin,
+  Clock,
+  DollarSign,
   Users,
   Heart,
   ArrowRight,
@@ -42,6 +43,7 @@ import {
 import { useGigs } from '@/contexts/GigsContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useContactDetails } from '@/contexts/ContactDetailsContext';
+import { useResponsive } from '@/hooks/useResponsive';
 import { apiClient } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { formatGigBudget, getDaysAgo, getGigStatusColor } from '@/hooks/useGigsManager';
@@ -73,8 +75,10 @@ export default function EnhancedGigsListing() {
   const { user } = useAuth();
   const { state, actions, gigsManager } = useGigs();
   const { getDefaultContactDetails } = useContactDetails();
-  
+  const { isMobile } = useResponsive();
+
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
   const [paymentGig, setPaymentGig] = useState<{
@@ -84,12 +88,18 @@ export default function EnhancedGigsListing() {
   const [orderingGigId, setOrderingGigId] = useState<string | null>(null);
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [appliedGigIds, setAppliedGigIds] = useState<Set<string>>(new Set());
-  const loadMoreRef = useRef<HTMLDivElement>(null);
   const [creatingOrder, setCreatingOrder] = useState(false);
   const [rzpOrderId, setRzpOrderId] = useState<string | null>(null);
   const [rzpKeyId, setRzpKeyId] = useState<string | undefined>(undefined);
   const [payerEmail, setPayerEmail] = useState<string>('');
   const [payerContact, setPayerContact] = useState<string>('');
+  const [showFilters, setShowFilters] = useState(false);
+  const [locationFilter, setLocationFilter] = useState('');
+  const [skillsFilter, setSkillsFilter] = useState('');
+  const [budgetMin, setBudgetMin] = useState('');
+  const [budgetMax, setBudgetMax] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const filtersInitializedRef = useRef(false);
 
   // Store fetchGigs in a ref to avoid dependency issues
   const fetchGigsRef = useRef(gigsManager.fetchGigs);
@@ -97,25 +107,115 @@ export default function EnhancedGigsListing() {
     fetchGigsRef.current = gigsManager.fetchGigs;
   }, [gigsManager.fetchGigs]);
 
-  // Debounced search - only handle search query changes
-  // The GigsContext already handles filter changes, so we don't need to fetch here for category changes
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (searchQuery !== '') {
-        actions.addRecentSearch(searchQuery);
-        setIsSearching(true);
-        fetchGigsRef.current({
-          category: state.filters.category !== 'all' ? state.filters.category as any : undefined,
-          query: searchQuery
-        }).finally(() => setIsSearching(false));
-      } else if (searchQuery === '') {
-        // Only fetch when clearing search, let context handle other filter changes
-        setIsSearching(false);
-      }
+    const handler = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery.trim());
     }, 300);
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
 
-    return () => clearTimeout(timeoutId);
-  }, [searchQuery, state.filters.category, actions]); // Include necessary dependencies
+  useEffect(() => {
+    if (debouncedSearchQuery) {
+      actions.addRecentSearch(debouncedSearchQuery);
+    }
+  }, [debouncedSearchQuery, actions]);
+
+  const filterSignature = useMemo(
+    () =>
+      JSON.stringify({
+        search: debouncedSearchQuery,
+        category: state.filters.category,
+        sortBy: state.sortBy,
+        location: locationFilter,
+        skills: skillsFilter,
+        minBudget: budgetMin,
+        maxBudget: budgetMax
+      }),
+    [
+      debouncedSearchQuery,
+      state.filters.category,
+      state.sortBy,
+      locationFilter,
+      skillsFilter,
+      budgetMin,
+      budgetMax
+    ]
+  );
+
+  const buildSearchParams = useCallback((page: number) => {
+    const params: any = {
+      page,
+      limit: 10,
+      sortBy: state.sortBy
+    };
+
+    if (state.filters.category && state.filters.category !== 'all') {
+      params.category = state.filters.category;
+    }
+    if (debouncedSearchQuery) {
+      params.query = debouncedSearchQuery;
+    }
+    if (locationFilter.trim()) {
+      params.location = locationFilter.trim();
+    }
+    if (skillsFilter.trim()) {
+      const skills = skillsFilter
+        .split(',')
+        .map(skill => skill.trim())
+        .filter(Boolean)
+        .join(',');
+      if (skills) {
+        params.skills = skills;
+      }
+    }
+    const min = parseInt(budgetMin, 10);
+    if (!Number.isNaN(min)) {
+      params.minBudget = min;
+    }
+    const max = parseInt(budgetMax, 10);
+    if (!Number.isNaN(max)) {
+      params.maxBudget = max;
+    }
+    return params;
+  }, [
+    state.sortBy,
+    state.filters.category,
+    debouncedSearchQuery,
+    locationFilter,
+    skillsFilter,
+    budgetMin,
+    budgetMax
+  ]);
+
+  const fetchPage = useCallback(async (page: number, options?: { keepPageState?: boolean }) => {
+    if (!options?.keepPageState) {
+      setCurrentPage(page);
+    }
+    setIsSearching(true);
+    try {
+      await fetchGigsRef.current(buildSearchParams(page));
+    } catch {
+      // handled via toast inside gigs manager
+    } finally {
+      setIsSearching(false);
+    }
+  }, [buildSearchParams]);
+
+  useEffect(() => {
+    if (!filtersInitializedRef.current) {
+      filtersInitializedRef.current = true;
+      return;
+    }
+    setCurrentPage(1);
+    fetchPage(1, { keepPageState: true });
+  }, [filterSignature, fetchPage]);
+
+  useEffect(() => {
+    const managerPage = gigsManager.pagination.page || 1;
+    if (managerPage !== currentPage && !isSearching) {
+      setCurrentPage(managerPage);
+    }
+  }, [gigsManager.pagination.page, currentPage, isSearching]);
 
   // Fetch user's applied gigs (bids) to filter them out
   useEffect(() => {
@@ -145,6 +245,49 @@ export default function EnhancedGigsListing() {
 
   // Filter out applied gigs from the display
   const filteredGigs = gigsManager.gigs.filter(gig => !appliedGigIds.has(gig._id));
+  const totalPages = Math.max(gigsManager.pagination.totalPages || 1, 1);
+  const totalResults = gigsManager.pagination.total || gigsManager.gigs.length;
+  const pageSize = gigsManager.pagination.limit || 10;
+  const showingFrom = filteredGigs.length === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+  const showingTo = filteredGigs.length === 0 ? 0 : showingFrom + filteredGigs.length - 1;
+
+  const pageNumbers = useMemo(() => {
+    const pages = Math.max(totalPages, 1);
+    const maxVisible = 5;
+    let start = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+    let end = start + maxVisible - 1;
+    if (end > pages) {
+      end = pages;
+      start = Math.max(1, end - maxVisible + 1);
+    }
+
+    const numbers: Array<number | string> = [];
+    if (start > 1) {
+      numbers.push(1);
+      if (start > 2) {
+        numbers.push('start-ellipsis');
+      }
+    }
+    for (let page = start; page <= end; page += 1) {
+      numbers.push(page);
+    }
+    if (end < pages) {
+      if (end < pages - 1) {
+        numbers.push('end-ellipsis');
+      }
+      numbers.push(pages);
+    }
+    return numbers;
+  }, [currentPage, totalPages]);
+
+  const handlePageChange = (page: number) => {
+    if (page < 1 || page > totalPages || page === currentPage) return;
+    setCurrentPage(page);
+    fetchPage(page, { keepPageState: true });
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
 
   const handleSaveGig = async (gigId: string) => {
     if (!user) {
@@ -155,7 +298,7 @@ export default function EnhancedGigsListing() {
 
     try {
       const isSaved = state.savedGigs.includes(gigId);
-      
+
       if (isSaved) {
         await apiClient.unsaveJob(gigId);
         actions.toggleSavedGig(gigId);
@@ -187,7 +330,7 @@ export default function EnhancedGigsListing() {
 
     // Set loading state
     setOrderingGigId(gigId);
-    
+
     try {
       // Set payment gig and show payment
       setPaymentGig({
@@ -208,7 +351,7 @@ export default function EnhancedGigsListing() {
 
     try {
       setPaymentLoading(true);
-      
+
       // Prepare bidder contact details (required by backend)
       const defaultContact = typeof getDefaultContactDetails === 'function' ? getDefaultContactDetails() : null;
       const bidderContact = contactFromPayment?.bidderContact ? contactFromPayment.bidderContact : (defaultContact ? {
@@ -274,16 +417,16 @@ export default function EnhancedGigsListing() {
       toast.success('Access unlocked. Contact details will be shown.');
       setShowPayment(false);
       setPaymentGig(null);
-      
+
       // Add to applied gigs (orders) to hide from list
       setAppliedGigIds(prev => new Set([...prev, paymentGig.id]));
-      
+
       // Refresh gigs to show updated bid count and remove from list
       gigsManager.refresh();
-      
+
       // Optionally, open contact details view (navigate to gig page)
-      router.push(`/gigs/${paymentGig.id}`);
-      
+      router.push(`/gigs/${paymentGig.id}#overview`);
+
     } catch (error) {
       console.error('Payment success handling failed:', error);
       toast.error('Payment completed but order creation failed.');
@@ -353,7 +496,7 @@ export default function EnhancedGigsListing() {
   };
 
   const handleViewGig = (gigId: string) => {
-    router.push(`/gigs/${gigId}`);
+    router.push(`/gigs/${gigId}#overview`);
   };
 
   const getCategoryLabel = (category: string) => {
@@ -365,42 +508,25 @@ export default function EnhancedGigsListing() {
   };
 
   const handleRefresh = () => {
-    gigsManager.refresh();
-    toast.success('Gigs refreshed');
+    gigsManager.clearCache();
+    setIsSearching(true);
+    fetchGigsRef.current(buildSearchParams(currentPage))
+      .then(() => toast.success('Gigs refreshed'))
+      .catch(() => toast.error('Failed to refresh gigs'))
+      .finally(() => {
+        setIsSearching(false);
+      });
   };
 
-  // Infinite scroll implementation
-  const handleLoadMore = useCallback(() => {
-    if (gigsManager.hasMore && !gigsManager.loading) {
-      gigsManager.loadMoreGigs();
-    }
-  }, [gigsManager.hasMore, gigsManager.loading, gigsManager.loadMoreGigs]);
-
-  // Intersection Observer for infinite scroll
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const target = entries[0];
-        if (target.isIntersecting && gigsManager.hasMore && !gigsManager.loading) {
-          handleLoadMore();
-        }
-      },
-      {
-        threshold: 0.1,
-        rootMargin: '100px'
-      }
-    );
-
-    if (loadMoreRef.current) {
-      observer.observe(loadMoreRef.current);
-    }
-
-    return () => {
-      if (loadMoreRef.current) {
-        observer.unobserve(loadMoreRef.current);
-      }
-    };
-  }, [handleLoadMore, gigsManager.hasMore, gigsManager.loading]);
+  const handleClearFilters = () => {
+    setSearchQuery('');
+    setLocationFilter('');
+    setSkillsFilter('');
+    setBudgetMin('');
+    setBudgetMax('');
+    actions.resetFilters();
+    actions.setSortBy('recent');
+  };
 
   // Show payment screen if payment is in progress
   if (showPayment && paymentGig) {
@@ -409,8 +535,8 @@ export default function EnhancedGigsListing() {
         <div className="container mx-auto px-4 py-8">
           <div className="max-w-4xl mx-auto">
             {/* Back Button */}
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               onClick={() => {
                 setShowPayment(false);
                 setPaymentGig(null);
@@ -470,18 +596,78 @@ export default function EnhancedGigsListing() {
 
   return (
     <TooltipProvider>
-    <div className="space-y-6">
-          {/* Professional Search and Filters */}
-          <Card className="professional-card">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center gap-2 text-foreground text-xl">
-                <Search className="h-5 w-5 text-primary" />
-                Find Your Perfect Gig
-              </CardTitle>
-            </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-            <div className="lg:col-span-2">
+      <div className="space-y-6">
+        {/* Professional Search and Filters */}
+        {/* Ensure filters (including dropdowns) render above gig cards and stay visible on scroll (mobile) */}
+        <Card
+          className={`professional-card relative z-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:backdrop-blur             `}
+        >
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-2 text-foreground text-xl">
+              <Search className="h-5 w-5 text-primary" />
+              Find Your Perfect Gig
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Desktop Layout */}
+            <div className="hidden lg:grid lg:grid-cols-4 gap-4">
+              <div className="lg:col-span-2">
+                <InputGroup className="professional-input">
+                  <InputPrefix>
+                    <Search className="h-4 w-4 text-muted-foreground" />
+                  </InputPrefix>
+                  <Input
+                    placeholder="Search gigs, skills, or keywords..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10"
+                  />
+                  <InputSuffix>
+                    {isSearching && (
+                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                    )}
+                  </InputSuffix>
+                </InputGroup>
+              </div>
+
+              <Select
+                value={state.filters.category}
+                onValueChange={(value) => actions.setFilters({ category: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Category" />
+                </SelectTrigger>
+                <SelectContent className="z-[9999]">
+                  {categories.map(category => (
+                    <SelectItem key={category.value} value={category.value}>
+                      <div className="flex items-center gap-2">
+                        <span>{category.icon}</span>
+                        <span>{category.label}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select
+                value={state.sortBy}
+                onValueChange={actions.setSortBy}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent className="z-[9999]">
+                  {sortOptions.map(option => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Mobile Layout */}
+            <div className="lg:hidden space-y-4">
               <InputGroup className="professional-input">
                 <InputPrefix>
                   <Search className="h-4 w-4 text-muted-foreground" />
@@ -498,481 +684,561 @@ export default function EnhancedGigsListing() {
                   )}
                 </InputSuffix>
               </InputGroup>
-            </div>
-            
-            <Select 
-              value={state.filters.category} 
-              onValueChange={(value) => actions.setFilters({ category: value })}
-            >
-              <SelectTrigger>
-                  <SelectValue placeholder="Category" />
-                </SelectTrigger>
-                <SelectContent className="z-[9999]">
-                {categories.map(category => (
-                  <SelectItem key={category.value} value={category.value}>
-                    <div className="flex items-center gap-2">
-                      <span>{category.icon}</span>
-                      <span>{category.label}</span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
 
-            <Select 
-              value={state.sortBy} 
-              onValueChange={actions.setSortBy}
-            >
-              <SelectTrigger>
-                  <SelectValue placeholder="Sort by" />
-                </SelectTrigger>
-                <SelectContent className="z-[9999]">
-                {sortOptions.map(option => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
               <div className="flex gap-2">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                <Button
-                  variant={state.viewMode === 'grid' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => actions.setViewMode('grid')}
-                      className="hover:scale-105 active:scale-95 transition-all duration-200"
-                      aria-label="Grid view"
-                >
-                  <div className="grid grid-cols-2 gap-1">
-                    <div className="w-1 h-1 bg-current rounded"></div>
-                    <div className="w-1 h-1 bg-current rounded"></div>
-                    <div className="w-1 h-1 bg-current rounded"></div>
-                    <div className="w-1 h-1 bg-current rounded"></div>
-                  </div>
-                </Button>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom">
-                    <p>Grid view</p>
-                  </TooltipContent>
-                </Tooltip>
-                
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                <Button
-                  variant={state.viewMode === 'list' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => actions.setViewMode('list')}
-                      className="hover:scale-105 active:scale-95 transition-all duration-200"
-                      aria-label="List view"
-                >
-                  <div className="flex flex-col gap-1">
-                    <div className="w-3 h-1 bg-current rounded"></div>
-                    <div className="w-3 h-1 bg-current rounded"></div>
-                    <div className="w-3 h-1 bg-current rounded"></div>
-                  </div>
-                </Button>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom">
-                    <p>List view</p>
-                  </TooltipContent>
-                </Tooltip>
+                <Dialog open={showFilters} onOpenChange={setShowFilters}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" className="flex-1">
+                      <Filter className="h-4 w-4 mr-2" />
+                      Filters
+                      {(locationFilter || skillsFilter || budgetMin || budgetMax) && (
+                        <Badge variant="secondary" className="ml-2 h-5 w-5 p-0 text-xs">
+                          {(locationFilter ? 1 : 0) + (skillsFilter ? 1 : 0) + (budgetMin || budgetMax ? 1 : 0)}
+                        </Badge>
+                      )}
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Filter Gigs</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">Category</label>
+                        <Select
+                          value={state.filters.category}
+                          onValueChange={(value) => actions.setFilters({ category: value })}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Category" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {categories.map(category => (
+                              <SelectItem key={category.value} value={category.value}>
+                                <div className="flex items-center gap-2">
+                                  <span>{category.icon}</span>
+                                  <span>{category.label}</span>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">Location</label>
+                        <Input
+                          placeholder="e.g., New York, Remote"
+                          value={locationFilter}
+                          onChange={(e) => setLocationFilter(e.target.value)}
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">Skills (comma-separated)</label>
+                        <Input
+                          placeholder="e.g., React, Node.js, Python"
+                          value={skillsFilter}
+                          onChange={(e) => setSkillsFilter(e.target.value)}
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">Budget Range (₹)</label>
+                        <div className="flex gap-2">
+                          <Input
+                            type="number"
+                            placeholder="Min"
+                            value={budgetMin}
+                            onChange={(e) => setBudgetMin(e.target.value)}
+                          />
+                          <Input
+                            type="number"
+                            placeholder="Max"
+                            value={budgetMax}
+                            onChange={(e) => setBudgetMax(e.target.value)}
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">Sort by</label>
+                        <Select
+                          value={state.sortBy}
+                          onValueChange={actions.setSortBy}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Sort by" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {sortOptions.map(option => (
+                              <SelectItem key={option.value} value={option.value}>
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="flex gap-2 pt-4">
+                        <Button onClick={handleClearFilters} variant="outline" className="flex-1">
+                          Clear All
+                        </Button>
+                        <Button onClick={() => setShowFilters(false)} className="flex-1">
+                          Apply Filters
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
               </div>
-
-              <Tooltip>
-                <TooltipTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleRefresh}
-                disabled={gigsManager.isRefreshing}
-                    className="hover:scale-105 active:scale-95 transition-all duration-200"
-                    aria-label="Refresh gigs list"
-              >
-                <RefreshCw className={`h-4 w-4 mr-2 ${gigsManager.isRefreshing ? 'animate-spin' : ''}`} />
-                Refresh
-              </Button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom">
-                  <p>Refresh gigs list</p>
-                </TooltipContent>
-              </Tooltip>
             </div>
 
-            <div className="text-sm text-muted-foreground">
-              {filteredGigs.length} gigs found
-              {state.filters.category !== 'all' && ` in ${getCategoryLabel(state.filters.category)}`}
+            <div className="flex items-center justify-between">
+              {!isMobile && (
+                <div className="flex items-center gap-4">
+                  <div className="flex gap-2">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant={state.viewMode === 'grid' ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => actions.setViewMode('grid')}
+                          className="hover:scale-105 active:scale-95 transition-all duration-200"
+                          aria-label="Grid view"
+                        >
+                          <div className="grid grid-cols-2 gap-1">
+                            <div className="w-1 h-1 bg-current rounded"></div>
+                            <div className="w-1 h-1 bg-current rounded"></div>
+                            <div className="w-1 h-1 bg-current rounded"></div>
+                            <div className="w-1 h-1 bg-current rounded"></div>
+                          </div>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom">
+                        <p>Grid view</p>
+                      </TooltipContent>
+                    </Tooltip>
+
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant={state.viewMode === 'list' ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => actions.setViewMode('list')}
+                          className="hover:scale-105 active:scale-95 transition-all duration-200"
+                          aria-label="List view"
+                        >
+                          <div className="flex flex-col gap-1">
+                            <div className="w-3 h-1 bg-current rounded"></div>
+                            <div className="w-3 h-1 bg-current rounded"></div>
+                            <div className="w-3 h-1 bg-current rounded"></div>
+                          </div>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom">
+                        <p>List view</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleRefresh}
+                        disabled={gigsManager.isRefreshing}
+                        className="hover:scale-105 active:scale-95 transition-all duration-200"
+                        aria-label="Refresh gigs list"
+                      >
+                        <RefreshCw className={`h-4 w-4 mr-2 ${gigsManager.isRefreshing ? 'animate-spin' : ''}`} />
+                        Refresh
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      <p>Refresh gigs list</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+              )}
+
+              <div className="text-sm text-muted-foreground">
+                {totalResults} gigs found
+                {state.filters.category !== 'all' && ` in ${getCategoryLabel(state.filters.category)}`}
+              </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
 
 
-      {/* Error State */}
-      {gigsManager.error && gigsManager.gigs.length === 0 && (
-        <Card className="text-center py-12">
-          <CardContent>
-            <div className="text-destructive mb-4">
-              <AlertCircle className="h-16 w-16 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Unable to Connect to Server</h3>
-              <p className="text-muted-foreground mb-4">{gigsManager.error}</p>
-              <p className="text-sm text-muted-foreground mb-6">
-                Please check your internet connection and ensure the server is running.
+        {/* Error State */}
+        {gigsManager.error && gigsManager.gigs.length === 0 && (
+          <Card className="text-center py-12">
+            <CardContent>
+              <div className="text-destructive mb-4">
+                <AlertCircle className="h-16 w-16 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold mb-2">Unable to Connect to Server</h3>
+                <p className="text-muted-foreground mb-4">{gigsManager.error}</p>
+                <p className="text-sm text-muted-foreground mb-6">
+                  Please check your internet connection and ensure the server is running.
+                </p>
+                <div className="flex gap-3 justify-center">
+                  <Button onClick={gigsManager.retry}>
+                    Try Again
+                  </Button>
+                  <Button variant="outline" onClick={handleRefresh}>
+                    Refresh
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Loading State */}
+        {gigsManager.loading && gigsManager.gigs.length === 0 && (
+          <GigsSkeletonLoader viewMode={state.viewMode} count={6} />
+        )}
+
+        {/* Empty State */}
+        {!gigsManager.error && gigsManager.gigs.length === 0 && !gigsManager.loading && (
+          <Card className="text-center py-16">
+            <CardContent>
+              <Briefcase className="h-20 w-20 text-muted-foreground mx-auto mb-6" />
+              <h3 className="text-2xl font-semibold mb-3">No gigs found</h3>
+              <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                We couldn't find any gigs matching your criteria. Try adjusting your search or browse all categories.
               </p>
               <div className="flex gap-3 justify-center">
-                <Button onClick={gigsManager.retry}>
-                  Try Again
+                <Button onClick={handleClearFilters}>
+                  Clear Filters
                 </Button>
                 <Button variant="outline" onClick={handleRefresh}>
                   Refresh
                 </Button>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+            </CardContent>
+          </Card>
+        )}
 
-      {/* Loading State */}
-      {gigsManager.loading && gigsManager.gigs.length === 0 && (
-        <GigsSkeletonLoader viewMode={state.viewMode} count={6} />
-      )}
-
-      {/* Empty State */}
-      {!gigsManager.error && gigsManager.gigs.length === 0 && !gigsManager.loading && (
-        <Card className="text-center py-16">
-          <CardContent>
-            <Briefcase className="h-20 w-20 text-muted-foreground mx-auto mb-6" />
-            <h3 className="text-2xl font-semibold mb-3">No gigs found</h3>
-            <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-              We couldn't find any gigs matching your criteria. Try adjusting your search or browse all categories.
-            </p>
-            <div className="flex gap-3 justify-center">
-              <Button onClick={() => {
-                setSearchQuery('');
-                actions.resetFilters();
-              }}>
-                Clear Filters
-              </Button>
-              <Button variant="outline" onClick={handleRefresh}>
-                Refresh
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-              {/* Professional Gigs Grid/List */}
-          {filteredGigs.length > 0 && (
-            <>
-              <div className={state.viewMode === 'grid' 
-                ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6" 
-                : "space-y-6"
-              }>
-                {filteredGigs.map((gig) => (
-                  <Card 
-                    key={gig._id} 
-                    className={`group relative overflow-hidden bg-card border border-border rounded-xl shadow-sm hover:shadow-lg hover:border-primary/20 transition-all duration-300 cursor-pointer ${
-                      state.viewMode === 'list' 
-                        ? 'hover:-translate-y-0' 
-                        : 'hover:-translate-y-1'
+        {/* Professional Gigs Grid/List */}
+        {filteredGigs.length > 0 && (
+          <>
+            <div className={state.viewMode === 'grid'
+              ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6"
+              : isMobile ? "space-y-6" : "space-y-6"
+            }>
+              {filteredGigs.map((gig, index) => (
+                <Card
+                  key={`${gig._id}-${index}`}
+                  className={`group relative z-0 overflow-hidden bg-card border border-border rounded-xl shadow-sm hover:shadow-lg hover:border-primary/20 transition-all duration-300 cursor-pointer ${state.viewMode === 'list' && !isMobile
+                    ? 'hover:-translate-y-0'
+                    : 'hover:-translate-y-1'
                     }`}
-                    onClick={() => handleViewGig(gig._id)}
-                  >
-                    {/* Save Button - Topmost Right Corner */}
-                    <div className="absolute top-2 right-2 z-20">
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleSaveGig(gig._id);
-                            }}
-                            className="h-8 w-8 hover:bg-red-50 hover:text-red-600 transition-all duration-200 hover:scale-105 active:scale-95 bg-white/90 backdrop-blur-sm shadow-sm"
-                            aria-label={state.savedGigs.includes(gig._id) ? 'Remove from saved' : 'Save gig'}
-                      >
-                        <Heart 
-                              className={`h-4 w-4 transition-all duration-200 ${
-                            state.savedGigs.includes(gig._id) 
-                                  ? 'fill-red-500 text-red-500 scale-110' 
+                  onClick={() => handleViewGig(gig._id)}
+                >
+                  {/* Save Button - Topmost Right Corner */}
+                  <div className="absolute top-2 right-2 z-20">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSaveGig(gig._id);
+                          }}
+                          className="h-8 w-8 hover:bg-red-50 hover:text-red-600 transition-all duration-200 hover:scale-105 active:scale-95 bg-white/90 backdrop-blur-sm shadow-sm"
+                          aria-label={state.savedGigs.includes(gig._id) ? 'Remove from saved' : 'Save gig'}
+                        >
+                          <Heart
+                            className={`h-4 w-4 transition-all duration-200 ${state.savedGigs.includes(gig._id)
+                              ? 'fill-red-500 text-red-500 scale-110'
                               : 'text-muted-foreground hover:text-red-500'
-                          }`} 
-                        />
-                      </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom">
-                          <p>{state.savedGigs.includes(gig._id) ? 'Remove from saved' : 'Save gig'}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-
-                    {/* Status Indicator */}
-                    <div className="absolute top-2 right-12 z-10">
-                      <Badge 
-                        variant="outline" 
-                        className={`text-xs font-medium px-2 py-1 ${
-                          gig.status === 'active' 
-                            ? 'bg-green-50 text-green-700 border-green-200' 
-                            : gig.status === 'paused'
-                            ? 'bg-yellow-50 text-yellow-700 border-yellow-200'
-                            : 'bg-gray-50 text-gray-700 border-gray-200'
-                        }`}
-                      >
-                        <div className={`w-2 h-2 rounded-full mr-1.5 ${
-                          gig.status === 'active' 
-                            ? 'bg-green-500' 
-                            : gig.status === 'paused'
-                            ? 'bg-yellow-500'
-                            : 'bg-gray-500'
-                        }`} />
-                        {gig.status || 'Active'}
-                      </Badge>
-                    </div>
-
-                    <CardHeader className={`${state.viewMode === 'list' ? 'pb-4 pt-4' : 'pb-3 pt-6'}`}>
-                      <div className={`flex items-start justify-between ${state.viewMode === 'list' ? 'flex-row' : 'flex-col'}`}>
-                        <div className={`flex-1 ${state.viewMode === 'list' ? 'pr-6' : 'pr-4'}`}>
-                          {/* Category Badge */}
-                          <div className="flex items-center gap-2 mb-3">
-                            <Badge variant="secondary" className="text-xs font-medium px-2 py-1 bg-primary/10 text-primary border-primary/20">
-                              <span className="mr-1">{getCategoryIcon(gig.category)}</span>
-                              {getCategoryLabel(gig.category)}
-                            </Badge>
-                            {/* Urgency Indicator */}
-                            {getDaysAgo(gig.createdAt) === 'Today' && (
-                              <Badge variant="outline" className="text-xs font-medium px-2 py-1 bg-orange-50 text-orange-700 border-orange-200">
-                                <Zap className="h-3 w-3 mr-1" />
-                                New
-                              </Badge>
-                            )}
-                          </div>
-
-                          {/* Title */}
-                          <CardTitle 
-                            className={`${state.viewMode === 'list' ? 'text-xl' : 'text-lg'} font-semibold mb-2 group-hover:text-primary transition-colors line-clamp-2 leading-tight`}
-                          >
-                            {gig.title}
-                          </CardTitle>
-
-                          {/* Description */}
-                          <p className={`text-muted-foreground text-sm leading-relaxed ${state.viewMode === 'list' ? 'line-clamp-1' : 'line-clamp-2'} mb-3`}>
-                            {(gig as any).descriptionShort || gig.description}
-                          </p>
-                    </div>
-
+                              }`}
+                          />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom">
+                        <p>{state.savedGigs.includes(gig._id) ? 'Remove from saved' : 'Save gig'}</p>
+                      </TooltipContent>
+                    </Tooltip>
                   </div>
-                </CardHeader>
 
-                    <CardContent className={`${state.viewMode === 'list' ? 'pt-0 pb-4' : 'space-y-4'}`}>
-                      {state.viewMode === 'list' ? (
-                        // List view layout
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-6">
-                        {/* Skills */}
-                        {gig.requirements && gig.requirements.length > 0 && (
-                              <div className="flex items-center gap-2">
-                                <Award className="h-4 w-4 text-muted-foreground" />
-                            <div className="flex flex-wrap gap-1">
-                                  {gig.requirements.slice(0, 2).map((skill, index) => (
-                                    <Badge key={index} variant="outline" className="text-xs px-2 py-1 bg-muted/50">
-                                  {skill}
-                                </Badge>
-                              ))}
-                                  {gig.requirements.length > 2 && (
-                                    <Badge variant="outline" className="text-xs px-2 py-1 bg-muted/50">
-                                      +{gig.requirements.length - 2}
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-                        )}
+                  {/* Status Indicator */}
+                  <div className="absolute top-2 right-12 z-10">
+                    <Badge
+                      variant="outline"
+                      className={`text-xs font-medium px-2 py-1 ${gig.status === 'active'
+                        ? 'bg-green-50 text-green-700 border-green-200'
+                        : gig.status === 'paused'
+                          ? 'bg-yellow-50 text-yellow-700 border-yellow-200'
+                          : 'bg-gray-50 text-gray-700 border-gray-200'
+                        }`}
+                    >
+                      <div className={`w-2 h-2 rounded-full mr-1.5 ${gig.status === 'active'
+                        ? 'bg-green-500'
+                        : gig.status === 'paused'
+                          ? 'bg-yellow-500'
+                          : 'bg-gray-500'
+                        }`} />
+                      {gig.status || 'Active'}
+                    </Badge>
+                  </div>
 
-                            {/* Budget */}
-                            <div className="flex items-center gap-2">
-                            <DollarSign className="h-4 w-4 text-green-600" />
-                              <span className="font-semibold text-green-700">
-                              {formatGigBudget(gig)}
-                            </span>
-                          </div>
-
-                            {/* Posted Date */}
-                            <div className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4 text-muted-foreground" />
-                              <span className="text-muted-foreground text-sm">
-                              {getDaysAgo(gig.createdAt)}
-                            </span>
-                          </div>
-
-                            {/* Stats */}
-                            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                              <div className="flex items-center gap-1">
-                                <Users className="h-4 w-4" />
-                                <span>{(gig as any).bidsCount || 0} bids</span>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Action Buttons */}
-                          <div className="flex items-center gap-2">
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button 
-                                  className="h-10 px-4 font-medium bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-white shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 active:scale-95"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleViewGig(gig._id);
-                                  }}
-                                  aria-label="View contact details"
-                                >
-                                  <Lock className="h-4 w-4 mr-2" />
-                                  Unlock more details
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent side="top">
-                                <p>Open gig to view contact details</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </div>
+                  <CardHeader className={`${state.viewMode === 'list' && !isMobile ? 'pb-4 pt-4' : 'pb-3 pt-6'}`}>
+                    <div className={`flex items-start justify-between ${state.viewMode === 'list' && !isMobile ? 'flex-row' : 'flex-col'}`}>
+                      <div className={`flex-1 ${state.viewMode === 'list' && !isMobile ? 'pr-6' : 'pr-4'}`}>
+                        {/* Category Badge */}
+                        <div className="flex items-center gap-2 mb-3">
+                          <Badge variant="secondary" className="text-xs font-medium px-2 py-1 bg-primary/10 text-primary border-primary/20">
+                            <span className="mr-1">{getCategoryIcon(gig.category)}</span>
+                            {getCategoryLabel(gig.category)}
+                          </Badge>
+                          {/* Urgency Indicator */}
+                          {getDaysAgo(gig.createdAt) === 'Today' && (
+                            <Badge variant="outline" className="text-xs font-medium px-2 py-1 bg-orange-50 text-orange-700 border-orange-200">
+                              <Zap className="h-3 w-3 mr-1" />
+                              New
+                            </Badge>
+                          )}
                         </div>
-                      ) : (
-                        // Grid view layout
-                        <>
+
+                        {/* Title */}
+                        <CardTitle
+                          className={`${state.viewMode === 'list' && !isMobile ? 'text-xl' : 'text-lg'} font-semibold mb-2 group-hover:text-primary transition-colors line-clamp-2 leading-tight`}
+                        >
+                          {gig.title}
+                        </CardTitle>
+
+                        {/* Description */}
+                        <p className={`text-muted-foreground text-sm leading-relaxed ${state.viewMode === 'list' && !isMobile ? 'line-clamp-1' : 'line-clamp-2'} mb-3`}>
+                          {(gig as any).descriptionShort || gig.description}
+                        </p>
+                      </div>
+
+                    </div>
+                  </CardHeader>
+
+                  <CardContent className={`${state.viewMode === 'list' && !isMobile ? 'pt-0 pb-4' : 'space-y-4'}`}>
+                    {state.viewMode === 'list' && !isMobile ? (
+                      // List view layout
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-6">
                           {/* Skills */}
                           {gig.requirements && gig.requirements.length > 0 && (
-                            <div>
-                              <div className="flex items-center gap-1 mb-2">
-                                <Award className="h-4 w-4 text-muted-foreground" />
-                                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Skills Required</span>
-                              </div>
-                              <div className="flex flex-wrap gap-1.5">
-                                {gig.requirements.slice(0, 3).map((skill, index) => (
+                            <div className="flex items-center gap-2">
+                              <Award className="h-4 w-4 text-muted-foreground" />
+                              <div className="flex flex-wrap gap-1">
+                                {gig.requirements.slice(0, 2).map((skill, index) => (
                                   <Badge key={index} variant="outline" className="text-xs px-2 py-1 bg-muted/50">
                                     {skill}
                                   </Badge>
                                 ))}
-                                {gig.requirements.length > 3 && (
+                                {gig.requirements.length > 2 && (
                                   <Badge variant="outline" className="text-xs px-2 py-1 bg-muted/50">
-                                    +{gig.requirements.length - 3} more
+                                    +{gig.requirements.length - 2}
                                   </Badge>
                                 )}
                               </div>
                             </div>
                           )}
 
-                          {/* Gig Stats */}
-                          <div className="grid grid-cols-2 gap-3 text-sm">
-                            <div className="flex items-center gap-2">
-                              <div className="p-1.5 bg-green-50 rounded-md">
-                                <DollarSign className="h-3.5 w-3.5 text-green-600" />
-                              </div>
-                              <div className="min-w-0">
-                                <div className="font-semibold text-green-700 truncate">
-                                  {formatGigBudget(gig)}
-                                </div>
-                                <div className="text-xs text-muted-foreground">Budget</div>
-                              </div>
-                            </div>
-                            
-                            <div className="flex items-center gap-2">
-                              <div className="p-1.5 bg-blue-50 rounded-md">
-                                <Calendar className="h-3.5 w-3.5 text-blue-600" />
-                              </div>
-                              <div className="min-w-0">
-                                <div className="font-medium text-foreground truncate">
-                                  {getDaysAgo(gig.createdAt)}
-                                </div>
-                                <div className="text-xs text-muted-foreground">Posted</div>
-                              </div>
-                            </div>
-                            
-                            <div className="flex items-center gap-2">
-                              <div className="p-1.5 bg-purple-50 rounded-md">
-                                <Users className="h-3.5 w-3.5 text-purple-600" />
-                              </div>
-                              <div className="min-w-0">
-                                <div className="font-medium text-foreground truncate">
-                                  {(gig as any).bidsCount || 0}
-                                </div>
-                                <div className="text-xs text-muted-foreground">Bids</div>
-                              </div>
-                            </div>
-                            
-                            {/* Removed views */}
+                          {/* Budget */}
+                          <div className="flex items-center gap-2">
+                            <DollarSign className="h-4 w-4 text-green-600" />
+                            <span className="font-semibold text-green-700">
+                              {formatGigBudget(gig)}
+                            </span>
                           </div>
 
-                          {/* Action Buttons */}
-                          <div className="flex gap-2 pt-2">
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button 
-                                  className="flex-1 h-10 font-medium bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-white shadow-md hover:shadow-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleViewGig(gig._id);
-                                  }}
-                                  aria-label="View contact details"
-                                >
-                                  <Lock className="h-4 w-4 mr-2" />
-                                  Unlock more details
-                                  <ArrowRight className="h-4 w-4 ml-2" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent side="top">
-                                <p>Open gig to view contact details</p>
-                              </TooltipContent>
-                            </Tooltip>
+                          {/* Posted Date */}
+                          <div className="flex items-center gap-2">
+                            <Calendar className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-muted-foreground text-sm">
+                              {getDaysAgo(gig.createdAt)}
+                            </span>
+                          </div>
+
+                          {/* Stats */}
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                            <div className="flex items-center gap-1">
+                              <Users className="h-4 w-4" />
+                              <span>{(gig as any).bidsCount || 0} bids</span>
+                            </div>
+                          </div>
                         </div>
-                        </>
-                      )}
-                      </CardContent>
-                    </Card>
-                ))}
-                </div>
 
-          {/* Infinite Scroll Trigger */}
-          {gigsManager.hasMore ? (
-            <div ref={loadMoreRef} className="text-center mt-12">
-              {gigsManager.loading ? (
-                <div className="flex items-center justify-center gap-2 text-muted-foreground">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Loading more gigs...
-                </div>
-              ) : (
-              <Button 
-                variant="outline" 
-                size="lg" 
-                  onClick={handleLoadMore}
-                className="px-8"
-              >
-                    Load More Gigs
-                    <ArrowRight className="h-4 w-4 ml-2" />
-                </Button>
-              )}
+                        {/* Action Buttons */}
+                        <div className="flex items-center gap-2">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                className="h-10 px-4 font-medium bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-white shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 active:scale-95"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleViewGig(gig._id);
+                                }}
+                                aria-label="View contact details"
+                              >
+                                <Lock className="h-4 w-4 mr-2" />
+                                Unlock more details
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent side="top">
+                              <p>Open gig to view contact details</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </div>
+                      </div>
+                    ) : (
+                      // Grid view layout
+                      <>
+                        {/* Skills */}
+                        {gig.requirements && gig.requirements.length > 0 && (
+                          <div>
+                            <div className="flex items-center gap-1 mb-2">
+                              <Award className="h-4 w-4 text-muted-foreground" />
+                              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Skills Required</span>
+                            </div>
+                            <div className="flex flex-wrap gap-1.5">
+                              {gig.requirements.slice(0, 3).map((skill, index) => (
+                                <Badge key={index} variant="outline" className="text-xs px-2 py-1 bg-muted/50">
+                                  {skill}
+                                </Badge>
+                              ))}
+                              {gig.requirements.length > 3 && (
+                                <Badge variant="outline" className="text-xs px-2 py-1 bg-muted/50">
+                                  +{gig.requirements.length - 3} more
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Gig Stats */}
+                        <div className="grid grid-cols-2 gap-3 text-sm">
+                          <div className="flex items-center gap-2">
+                            <div className="p-1.5 bg-green-50 rounded-md">
+                              <DollarSign className="h-3.5 w-3.5 text-green-600" />
+                            </div>
+                            <div className="min-w-0">
+                              <div className="font-semibold text-green-700 truncate">
+                                {formatGigBudget(gig)}
+                              </div>
+                              <div className="text-xs text-muted-foreground">Budget</div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <div className="p-1.5 bg-blue-50 rounded-md">
+                              <Calendar className="h-3.5 w-3.5 text-blue-600" />
+                            </div>
+                            <div className="min-w-0">
+                              <div className="font-medium text-foreground truncate">
+                                {getDaysAgo(gig.createdAt)}
+                              </div>
+                              <div className="text-xs text-muted-foreground">Posted</div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <div className="p-1.5 bg-purple-50 rounded-md">
+                              <Users className="h-3.5 w-3.5 text-purple-600" />
+                            </div>
+                            <div className="min-w-0">
+                              <div className="font-medium text-foreground truncate">
+                                {(gig as any).bidsCount || 0}
+                              </div>
+                              <div className="text-xs text-muted-foreground">Bids</div>
+                            </div>
+                          </div>
+
+                          {/* Removed views */}
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex gap-2 pt-2">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                className="flex-1 h-10 font-medium bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-white shadow-md hover:shadow-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleViewGig(gig._id);
+                                }}
+                                aria-label="View contact details"
+                              >
+                                <Lock className="h-4 w-4 mr-2" />
+                                Unlock more details
+                                <ArrowRight className="h-4 w-4 ml-2" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent side="top">
+                              <p>Open gig to view contact details</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </div>
+                      </>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
             </div>
-          ) : filteredGigs.length > 0 && (
-            <div className="text-center mt-12 py-8">
-              <div className="text-muted-foreground">
-                <Briefcase className="h-8 w-8 mx-auto mb-2" />
-                <p>You've reached the end! No more gigs to load.</p>
+
+            {totalPages > 1 && (
+              <div className="mt-10 flex flex-col items-center gap-4">
+                <p className="text-sm text-muted-foreground">
+                  {filteredGigs.length === 0
+                    ? 'Showing 0 gigs'
+                    : `Showing ${showingFrom}-${showingTo} of ${totalResults} gigs`}
+                </p>
+                <div className="flex flex-wrap items-center justify-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="min-w-[100px]"
+                  >
+                    <ArrowLeft className="h-4 w-4 mr-1" />
+                    Previous
+                  </Button>
+                  {pageNumbers.map((page, index) =>
+                    typeof page === 'string' ? (
+                      <span key={`${page}-${index}`} className="px-2 text-muted-foreground select-none">
+                        …
+                      </span>
+                    ) : (
+                      <Button
+                        key={page}
+                        variant={page === currentPage ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => handlePageChange(page)}
+                        className="min-w-[40px]"
+                      >
+                        {page}
+                      </Button>
+                    )
+                  )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="min-w-[100px]"
+                  >
+                    Next
+                    <ArrowRight className="h-4 w-4 ml-1" />
+                  </Button>
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </>
+        )}
 
-          {/* Loading More Skeleton */}
-          {gigsManager.loading && filteredGigs.length > 0 && (
-            <div className="mt-6">
-              <GigsSkeletonLoader viewMode={state.viewMode} count={6} />
-            </div>
-          )}
-        </>
-      )}
-
-    </div>
+      </div>
     </TooltipProvider>
   );
 }

@@ -1,5 +1,6 @@
 import Notification from '../models/Notification.js';
 import { validationResult } from 'express-validator';
+import notificationService from '../services/notificationService.js';
 
 // Get user's notifications with pagination and filtering
 export const getNotifications = async (req, res) => {
@@ -180,7 +181,8 @@ export const deleteNotification = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: 'Notification deleted successfully'
+      message: 'Notification deleted successfully',
+      data: { id: notificationId }
     });
 
   } catch (error) {
@@ -204,19 +206,44 @@ export const createNotification = async (req, res) => {
       });
     }
 
-    const { user, type, title, message, data } = req.body;
+    const { user, type, title, message, data, channels } = req.body;
 
-    const notification = await Notification.create({
-      user,
-      type,
-      title,
-      message,
-      data: data || {}
-    });
+    if (!user || !type) {
+      return res.status(400).json({
+        success: false,
+        message: 'User and type are required'
+      });
+    }
+
+    const channelList = Array.isArray(channels) && channels.length ? channels : ['email', 'inApp'];
+    if (!channelList.includes('inApp')) {
+      channelList.push('inApp');
+    }
+
+    const payload = {
+      ...(data || {}),
+      title: title || data?.title,
+      message: message || data?.message
+    };
+
+    const result = await notificationService.sendNotification(user, type, payload, channelList);
+    let createdNotification = null;
+
+    if (result?.notificationId) {
+      createdNotification = await Notification.findById(result.notificationId);
+    } else {
+      createdNotification = await notificationService.createNotification(
+        user,
+        type,
+        payload.title || 'Notification',
+        payload.message || 'You have a new notification',
+        data || {}
+      );
+    }
 
     res.status(201).json({
       success: true,
-      data: notification,
+      data: createdNotification,
       message: 'Notification created successfully'
     });
 
@@ -225,6 +252,23 @@ export const createNotification = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Server error while creating notification'
+    });
+  }
+};
+
+export const clearNotifications = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    await Notification.deleteMany({ user: userId });
+    res.status(200).json({
+      success: true,
+      message: 'All notifications cleared'
+    });
+  } catch (error) {
+    console.error('Error clearing notifications:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while clearing notifications'
     });
   }
 };

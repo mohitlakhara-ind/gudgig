@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Star } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 type Testimonial = {
   id?: string;
@@ -16,15 +17,35 @@ type Testimonial = {
 };
 
 export default function Testimonials() {
+  const { user } = useAuth();
   const [items, setItems] = useState<Testimonial[]>([]);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [form, setForm] = useState({ name: '', role: '', company: '', content: '', rating: '5' });
+  const [form, setForm] = useState({ content: '', rating: '5' });
   const [message, setMessage] = useState<string | null>(null);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
+
+  const storageKey = useMemo(() => {
+    if (!user?._id) return null;
+    return `testimonial-submitted-${user._id}`;
+  }, [user?._id]);
 
   useEffect(() => {
     fetchList();
   }, []);
+
+  useEffect(() => {
+    if (!storageKey) {
+      setHasSubmitted(false);
+      return;
+    }
+    if (typeof window === 'undefined') return;
+    try {
+      setHasSubmitted(localStorage.getItem(storageKey) === 'true');
+    } catch {
+      setHasSubmitted(false);
+    }
+  }, [storageKey]);
 
   async function fetchList() {
     setLoading(true);
@@ -44,11 +65,21 @@ export default function Testimonials() {
     }
   }
 
+  const ratingValue = Number(form.rating);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setMessage(null);
-    if (!form.name.trim() || form.content.trim().length < 10) {
-      setMessage('Please provide your name and a message (min 10 chars).');
+    if (!user) {
+      setMessage('Please log in as a freelancer to share your experience.');
+      return;
+    }
+    if (hasSubmitted) {
+      setMessage('Thanks! You have already shared a testimonial for this account.');
+      return;
+    }
+    if (form.content.trim().length < 20) {
+      setMessage('Please share at least 20 characters about your experience.');
       return;
     }
     setSubmitting(true);
@@ -57,9 +88,10 @@ export default function Testimonials() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: form.name,
-          role: form.role,
-          company: form.company,
+          name: user?.name || 'Freelancer',
+          email: user?.email || '',
+          role: 'Freelancer',
+          company: '',
           content: form.content,
           rating: Number(form.rating)
         })
@@ -67,7 +99,14 @@ export default function Testimonials() {
       const data = await resp.json();
       if (data?.success) {
         setMessage('Thanks — your testimonial was submitted for review.');
-        setForm({ name: '', role: '', company: '', content: '', rating: '5' });
+        setForm({ content: '', rating: '5' });
+        if (storageKey && typeof window !== 'undefined') {
+          try {
+            localStorage.setItem(storageKey, 'true');
+          } catch {}
+        }
+        setHasSubmitted(true);
+        fetchList();
       } else {
         setMessage(data?.message || 'Submission failed');
       }
@@ -99,42 +138,77 @@ export default function Testimonials() {
           )}
         </div>
 
-        <form onSubmit={handleSubmit} className="p-4 border rounded-lg">
-          <h3 className="font-medium mb-2">Share your experience</h3>
-          <label className="block mb-2">
-            <div className="text-sm">Name</div>
-            <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full border rounded px-2 py-1" />
-          </label>
-          <label className="block mb-2">
-            <div className="text-sm">Role</div>
-            <input value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} className="w-full border rounded px-2 py-1" />
-          </label>
-          <label className="block mb-2">
-            <div className="text-sm">Company (optional)</div>
-            <input value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} className="w-full border rounded px-2 py-1" />
-          </label>
-          <label className="block mb-2">
-            <div className="text-sm">Message</div>
-            <textarea value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} className="w-full border rounded px-2 py-1" rows={4} />
-          </label>
-          <label className="block mb-4">
-            <div className="text-sm">Rating</div>
-            <select value={form.rating} onChange={(e) => setForm({ ...form, rating: e.target.value })} className="border rounded px-2 py-1">
-              <option>5</option>
-              <option>4</option>
-              <option>3</option>
-              <option>2</option>
-              <option>1</option>
-            </select>
-          </label>
-
-          {message && <div className="mb-2 text-sm text-slate-600">{message}</div>}
-
-          <div className="flex items-center gap-2">
-            <button type="submit" disabled={submitting} className="bg-primary text-white px-3 py-1 rounded disabled:opacity-60">{submitting ? 'Sending…' : 'Submit'}</button>
-            <button type="button" onClick={() => fetchList()} className="text-sm text-secondary">Refresh</button>
-          </div>
-        </form>
+        <div className="p-4 border rounded-lg space-y-4">
+          <h3 className="font-medium">Share your experience</h3>
+          {!user ? (
+            <div className="text-sm text-muted-foreground">
+              Login as a freelancer to submit a testimonial. Your profile name and email will be attached automatically.
+            </div>
+          ) : hasSubmitted ? (
+            <div className="text-sm text-muted-foreground">
+              Thanks for sharing your thoughts! You can&apos;t edit or resubmit another testimonial with this account.
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="text-xs text-muted-foreground border border-dashed rounded-md p-3 bg-muted/40">
+                Submissions use your profile name ({user?.name || 'Unnamed'}) and email ({user?.email || 'no email'}) automatically.
+              </div>
+              <label className="block space-y-2">
+                <div className="text-sm font-medium">Message</div>
+                <textarea
+                  value={form.content}
+                  onChange={(e) => setForm({ ...form, content: e.target.value })}
+                  className="w-full border rounded px-2 py-2"
+                  rows={4}
+                  placeholder="Tell other freelancers how unlocking gigs helped you..."
+                  disabled={submitting || hasSubmitted}
+                />
+              </label>
+              <div className="space-y-2">
+                <div className="text-sm font-medium">Rating</div>
+                <div className="flex items-center gap-1" role="radiogroup" aria-label="Select a star rating">
+                  {Array.from({ length: 5 }).map((_, index) => {
+                    const value = index + 1;
+                    return (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => setForm({ ...form, rating: String(value) })}
+                        className="p-1"
+                        aria-label={`${value} star`}
+                        disabled={submitting || hasSubmitted}
+                      >
+                        <Star
+                          className={`h-6 w-6 ${
+                            value <= ratingValue ? 'text-yellow-500 fill-yellow-500' : 'text-muted-foreground'
+                          }`}
+                        />
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+              {message && <div className="text-sm text-slate-600">{message}</div>}
+              <div className="flex items-center gap-2">
+                <button
+                  type="submit"
+                  disabled={submitting || hasSubmitted}
+                  className="bg-primary text-white px-4 py-2 rounded disabled:opacity-60"
+                >
+                  {submitting ? 'Sending…' : 'Submit'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => fetchList()}
+                  className="text-sm text-secondary"
+                  disabled={submitting}
+                >
+                  Refresh list
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
       </div>
     </section>
   );

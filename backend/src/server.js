@@ -138,6 +138,8 @@ const io = new Server(server, {
   pingTimeout: 25000 // 25s
 });
 
+notificationService.setSocketIO(io);
+
 // Connect to MongoDB (skip in tests)
 if (process.env.NODE_ENV !== 'test') {
   connectDB();

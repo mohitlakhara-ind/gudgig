@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from './AuthContext';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { apiClient } from '@/lib/api';
@@ -36,6 +36,45 @@ interface NotificationContextType {
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
+const BROADCAST_CHANNEL_NAME = 'gigsmint-notifications';
+
+type IncomingNotificationPayload = Partial<Notification> & {
+  id?: string;
+  notificationId?: string;
+  body?: string;
+};
+
+const sortNotifications = (items: Notification[]) =>
+  [...items].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
+
+const generateNotificationId = () => {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return `notification-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+};
+
+const normalizeIncomingNotification = (
+  incoming: IncomingNotificationPayload
+): Notification => {
+  const createdAtRaw = incoming?.createdAt ?? Date.now();
+  const createdAt =
+    typeof createdAtRaw === 'string'
+      ? createdAtRaw
+      : new Date(createdAtRaw).toISOString();
+
+  return {
+    _id: incoming?._id || incoming?.id || incoming?.notificationId || generateNotificationId(),
+    title: incoming?.title || 'New notification',
+    message: incoming?.message || incoming?.body || 'You have a new notification.',
+    type: incoming?.type || 'general',
+    read: Boolean(incoming?.read),
+    createdAt,
+    data: incoming?.data,
+  };
+};
 
 export function NotificationProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
@@ -43,6 +82,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   const [unreadCount, setUnreadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const broadcastRef = useRef<BroadcastChannel | null>(null);
 
   const {
     isSupported: isPushSupported,
@@ -52,6 +92,64 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     unsubscribe: unsubscribeFromPush,
     testNotification: testPushNotification,
   } = usePushNotifications();
+
+  const handleIncomingNotification = useCallback(
+    (incoming: IncomingNotificationPayload | null | undefined, options?: { silent?: boolean; skipBroadcast?: boolean }) => {
+      if (!incoming) return;
+      const normalized = normalizeIncomingNotification(incoming);
+      let unreadDelta = 0;
+
+      setNotifications(prev => {
+        const existingIndex = prev.findIndex(n => n._id === normalized._id);
+        if (existingIndex >= 0) {
+          const next = [...prev];
+          const previousItem = next[existingIndex];
+          const merged = { ...previousItem, ...normalized };
+          next[existingIndex] = merged;
+
+          if (!previousItem.read && merged.read) {
+            unreadDelta -= 1;
+          } else if (previousItem.read && !merged.read) {
+            unreadDelta += 1;
+          }
+
+          return sortNotifications(next);
+        }
+
+        if (!normalized.read) {
+          unreadDelta += 1;
+        }
+
+        return sortNotifications([normalized, ...prev]);
+      });
+
+      if (unreadDelta !== 0) {
+        setUnreadCount(prev => Math.max(0, prev + unreadDelta));
+      }
+
+      if (!options?.skipBroadcast) {
+        broadcastRef.current?.postMessage({
+          type: 'NOTIFICATION_NEW',
+          payload: normalized,
+          source: 'notification-context',
+        });
+      }
+
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('notification:new', { detail: normalized }));
+
+        if (
+          !options?.silent &&
+          typeof document !== 'undefined' &&
+          document.visibilityState === 'visible' &&
+          !normalized.read
+        ) {
+          toast.success(normalized.title || 'New notification');
+        }
+      }
+    },
+    []
+  );
 
   // Load notifications
   const loadNotifications = useCallback(async () => {
@@ -74,27 +172,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     } catch (err) {
       console.error('Failed to load notifications:', err);
       setError(err instanceof Error ? err.message : 'Failed to load notifications');
-      // Provide fallback mock data for development
-      const fallbackNotifications: Notification[] = [
-        {
-          _id: '1',
-          title: 'Welcome to Gigs Mint!',
-          message: 'Get started by completing your profile and browsing available gigs.',
-          type: 'system',
-          read: false,
-          createdAt: new Date().toISOString(),
-        },
-        {
-          _id: '2',
-          title: 'Profile Setup Reminder',
-          message: 'Complete your profile to increase your chances of getting hired.',
-          type: 'system',
-          read: true,
-          createdAt: new Date(Date.now() - 86400000).toISOString(),
-        }
-      ];
-      setNotifications(fallbackNotifications);
-      setUnreadCount(1);
+      setNotifications([]);
     } finally {
       setIsLoading(false);
     }
@@ -119,6 +197,40 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     await loadNotifications();
     await loadUnreadCount();
   }, [loadNotifications, loadUnreadCount]);
+
+  useEffect(() => {
+    if (!user) {
+      broadcastRef.current?.close();
+      broadcastRef.current = null;
+      return;
+    }
+
+    if (typeof window === 'undefined' || !('BroadcastChannel' in window)) return;
+
+    const channel = new BroadcastChannel(BROADCAST_CHANNEL_NAME);
+    broadcastRef.current = channel;
+
+    const handleMessage = (event: MessageEvent) => {
+      const { type, payload, source } = event.data || {};
+      if (source === 'notification-context') return;
+
+      if (type === 'NOTIFICATION_NEW') {
+        handleIncomingNotification(payload, { skipBroadcast: true, silent: true });
+      } else if (type === 'NOTIFICATION_REFRESH') {
+        refreshNotifications();
+      }
+    };
+
+    channel.onmessage = handleMessage;
+
+    return () => {
+      channel.onmessage = null;
+      channel.close();
+      if (broadcastRef.current === channel) {
+        broadcastRef.current = null;
+      }
+    };
+  }, [user, handleIncomingNotification, refreshNotifications]);
 
   // Mark notification as read
   const markAsRead = useCallback(async (id: string) => {
@@ -178,7 +290,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   // Clear all notifications
   const clearAll = useCallback(async () => {
     try {
-      // TODO: Implement clear all notifications API
+      await apiClient.clearNotifications();
       setNotifications([]);
       setUnreadCount(0);
       toast.success('All notifications cleared');
@@ -192,20 +304,44 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   useEffect(() => {
     if (user) {
       loadNotifications();
+      loadUnreadCount();
     } else {
       setNotifications([]);
       setUnreadCount(0);
     }
-  }, [user, loadNotifications]);
+  }, [user, loadNotifications, loadUnreadCount]);
+
+  // Listen for service worker push messages
+  useEffect(() => {
+    if (
+      typeof window === 'undefined' ||
+      typeof navigator === 'undefined' ||
+      !('serviceWorker' in navigator) ||
+      !user
+    ) {
+      return;
+    }
+
+    const handler = (event: MessageEvent) => {
+      const { type, payload } = (event.data || {}) as { type?: string; payload?: any };
+      if (type === 'PUSH_NOTIFICATION') {
+        handleIncomingNotification(payload);
+      } else if (type === 'NOTIFICATION_REFRESH') {
+        refreshNotifications();
+      }
+    };
+
+    navigator.serviceWorker.addEventListener('message', handler);
+
+    return () => {
+      navigator.serviceWorker.removeEventListener('message', handler);
+    };
+  }, [user, handleIncomingNotification, refreshNotifications]);
 
   // Listen for new notifications via custom events
   useEffect(() => {
     const handleNewNotification = (event: CustomEvent) => {
-      const notification = event.detail;
-      setNotifications(prev => [notification, ...prev]);
-      if (!notification.read) {
-        setUnreadCount(prev => prev + 1);
-      }
+      handleIncomingNotification(event.detail);
     };
 
     const handleNotificationUpdate = (event: CustomEvent) => {
@@ -225,7 +361,32 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       window.removeEventListener('notification:new', handleNewNotification as EventListener);
       window.removeEventListener('notification:updated', handleNotificationUpdate as EventListener);
     };
-  }, []);
+  }, [handleIncomingNotification]);
+
+  // Refresh when coming back online or tab becomes visible
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof document === 'undefined' || !user) {
+      return;
+    }
+
+    const handleOnline = () => {
+      refreshNotifications();
+    };
+
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        refreshNotifications();
+      }
+    };
+
+    window.addEventListener('online', handleOnline);
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
+  }, [user, refreshNotifications]);
 
   const value: NotificationContextType = {
     notifications,
