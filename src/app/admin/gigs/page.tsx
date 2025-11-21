@@ -22,11 +22,20 @@ type EditableGig = Pick<Gig, '_id' | 'title' | 'category' | 'createdAt'> & {
   location?: string;
 };
 
+const PAGE_SIZE = 10;
+
 export default function AdminGigsPage() {
   const [gigs, setGigs] = React.useState<EditableGig[]>([]);
   const [isLoading, setIsLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [category, setCategory] = React.useState<Gig['category'] | ''>('');
+  const [page, setPage] = React.useState(1);
+  const [pagination, setPagination] = React.useState({
+    page: 1,
+    limit: PAGE_SIZE,
+    totalPages: 1,
+    total: 0
+  });
   const [creating, setCreating] = React.useState(false);
   const [editing, setEditing] = React.useState<EditableGig | null>(null);
   const [form, setForm] = React.useState<{ 
@@ -58,11 +67,19 @@ export default function AdminGigsPage() {
   });
   const [touched, setTouched] = React.useState<Record<string, boolean>>({});
 
-  const load = React.useCallback(async () => {
+  const load = React.useCallback(async (pageToLoad = 1) => {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await apiClient.getGigs(category ? { category } : undefined);
+      const params: { limit: number; page: number; category?: Gig['category'] } = {
+        limit: PAGE_SIZE,
+        page: pageToLoad
+      };
+      if (category) {
+        params.category = category;
+      }
+
+      const res = await apiClient.getGigs(params);
       const list = Array.isArray(res.data) ? res.data : [];
       setGigs(list.map(j => ({ 
         _id: j._id, 
@@ -74,6 +91,22 @@ export default function AdminGigsPage() {
         isHidden: (j as any).isHidden,
         location: j.location
       })));
+
+      const totalResults = res.total ?? res.count ?? list.length;
+      const limitFromApi = res.pagination?.limit ?? PAGE_SIZE;
+      const totalPages = Math.max(
+        res.pagination?.totalPages ?? (Math.ceil((totalResults || 0) / limitFromApi) || 1),
+        1
+      );
+      const resolvedPage = res.pagination?.page ?? Math.min(pageToLoad, totalPages);
+
+      setPagination({
+        page: resolvedPage,
+        limit: limitFromApi,
+        totalPages,
+        total: totalResults
+      });
+      setPage(resolvedPage);
     } catch (e: any) {
       setError(e?.message || 'Failed to load gigs');
     } finally {
@@ -81,7 +114,46 @@ export default function AdminGigsPage() {
     }
   }, [category]);
 
-  React.useEffect(() => { load(); }, [load]);
+  React.useEffect(() => { load(1); }, [load]);
+
+  const handlePageChange = React.useCallback((targetPage: number) => {
+    if (targetPage < 1 || targetPage > pagination.totalPages || targetPage === page) return;
+    load(targetPage);
+  }, [load, page, pagination.totalPages]);
+
+  const pageSize = pagination.limit || PAGE_SIZE;
+  const totalResults = pagination.total ?? gigs.length;
+  const totalPages = Math.max(pagination.totalPages || Math.ceil((totalResults || 0) / pageSize) || 1, 1);
+  const showingFrom = totalResults === 0 ? 0 : (page - 1) * pageSize + 1;
+  const showingTo = totalResults === 0 ? 0 : Math.min(showingFrom + gigs.length - 1, totalResults);
+  const pageNumbers = React.useMemo(() => {
+    const pages = Math.max(totalPages, 1);
+    const maxVisible = 5;
+    let start = Math.max(1, page - Math.floor(maxVisible / 2));
+    let end = start + maxVisible - 1;
+    if (end > pages) {
+      end = pages;
+      start = Math.max(1, end - maxVisible + 1);
+    }
+
+    const numbers: Array<number | string> = [];
+    if (start > 1) {
+      numbers.push(1);
+      if (start > 2) {
+        numbers.push('start-ellipsis');
+      }
+    }
+    for (let current = start; current <= end; current += 1) {
+      numbers.push(current);
+    }
+    if (end < pages) {
+      if (end < pages - 1) {
+        numbers.push('end-ellipsis');
+      }
+      numbers.push(pages);
+    }
+    return numbers;
+  }, [page, totalPages]);
 
   const openCreate = () => {
     setForm({ 
@@ -130,7 +202,7 @@ export default function AdminGigsPage() {
     setError(null);
     try {
       await apiClient.deleteGig(id);
-      await load();
+      await load(page);
     } catch (e: any) {
       setError(e?.message || 'Failed to delete job');
     } finally {
@@ -144,7 +216,7 @@ export default function AdminGigsPage() {
     try {
       await apiClient.toggleGigVisibility(id, !currentHidden);
       toast.success(`Gig ${!currentHidden ? 'hidden' : 'unhidden'} successfully`);
-      await load();
+      await load(page);
     } catch (e: any) {
       setError(e?.message || 'Failed to toggle gig visibility');
       toast.error(e?.message || 'Failed to toggle gig visibility');
@@ -172,7 +244,7 @@ export default function AdminGigsPage() {
       });
       setCreating(false);
       toast.success('Gig created');
-      await load();
+      await load(1);
     } catch (e: any) {
       const details = Array.isArray(e?.payload?.errors)
         ? e.payload.errors.map((er: any) => er?.msg || er?.message).filter(Boolean).join('; ')
@@ -205,7 +277,7 @@ export default function AdminGigsPage() {
       });
       setEditing(null);
       toast.success('Gig updated');
-      await load();
+      await load(page);
     } catch (e: any) {
       const details = Array.isArray(e?.payload?.errors)
         ? e.payload.errors.map((er: any) => er?.msg || er?.message).filter(Boolean).join('; ')
@@ -235,7 +307,7 @@ export default function AdminGigsPage() {
               <option key={c} value={c}>{c}</option>
             ))}
           </select>
-          <button onClick={load} className="border rounded px-3 py-2 text-sm">Filter</button>
+          <button onClick={() => load(1)} className="border rounded px-3 py-2 text-sm">Filter</button>
           <button onClick={openCreate} className="rounded px-3 py-2 text-sm bg-primary text-primary-foreground hover:bg-primary/90">Create New Gig</button>
         </div>
       </div>
@@ -332,6 +404,46 @@ export default function AdminGigsPage() {
             ))}
           </tbody>
         </table>
+      </div>
+
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border rounded-lg p-3 bg-card/60">
+        <div className="text-sm text-muted-foreground">
+          {totalResults === 0 ? 'No gigs to display' : `Showing ${showingFrom}-${showingTo} of ${totalResults} gigs`}
+        </div>
+        <div className="flex flex-wrap items-center justify-center gap-1">
+          <button
+            className="px-3 py-1 text-sm rounded border border-input text-muted-foreground hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={() => handlePageChange(page - 1)}
+            disabled={isLoading || page <= 1}
+          >
+            Previous
+          </button>
+          {pageNumbers.map((item, idx) => (
+            typeof item === 'number' ? (
+              <button
+                key={`page-${item}`}
+                className={`px-3 py-1 text-sm rounded border ${
+                  page === item
+                    ? 'border-primary bg-primary text-primary-foreground'
+                    : 'border-input text-muted-foreground hover:bg-muted'
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
+                onClick={() => handlePageChange(item)}
+                disabled={isLoading || page === item}
+              >
+                {item}
+              </button>
+            ) : (
+              <span key={`ellipsis-${idx}`} className="px-2 text-muted-foreground">...</span>
+            )
+          ))}
+          <button
+            className="px-3 py-1 text-sm rounded border border-input text-muted-foreground hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={() => handlePageChange(page + 1)}
+            disabled={isLoading || page >= totalPages}
+          >
+            Next
+          </button>
+        </div>
       </div>
 
       {error && <div className="text-sm text-error">{error}</div>}

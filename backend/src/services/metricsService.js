@@ -64,6 +64,9 @@ async function maybeSendErrorAlert(dateKey, errorCount) {
 }
 
 const GA_PROPERTY_ID = process.env.GA_PROPERTY_ID || process.env.GOOGLE_ANALYTICS_PROPERTY_ID;
+const GA_PROPERTY_PATH = GA_PROPERTY_ID
+  ? (GA_PROPERTY_ID.startsWith('properties/') ? GA_PROPERTY_ID : `properties/${GA_PROPERTY_ID}`)
+  : null;
 const GA_CACHE_TTL_MS = Number(process.env.GA_CACHE_TTL_MS || 60_000);
 let gaClient = null;
 let gaCredentialsLoaded = false;
@@ -137,10 +140,10 @@ function resolveServiceAccountCredentials() {
 function ensureGaClient() {
   if (gaClient) return gaClient;
   const credentials = resolveServiceAccountCredentials();
-  if (!credentials || !GA_PROPERTY_ID) {
+  if (!credentials || !GA_PROPERTY_PATH) {
     if (!gaDisabledLogged) {
       logger.info('ga_metrics_disabled', {
-        reason: !GA_PROPERTY_ID ? 'missing_property_id' : 'missing_credentials'
+        reason: !GA_PROPERTY_PATH ? 'missing_property_id' : 'missing_credentials'
       });
       gaDisabledLogged = true;
     }
@@ -189,9 +192,9 @@ function setCachedGaRange(startDate, endDate, data) {
 }
 
 async function fetchGaRange(startDate, endDate) {
-  const propertyId = GA_PROPERTY_ID;
+  const propertyPath = GA_PROPERTY_PATH;
   const client = ensureGaClient();
-  if (!propertyId || !client) {
+  if (!propertyPath || !client) {
     return null;
   }
 
@@ -200,7 +203,7 @@ async function fetchGaRange(startDate, endDate) {
 
   try {
     const [response] = await client.runReport({
-      property: `properties/${propertyId}`,
+      property: propertyPath,
       dateRanges: [{ startDate, endDate }],
       dimensions: [{ name: 'date' }],
       metrics: [
@@ -230,7 +233,7 @@ async function fetchGaRange(startDate, endDate) {
 }
 
 async function enrichWithGaMetrics(dataPoints) {
-  if (!GA_PROPERTY_ID) return dataPoints;
+  if (!GA_PROPERTY_PATH) return dataPoints;
   const first = dataPoints[0];
   const last = dataPoints[dataPoints.length - 1];
   if (!first || !last) return dataPoints;
@@ -253,6 +256,7 @@ export const metricsService = {
   recordPageView(req) {
     const key = ensureToday();
     state.pageViewsByDate[key] = (state.pageViewsByDate[key] || 0) + 1;
+    state.uniqueVisitorsByDate[key] = state.uniqueVisitorsByDate[key] || new Set();
     try {
       const visitorId = getVisitorId(req);
       state.uniqueVisitorsByDate[key].add(visitorId);
