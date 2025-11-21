@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Open_Sans } from "next/font/google";
 import "./globals.css";
+import { Suspense } from "react";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { NotificationProvider } from "@/contexts/NotificationContext";
 import { ThemeProvider } from "@/components/ui/theme-provider";
@@ -133,15 +134,25 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <AuthProvider>
             <NotificationProvider>
-              <AppLayout>
-                <Toaster position="top-right" />
-                <ServiceWorkerRegistration />
-                {children}
-              </AppLayout>
+              <Suspense
+                fallback={
+                  <div className="min-h-screen flex items-center justify-center text-muted-foreground">
+                    Initializing experience…
+                  </div>
+                }
+              >
+                <AppLayout>
+                  <Toaster position="top-right" />
+                  <ServiceWorkerRegistration />
+                  {children}
+                </AppLayout>
+              </Suspense>
             </NotificationProvider>
           </AuthProvider>
         </ThemeProvider>
-        <AnalyticsTracker />
+        <Suspense fallback={null}>
+          <AnalyticsTracker />
+        </Suspense>
         <Script
           src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
           strategy="afterInteractive"

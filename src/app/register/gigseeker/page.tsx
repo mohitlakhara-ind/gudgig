@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -31,7 +31,7 @@ import toast from 'react-hot-toast';
 import { useOtpTimer } from '@/hooks/useOtpTimer';
 import OtpInput from '@/components/ui/otp-input';
 
-export default function FreelancerRegisterPage() {
+function FreelancerRegisterContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const next = searchParams?.get('next') || '';
@@ -391,5 +391,13 @@ export default function FreelancerRegisterPage() {
 
       <Footer />
     </div>
+  );
+}
+
+export default function FreelancerRegisterPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading registration…</div>}>
+      <FreelancerRegisterContent />
+    </Suspense>
   );
 }

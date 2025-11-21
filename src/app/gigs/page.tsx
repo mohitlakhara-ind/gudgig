@@ -1,6 +1,5 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { 
   TrendingUp,
@@ -17,8 +16,6 @@ import { dataService, type ServerStats } from '@/services/dataService';
 import { LoadingState } from '@/components/ui/loading-states';
 
 export default function GigsPage() {
-  const searchParams = useSearchParams();
-  // const initialCategory = searchParams?.get('category') || 'all';
   const [stats, setStats] = useState<ServerStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

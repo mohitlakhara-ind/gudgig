@@ -1,18 +1,18 @@
 'use client';
 
-import React from 'react';
+import { Suspense, useEffect } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
 import CustomLoader from '@/components/CustomLoader';
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+function AdminLayoutInner({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (isLoading) return;
     const next = `${pathname}${searchParams?.toString() ? `?${searchParams.toString()}` : ''}`;
     const actualUser = (user as any)?.data || user;
@@ -37,10 +37,21 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     );
   }
 
+  return <DashboardLayout>{children}</DashboardLayout>;
+}
+
+export default function AdminLayout(props: { children: React.ReactNode }) {
   return (
-    <DashboardLayout>
-      {children}
-    </DashboardLayout>
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <CustomLoader size={32} color="#0966C2" />
+          <span className="ml-2 text-muted-foreground">Preparing console…</span>
+        </div>
+      }
+    >
+      <AdminLayoutInner {...props} />
+    </Suspense>
   );
 }
 

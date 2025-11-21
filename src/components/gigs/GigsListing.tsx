@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -21,7 +21,7 @@ const GM_CATEGORIES = [
   'game development',
 ];
 
-export default function GigsListing() {
+function GigsListingContent() {
   const router = useRouter();
   const params = useSearchParams();
   const initialCategory = params.get('category') || '';
@@ -158,4 +158,10 @@ export default function GigsListing() {
   );
 }
 
-
+export default function GigsListing() {
+  return (
+    <Suspense fallback={<div className="py-12 text-center text-muted-foreground">Loading projects…</div>}>
+      <GigsListingContent />
+    </Suspense>
+  );
+}

@@ -1,16 +1,12 @@
 'use client';
 
-import { useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
 import CustomLoader from '@/components/CustomLoader';
 
-export default function DashboardRouteLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+function DashboardRouteLayoutInner({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
@@ -38,9 +34,22 @@ export default function DashboardRouteLayout({
     return null; // Will redirect
   }
 
+  return <DashboardLayout>{children}</DashboardLayout>;
+}
+
+export default function DashboardRouteLayout(props: { children: React.ReactNode }) {
   return (
-    <DashboardLayout>
-      {children}
-    </DashboardLayout>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <div className="text-center">
+            <CustomLoader size={32} color="#1FA9FF" />
+            <p className="mt-2 text-muted-foreground">Securing dashboard…</p>
+          </div>
+        </div>
+      }
+    >
+      <DashboardRouteLayoutInner {...props} />
+    </Suspense>
   );
 }
