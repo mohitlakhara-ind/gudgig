@@ -58,14 +58,14 @@ const nextConfig: NextConfig = {
       { key: 'Content-Security-Policy', value: [
         "default-src 'self';",
         // Allow Razorpay checkout script
-        "script-src 'self' 'unsafe-inline' https://checkout.razorpay.com;",
+        "script-src 'self' 'unsafe-inline' https://checkout.razorpay.com https://www.googletagmanager.com https://www.google-analytics.com;",
         "style-src 'self' 'unsafe-inline';",
         // Allow frames for Razorpay Checkout
         "frame-src 'self' https://*.razorpay.com https://razorpay.com https://checkout.razorpay.com;",
         // Allow images and data URIs used by widgets
-        "img-src 'self' data: https:;",
+        "img-src 'self' data: https: https://www.google-analytics.com;",
         // Backend/API and dev websockets
-        `connect-src 'self' ${backendOrigin} http://localhost:5000 http://127.0.0.1:5000 ws://localhost:3000 ws://127.0.0.1:3000 https://api.razorpay.com;`
+        `connect-src 'self' ${backendOrigin} http://localhost:5000 http://127.0.0.1:5000 ws://localhost:3000 ws://127.0.0.1:3000 https://api.razorpay.com https://www.google-analytics.com https://www.googletagmanager.com https://stats.g.doubleclick.net;`
       ].join(' ') },
     ];
     return [

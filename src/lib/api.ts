@@ -2,6 +2,35 @@ import { LoginRequest, LoginResponse, RegisterRequest, RegisterResponse, JobsRes
 import * as Sentry from '@sentry/nextjs';
 import { log } from './logger';
 
+export type AdminMetricPoint = {
+  date: string;
+  errors: number;
+  pageViews: number;
+  uniqueVisitors: number;
+  sessions: number;
+  engagedSessions: number;
+  engagementRate: number;
+  averageSessionDuration: number;
+  eventCount: number;
+  alertSent: boolean;
+};
+
+export type AdminGaInsights = {
+  range: { startDate: string; endDate: string; days: number };
+  overview: {
+    pageViews: number;
+    uniqueVisitors: number;
+    sessions: number;
+    engagedSessions: number;
+    engagementRate: number;
+    averageSessionDuration: number;
+    eventCount: number;
+  };
+  topPages: Array<{ label: string; pageViews: number; users: number; engagedSessions: number; eventCount: number }>;
+  trafficSources: Array<{ label: string; sessions: number; users: number; engagedSessions: number; engagementRate: number }>;
+  locations: Array<{ label: string; users: number; sessions: number; engagedSessions: number; engagementRate: number }>;
+};
+
 export class ApiClientError extends Error {
   constructor(public statusCode: number, public payload?: any, message?: string) {
     super(message || payload?.message || 'Request failed');
@@ -734,13 +763,18 @@ class ApiClient {
   }
 
   // Admin analytics
-  async getAdminTodayMetrics(): Promise<ApiResponse<{ date: string; errors: number; pageViews: number; uniqueVisitors: number; alertSent: boolean }>> {
+  async getAdminTodayMetrics(): Promise<ApiResponse<AdminMetricPoint>> {
     return this.request(`/admin/analytics/metrics/today`);
   }
 
-  async getAdminRecentMetrics(days: number = 7): Promise<ApiResponse<Array<{ date: string; errors: number; pageViews: number; uniqueVisitors: number; alertSent: boolean }>>> {
+  async getAdminRecentMetrics(days: number = 7): Promise<ApiResponse<Array<AdminMetricPoint>>> {
     const d = Math.max(1, Math.min(days, 30));
     return this.request(`/admin/analytics/metrics/recent?days=${d}`);
+  }
+
+  async getAdminGaInsights(days: number = 14): Promise<ApiResponse<AdminGaInsights>> {
+    const d = Math.max(1, Math.min(days, 60));
+    return this.request(`/admin/analytics/metrics/ga/insights?days=${d}`);
   }
 
   // Chat

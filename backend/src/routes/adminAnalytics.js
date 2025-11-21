@@ -29,6 +29,17 @@ router.get('/metrics/recent', async (req, res) => {
   }
 });
 
+router.get('/metrics/ga/insights', async (req, res) => {
+  try {
+    const days = Math.min(parseInt(req.query.days || '14', 10), 60);
+    const data = await metricsService.getGaInsights(days);
+    res.status(200).json({ success: true, data });
+  } catch (error) {
+    logger.error('admin_metrics_ga_insights_failed', { error: error?.message });
+    res.status(500).json({ success: false, message: 'Failed to load GA insights' });
+  }
+});
+
 export default router;
 
 
