@@ -27,12 +27,16 @@ async function readFileList() {
   }
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const limitParam = Number(searchParams.get('limit'));
+  const limit = Number.isFinite(limitParam) ? Math.max(1, Math.min(100, limitParam)) : undefined;
+
   // If BACKEND_URL is set, proxy to backend public endpoint
   const backendUrl = getBackendUrl();
   if (backendUrl) {
     try {
-      const resp = await fetch(`${backendUrl}/api/testimonials/public`, {
+      const resp = await fetch(`${backendUrl}/api/testimonials/public${limit ? `?limit=${limit}` : ''}`, {
         headers: { 'Content-Type': 'application/json' },
         next: { revalidate: 60 }
       });
@@ -49,8 +53,13 @@ export async function GET() {
 
   const list = await readFileList();
   // Return only approved testimonials for public consumption
-  const approved = list.filter((t: any) => t.approved === true).sort((a: any, b: any) => (new Date(b.createdAt)).getTime() - (new Date(a.createdAt)).getTime());
-  return NextResponse.json({ success: true, data: approved });
+  const approved = list
+    .filter((t: any) => t.approved === true)
+    .sort((a: any, b: any) => (new Date(b.createdAt)).getTime() - (new Date(a.createdAt)).getTime());
+
+  const limited = typeof limit === 'number' ? approved.slice(0, limit) : approved;
+
+  return NextResponse.json({ success: true, data: limited });
 }
 
 export async function POST(req: NextRequest) {

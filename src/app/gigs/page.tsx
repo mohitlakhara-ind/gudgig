@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import EnhancedGigsListing from '@/components/gigs/EnhancedGigsListing';
-import { ProfessionalTestimonials } from '@/components/Testimonials';
+import ProfessionalTestimonials from '@/components/ProfessionalTestimonials';
 import { GigsProvider } from '@/contexts/GigsContext';
 import { ContactDetailsProvider } from '@/contexts/ContactDetailsContext';
 import { dataService, type ServerStats } from '@/services/dataService';

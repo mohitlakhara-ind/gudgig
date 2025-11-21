@@ -21,11 +21,10 @@ import {
   Lock,
   ArrowRight,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
 } from 'lucide-react';
 import CustomLoader from '@/components/CustomLoader';
 import { ContactDetailsCard } from '@/components/gigs';
-import Testimonials from '@/components/Testimonials';
 import { apiClient } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/contexts/AuthContext';
@@ -59,7 +58,6 @@ export default function GigDetailPage() {
   const [paymentEmail, setPaymentEmail] = useState<string>('');
   const [paymentPhone, setPaymentPhone] = useState<string>('');
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
-  const [isTestimonialsExpanded, setIsTestimonialsExpanded] = useState(false);
 
   const closePaymentModal = () => {
     setShowPayment(false);
@@ -854,43 +852,7 @@ export default function GigDetailPage() {
             </div>
 
           </div>
-          {user && hasUserBid && (
-            <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-6 pb-3">
-                <div>
-                  <h3 className="text-2xl font-semibold leading-none tracking-tight">
-                    Testimonials
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Real feedback from community members you unlocked.
-                  </p>
-                </div>
-                <button
-                  onClick={() => setIsTestimonialsExpanded((prev) => !prev)}
-                  className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground h-9 px-3 self-start sm:self-auto"
-                  aria-expanded={isTestimonialsExpanded}
-                  aria-controls="testimonials-content"
-                >
-                  {isTestimonialsExpanded ? 'Hide' : 'Show'}
-                  {isTestimonialsExpanded ? (
-                    <ChevronUp className="h-4 w-4 ml-2" />
-                  ) : (
-                    <ChevronDown className="h-4 w-4 ml-2" />
-                  )}
-                </button>
-              </div>
-              <div
-                id="testimonials-content"
-                className={`p-6 pt-0 transition-all duration-300 ease-in-out ${isTestimonialsExpanded ? 'opacity-100' : 'max-h-[420px] overflow-hidden relative'
-                  }`}
-              >
-                {!isTestimonialsExpanded && (
-                  <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background via-background/80 to-transparent pointer-events-none z-10" />
-                )}
-                <Testimonials />
-              </div>
-            </div>
-          )}
+          {/* Testimonials section intentionally removed per request */}
         </div>
       </div>
 

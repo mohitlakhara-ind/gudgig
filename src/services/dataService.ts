@@ -224,7 +224,12 @@ class DataService {
 
       if (response.ok) {
         const data = await response.json();
-        return data;
+        if (Array.isArray(data?.data)) {
+          return data.data;
+        }
+        if (Array.isArray(data)) {
+          return data;
+        }
       }
     } catch (error) {
       console.warn('Failed to fetch testimonials from server, using fallback data');

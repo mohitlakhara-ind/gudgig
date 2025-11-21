@@ -1,16 +1,18 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Star } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 type Testimonial = {
+  _id?: string;
   id?: string;
   name: string;
   role?: string;
   company?: string;
+  avatar?: string;
   content: string;
   rating?: number;
   createdAt?: string;
@@ -23,29 +25,43 @@ export default function Testimonials() {
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({ content: '', rating: '5' });
   const [message, setMessage] = useState<string | null>(null);
-  const [hasSubmitted, setHasSubmitted] = useState(false);
 
-  const storageKey = useMemo(() => {
-    if (!user?._id) return null;
-    return `testimonial-submitted-${user._id}`;
-  }, [user?._id]);
+  const draftKey = user?._id ? `testimonial-draft-${user._id}` : null;
 
   useEffect(() => {
     fetchList();
   }, []);
 
   useEffect(() => {
-    if (!storageKey) {
-      setHasSubmitted(false);
-      return;
+    if (!user) {
+      setForm({ content: '', rating: '5' });
     }
-    if (typeof window === 'undefined') return;
+  }, [user]);
+
+  useEffect(() => {
+    if (!draftKey || typeof window === 'undefined') return;
     try {
-      setHasSubmitted(localStorage.getItem(storageKey) === 'true');
+      const raw = localStorage.getItem(draftKey);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        setForm({
+          content: typeof parsed.content === 'string' ? parsed.content : '',
+          rating: parsed.rating ? String(parsed.rating) : '5'
+        });
+      }
     } catch {
-      setHasSubmitted(false);
+      // ignore draft parsing issues
     }
-  }, [storageKey]);
+  }, [draftKey]);
+
+  useEffect(() => {
+    if (!draftKey || typeof window === 'undefined') return;
+    try {
+      localStorage.setItem(draftKey, JSON.stringify(form));
+    } catch {
+      // ignore persistence issues
+    }
+  }, [form, draftKey]);
 
   async function fetchList() {
     setLoading(true);
@@ -71,11 +87,7 @@ export default function Testimonials() {
     e.preventDefault();
     setMessage(null);
     if (!user) {
-      setMessage('Please log in as a freelancer to share your experience.');
-      return;
-    }
-    if (hasSubmitted) {
-      setMessage('Thanks! You have already shared a testimonial for this account.');
+      setMessage('Please log in as a freelancer to share or edit your testimonial.');
       return;
     }
     if (form.content.trim().length < 20) {
@@ -88,6 +100,7 @@ export default function Testimonials() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          user: user?._id,
           name: user?.name || 'Freelancer',
           email: user?.email || '',
           role: 'Freelancer',
@@ -98,14 +111,7 @@ export default function Testimonials() {
       });
       const data = await resp.json();
       if (data?.success) {
-        setMessage('Thanks — your testimonial was submitted for review.');
-        setForm({ content: '', rating: '5' });
-        if (storageKey && typeof window !== 'undefined') {
-          try {
-            localStorage.setItem(storageKey, 'true');
-          } catch {}
-        }
-        setHasSubmitted(true);
+        setMessage('Saved! Your testimonial was submitted (or updated) for review.');
         fetchList();
       } else {
         setMessage(data?.message || 'Submission failed');
@@ -142,11 +148,7 @@ export default function Testimonials() {
           <h3 className="font-medium">Share your experience</h3>
           {!user ? (
             <div className="text-sm text-muted-foreground">
-              Login as a freelancer to submit a testimonial. Your profile name and email will be attached automatically.
-            </div>
-          ) : hasSubmitted ? (
-            <div className="text-sm text-muted-foreground">
-              Thanks for sharing your thoughts! You can&apos;t edit or resubmit another testimonial with this account.
+              Login as a freelancer to submit or edit your testimonial. Your profile name and email will be attached automatically.
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -161,7 +163,7 @@ export default function Testimonials() {
                   className="w-full border rounded px-2 py-2"
                   rows={4}
                   placeholder="Tell other freelancers how unlocking gigs helped you..."
-                  disabled={submitting || hasSubmitted}
+                  disabled={submitting}
                 />
               </label>
               <div className="space-y-2">
@@ -176,7 +178,7 @@ export default function Testimonials() {
                         onClick={() => setForm({ ...form, rating: String(value) })}
                         className="p-1"
                         aria-label={`${value} star`}
-                        disabled={submitting || hasSubmitted}
+                        disabled={submitting}
                       >
                         <Star
                           className={`h-6 w-6 ${
@@ -192,10 +194,10 @@ export default function Testimonials() {
               <div className="flex items-center gap-2">
                 <button
                   type="submit"
-                  disabled={submitting || hasSubmitted}
+                  disabled={submitting}
                   className="bg-primary text-white px-4 py-2 rounded disabled:opacity-60"
                 >
-                  {submitting ? 'Sending…' : 'Submit'}
+                  {submitting ? 'Saving…' : 'Save testimonial'}
                 </button>
                 <button
                   type="button"
@@ -215,116 +217,3 @@ export default function Testimonials() {
 }
 
 // A richer, styled testimonial grid — exported as a named component
-export function ProfessionalTestimonials() {
-  const testimonials = [
-    {
-      name: 'Sarah Johnson',
-      role: 'Freelance Designer',
-      avatar: '/api/placeholder/40/40',
-      content: 'Easy to post and manage jobs, saved me hours! The subscription system is straightforward and the candidate quality is excellent.',
-      rating: 5
-    },
-    {
-      name: 'Michael Chen',
-      role: 'Software Developer',
-      avatar: '/api/placeholder/40/40',
-      content: 'Found my last 3 gigs through this platform. The job alerts and WhatsApp notifications keep me updated instantly.',
-      rating: 5
-    },
-    {
-      name: 'Emily Rodriguez',
-      role: 'Marketing Manager',
-      avatar: '/api/placeholder/40/40',
-      content: 'As an employer, I love the dashboard and how easy it is to manage multiple job postings. Highly recommend!',
-      rating: 5
-    },
-    {
-      name: 'David Kim',
-      role: 'Content Writer',
-      avatar: '/api/placeholder/40/40',
-      content: 'The platform is intuitive and the support team is amazing. Got my first job within a week of subscribing.',
-      rating: 5
-    },
-    {
-      name: 'Lisa Thompson',
-      role: 'Product Manager',
-      avatar: '/api/placeholder/40/40',
-      content: 'The user interface is clean and modern. Finding qualified candidates has never been easier.',
-      rating: 5
-    },
-    {
-      name: 'James Wilson',
-      role: 'UX Designer',
-      avatar: '/api/placeholder/40/40',
-      content: 'Excellent platform that connects talent with opportunity seamlessly. Professional and reliable.',
-      rating: 5
-    }
-  ];
-
-  return (
-    <section className="py-20 md:py-28 bg-muted">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center mb-20">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight text-foreground">What Our Users Say</h2>
-          <p className="text-lg md:text-xl max-w-3xl mx-auto leading-relaxed text-card-foreground">Join thousands of satisfied candidates and employers who have found success through our platform</p>
-          <div className="mt-8 w-16 h-1 mx-auto rounded-full bg-primary"></div>
-        </div>
-
-        {/* Testimonials Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
-          {testimonials.map((testimonial, index) => (
-            <Card key={index} className="hover:shadow-xl transition-all duration-300 border-0 group bg-card">
-              <CardContent className="p-8">
-                <div className="flex items-center mb-6">
-                  <Avatar className="h-16 w-16 mr-4 border-2 border-accent">
-                    <AvatarImage src={testimonial.avatar} alt={testimonial.name} />
-                    <AvatarFallback className="text-secondary-foreground font-semibold text-lg bg-secondary">
-                      {testimonial.name.split(' ').map((n: string) => n[0]).join('')}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <h4 className="font-semibold text-lg mb-1 text-card-foreground">{testimonial.name}</h4>
-                    <p className="text-sm font-medium text-muted-foreground">{testimonial.role}</p>
-                  </div>
-                </div>
-
-                <div className="flex mb-6">{[...Array(testimonial.rating)].map((_, i) => (
-                  <Star key={i} className="h-5 w-5 fill-current mr-1 text-warning" />
-                ))}</div>
-
-                <div className="relative">
-                  <div className="absolute -top-2 -left-2 text-6xl font-serif opacity-20 text-accent">&ldquo;</div>
-                  <p className="text-base leading-relaxed relative z-10 text-card-foreground">{testimonial.content}</p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        <div className="mt-20 text-center">
-          <div className="inline-flex items-center justify-center space-x-12 px-12 py-8 rounded-2xl border bg-card border-accent">
-            <div className="text-center">
-              <div className="text-3xl font-bold mb-1 text-primary">1,000&#43;</div>
-              <div className="text-sm font-medium text-card-foreground">Happy Users</div>
-            </div>
-
-            <div className="w-px h-12 bg-accent"></div>
-
-            <div className="text-center">
-              <div className="text-3xl font-bold mb-1 text-primary">4.9/5</div>
-              <div className="text-sm font-medium text-card-foreground">Average Rating</div>
-            </div>
-
-            <div className="w-px h-12 bg-accent"></div>
-
-            <div className="text-center">
-              <div className="text-3xl font-bold mb-1 text-primary">24/7</div>
-              <div className="text-sm font-medium text-card-foreground">Support Available</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}

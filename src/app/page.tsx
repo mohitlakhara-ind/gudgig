@@ -3,7 +3,7 @@ import StatsSection from '@/components/StatsSection';
 import HowItWorks from '@/components/HowItWorks';
 import LatestGigs from '@/components/gigs/LatestGigs';
 import CTASection from '@/components/CTASection';
-import { ProfessionalTestimonials } from '@/components/Testimonials';
+import ProfessionalTestimonials from '@/components/ProfessionalTestimonials';
 import Footer from '@/components/Footer';
 import type { Metadata } from 'next';
 import CategorySub from '@/components/category-sub';

@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 const testimonialSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   name: { type: String, required: true, trim: true },
+  email: { type: String, trim: true, lowercase: true },
   role: { type: String, trim: true },
   company: { type: String, trim: true },
   content: { type: String, required: true, trim: true },

@@ -760,6 +760,32 @@ class ApiClient {
     return { success: true } as ApiResponse;
   }
 
+  // Public platform stats for marketing sections
+  async getPublicStats(): Promise<ApiResponse<{
+    activeUsers: number;
+    verifiedLeads: number;
+    successRate: number;
+    averageRating: number;
+    totalReviews: number;
+    categories: number;
+    countries: number;
+  }>> {
+    const raw = await this.request<any>(`/stats`);
+    return {
+      success: !!raw?.success,
+      message: raw?.message,
+      data: {
+        activeUsers: raw?.data?.activeUsers ?? 0,
+        verifiedLeads: raw?.data?.verifiedLeads ?? 0,
+        successRate: raw?.data?.successRate ?? 0,
+        averageRating: raw?.data?.averageRating ?? 0,
+        totalReviews: raw?.data?.totalReviews ?? 0,
+        categories: raw?.data?.categories ?? 0,
+        countries: raw?.data?.countries ?? 0,
+      },
+    } as ApiResponse<any>;
+  }
+
   // Notifications
   async getNotifications(params?: { page?: number; limit?: number; read?: boolean }): Promise<NotificationsResponse> {
     const qs = new URLSearchParams();
