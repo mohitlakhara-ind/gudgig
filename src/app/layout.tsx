@@ -7,6 +7,8 @@ import { ThemeProvider } from "@/components/ui/theme-provider";
 import { Toaster } from "react-hot-toast";
 import AppLayout from "@/components/layouts/AppLayout";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
+import Script from "next/script";
+import AnalyticsTracker from "@/hooks/Analytics";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -139,6 +141,20 @@ export default function RootLayout({
             </NotificationProvider>
           </AuthProvider>
         </ThemeProvider>
+        <AnalyticsTracker />
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
+          strategy="afterInteractive"
+        />
+
+        <Script id="ga-init" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '${process.env.NEXT_PUBLIC_GA_ID}');
+          `}
+        </Script>
       </body>
     </html>
   );

@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "gigsmint-dev",
+  "private_key_id": "4c4a322d008723a746eb49858fe142b718d382c8",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCiCxbXKivV9Ywu\nsxVo55uTyIXPlVwAaHQTHNc9g7QM736T/Xy5b6TadCAdRsAQWhK18/XnPAmghK9+\nkAmFpgeTYIbuJCRAjfAkQi3RmCi1p5XwjKGXZOa1qsR4moBS2qH8jM3NW1qoqB1S\nfSSi7yZTlr5NUYsv6+KkTh4e0qvFSS3oSb71kUzix4auKQ6GBURWeCT8j9LJ+X7V\nYcpS3EuhGgsPGq2LRGGUySBIhnblkJidbMlEXBZSOYcmJtZJ5UVQSMhwChnk7njw\nE/jLF5q5/WX9qEPbunWfgBGQ+pxkLrQdac8JYe9OGPuOJeNXfTv+R3haiPBY5nwt\n8td2IIJ5AgMBAAECggEAAstqqizLwz2gHIkRoDTIWdjeN+mFQ+uJPvAjJSgxkXyK\n5A392evbPbo9eIvJEa8f/fvWXJXMO7S2GxpsU538qPXD9fTxHBzmjJWImUIEx7c7\nboHaYpRGp1Dp4QOXHXawTvz1qqo96sU1dj/6wwWZVV027HnwytOIXdmMCu+Kr1UP\n+ohRUljGZTO3vv6sQbpqx+9f5dKxUUsbf+BVKWzpH0ogdkUHAsQJ9M1uLLV8Ztg9\naTDmVWiGktPhSrLNZBh/FMBQl9vPFpTFPcphMCfJw1otkOZxluXnvHqbG7H1ZwKZ\ncp38/Y45KY+wpbmEhlY/N0r9fjILZCO4KvPyiVHi4QKBgQDSJiGaVEODw97fsd+e\ngbSmk4YSPnJFVn3Q8ZHzZvBQWYXPxJJL3yy6bZyziUgjM4ZLpL0KYHq/DSULUwac\nYm4untYkHxW6HlA25FqgaLbq36R/mAfJVRoyhfIbcba4G5/V8n+8kNqFuXHBPkHi\nTe5+Rt0Xb9uzbJMGFUaKpZtl8QKBgQDFZgSdqAUx0y0RDUro0dKuVFKK9/chEx/+\nhu3JC/R25wjDx6z0Q37UUZxu+wCxuxFvIbnDPLMVKl0bJg9GcPmugR0shA1bjcyP\nfpaGo4Bbykd6ZWXuW+6oJPjK2W6Qiuv34f8ONsvEAJz880WgBADiZnPFKCmfaIkS\nZeIKDNe9CQKBgAe1Zl4m4SMgODi0aaOC1oGVv8FDkSWB+rODaPsot3/7CLGKYGNw\nGE/uXWUokADajv6PWG/dAiOn88fqj7+EzM3g/bHtgfqFyiN5VOm1baBH+9zCUubL\nvF5GE492KGGwgbhzYMQl/B4To1yXUAthGHKBXvLRI5n9TZdXiHLliEHBAoGAQI8/\nDzj2ifchFCSezUpidzWI0X6LyrtwiVQjzM8mIwUorq9Nd43jmxkd6oYZEge2ifwj\nvyDJCTETxl9KO6WTY2lC215M6BaWQpAKNvqebmbXvcYP8kcK5N9Cp0U5jfiBeE7n\nlgSB3Ba/QVNnABCPIXyUfHTIOCR+QBAmP1c379ECgYEAxFkJYgZg1bAL9Ab0ZQqn\n3YFQbAuXmpBQaHOzNwhMjB0Q7NG+tFTKP1z2cerJXBl202d1mHe10f9vXaU0ORLN\nOamKVWcWKz/lIle46/dgowvlUOWlsnm/TDFBDUA48YZR6ex0YvpGqALZRgBxI5ZE\nesVUl5ZJWy4yQxv7bE+4szc=\n-----END PRIVATE KEY-----\n",
+  "client_email": "gigsmint@gigsmint-dev.iam.gserviceaccount.com",
+  "client_id": "112261990335370592969",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/gigsmint%40gigsmint-dev.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

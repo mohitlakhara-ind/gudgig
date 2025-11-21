@@ -22,6 +22,7 @@
   "author": "Job Portal Team",
   "license": "MIT",
   "dependencies": {
+    "@google-analytics/data": "^5.2.1",
     "@paypal/checkout-server-sdk": "^1.0.3",
     "@sentry/node": "^8.35.0",
     "@sentry/profiling-node": "^8.35.0",
