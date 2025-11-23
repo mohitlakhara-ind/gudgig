@@ -68,7 +68,8 @@ export default function AppLayout({ children }: AppLayoutProps) {
     if (!isLoading && !isAuthenticated && !isPublicPage && !isGigsRoute) {
       router.push('/login');
     }
-  }, [isAuthenticated, isLoading, router, isPublicPage, isGigsRoute]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, isLoading, isPublicPage, isGigsRoute]); // Removed router from deps to prevent infinite loops
 
   // Socket.io notifications client
   useEffect(() => {
@@ -124,7 +125,8 @@ export default function AppLayout({ children }: AppLayoutProps) {
     if (isAdmin && !isAdminPage) {
       router.replace('/admin');
     }
-  }, [isAdmin, isAdminPage, router]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAdmin, isAdminPage]); // Removed router from deps to prevent infinite loops
 
   // Close sidebar when switching to desktop
   useEffect(() => {

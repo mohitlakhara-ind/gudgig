@@ -161,9 +161,10 @@ class ApiClient {
 
     try {
       
-      // Add timeout to fetch request
+      // Add timeout to fetch request (increased for production)
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+      const timeoutDuration = process.env.NODE_ENV === 'production' ? 30000 : 15000; // 30s in prod, 15s in dev
+      const timeoutId = setTimeout(() => controller.abort(), timeoutDuration);
       
       const response = await fetch(url, {
         ...config,
@@ -230,11 +231,29 @@ class ApiClient {
     } catch (error) {
       if (error instanceof Error) {
         if (error.name === 'AbortError') {
+          // Retry on timeout errors with exponential backoff
+          if (retryCount < maxRetries) {
+            log.info('request_retry_timeout', { attempt: retryCount + 1, maxRetries });
+            await new Promise(resolve => setTimeout(resolve, Math.pow(2, retryCount) * 1000));
+            return this.request<T>(endpoint, options, retryCount + 1, maxRetries);
+          }
           throw new ApiClientError(0, null, 'Request timeout. Please try again.');
         }
         if (error.name === 'TypeError') {
+          // Retry on network errors with exponential backoff
+          if (retryCount < maxRetries) {
+            log.info('request_retry_network', { attempt: retryCount + 1, maxRetries });
+            await new Promise(resolve => setTimeout(resolve, Math.pow(2, retryCount) * 1000));
+            return this.request<T>(endpoint, options, retryCount + 1, maxRetries);
+          }
           throw new ApiClientError(0, null, 'Network error. Please check your connection.');
         }
+      }
+      // If it's an ApiClientError and we haven't exceeded retries, retry
+      if (error instanceof ApiClientError && error.statusCode === 0 && retryCount < maxRetries) {
+        log.info('request_retry_error', { attempt: retryCount + 1, maxRetries });
+        await new Promise(resolve => setTimeout(resolve, Math.pow(2, retryCount) * 1000));
+        return this.request<T>(endpoint, options, retryCount + 1, maxRetries);
       }
       throw error;
     }
@@ -832,7 +851,9 @@ class ApiClient {
       return await this.request<NotificationsResponse>(`/app-api/notifications${query ? `?${query}` : ''}`);
     } catch (error) {
       // If notifications API fails, return empty response
-      console.warn('Notifications API not available, returning empty response');
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('Notifications API not available, returning empty response');
+      }
       return {
         success: false,
         message: 'Notifications API not available',
@@ -847,7 +868,9 @@ class ApiClient {
       return await this.request<UnreadCountResponse>('/api/notifications/unread-count');
     } catch (error) {
       // If unread count API fails, return zero count
-      console.warn('Unread notification count API not available, returning zero');
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('Unread notification count API not available, returning zero');
+      }
       return {
         success: false,
         message: 'Unread count API not available',

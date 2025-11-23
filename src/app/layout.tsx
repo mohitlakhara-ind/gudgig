@@ -10,6 +10,7 @@ import AppLayout from "@/components/layouts/AppLayout";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 import Script from "next/script";
 import AnalyticsTracker from "@/hooks/Analytics";
+import ErrorBoundary from "@/components/error/ErrorBoundary";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -134,19 +135,21 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <AuthProvider>
             <NotificationProvider>
-              <Suspense
-                fallback={
-                  <div className="min-h-screen flex items-center justify-center text-muted-foreground">
-                    Initializing experience…
-                  </div>
-                }
-              >
-                <AppLayout>
-                  <Toaster position="top-right" />
-                  <ServiceWorkerRegistration />
-                  {children}
-                </AppLayout>
-              </Suspense>
+              <ErrorBoundary>
+                <Suspense
+                  fallback={
+                    <div className="min-h-screen flex items-center justify-center text-muted-foreground">
+                      Initializing experience…
+                    </div>
+                  }
+                >
+                  <AppLayout>
+                    <Toaster position="top-right" />
+                    <ServiceWorkerRegistration />
+                    {children}
+                  </AppLayout>
+                </Suspense>
+              </ErrorBoundary>
             </NotificationProvider>
           </AuthProvider>
         </ThemeProvider>

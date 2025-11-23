@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useEffect } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
@@ -11,10 +11,13 @@ function DashboardRouteLayoutInner({ children }: { children: React.ReactNode }) 
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const hasRedirectedRef = React.useRef(false);
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      const next = `${pathname}${searchParams?.toString() ? `?${searchParams.toString()}` : ''}`;
+    if (!isLoading && !isAuthenticated && !hasRedirectedRef.current) {
+      hasRedirectedRef.current = true;
+      const searchString = searchParams?.toString();
+      const next = `${pathname}${searchString ? `?${searchString}` : ''}`;
       router.push(`/login?next=${encodeURIComponent(next)}`);
     }
   }, [isAuthenticated, isLoading, router, pathname, searchParams]);
