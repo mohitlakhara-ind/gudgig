@@ -78,7 +78,7 @@ export default function EnhancedGigsListing() {
   const { isMobile } = useResponsive();
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
+  const [activeSearchQuery, setActiveSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
   const [paymentGig, setPaymentGig] = useState<{
@@ -108,23 +108,11 @@ export default function EnhancedGigsListing() {
     fetchGigsRef.current = gigsManager.fetchGigs;
   }, [gigsManager.fetchGigs]);
 
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearchQuery(searchQuery.trim());
-    }, 300);
-    return () => clearTimeout(handler);
-  }, [searchQuery]);
-
-  useEffect(() => {
-    if (debouncedSearchQuery) {
-      actions.addRecentSearch(debouncedSearchQuery);
-    }
-  }, [debouncedSearchQuery, actions]);
 
   const filterSignature = useMemo(
     () =>
       JSON.stringify({
-        search: debouncedSearchQuery,
+        search: activeSearchQuery,
         category: state.filters.category,
         sortBy: state.sortBy,
         location: locationFilter,
@@ -133,7 +121,7 @@ export default function EnhancedGigsListing() {
         maxBudget: budgetMax
       }),
     [
-      debouncedSearchQuery,
+      activeSearchQuery,
       state.filters.category,
       state.sortBy,
       locationFilter,
@@ -143,7 +131,7 @@ export default function EnhancedGigsListing() {
     ]
   );
 
-  const buildSearchParams = useCallback((page: number) => {
+  const buildSearchParams = useCallback((page: number, searchQueryOverride?: string) => {
     const params: any = {
       page,
       limit: 10,
@@ -153,8 +141,9 @@ export default function EnhancedGigsListing() {
     if (state.filters.category && state.filters.category !== 'all') {
       params.category = state.filters.category;
     }
-    if (debouncedSearchQuery) {
-      params.query = debouncedSearchQuery;
+    const queryToUse = searchQueryOverride !== undefined ? searchQueryOverride : activeSearchQuery;
+    if (queryToUse) {
+      params.query = queryToUse;
     }
     if (locationFilter.trim()) {
       params.location = locationFilter.trim();
@@ -181,7 +170,7 @@ export default function EnhancedGigsListing() {
   }, [
     state.sortBy,
     state.filters.category,
-    debouncedSearchQuery,
+    activeSearchQuery,
     locationFilter,
     skillsFilter,
     budgetMin,
@@ -203,6 +192,34 @@ export default function EnhancedGigsListing() {
     }
   }, [buildSearchParams]);
 
+  // Handle search button click or Enter key
+  const handleSearch = useCallback(() => {
+    const trimmedQuery = searchQuery.trim();
+    setActiveSearchQuery(trimmedQuery);
+    if (trimmedQuery) {
+      actions.addRecentSearch(trimmedQuery);
+    }
+    setCurrentPage(1);
+    setIsSearching(true);
+    const params = buildSearchParams(1, trimmedQuery);
+    fetchGigsRef.current(params)
+      .catch(() => {
+        // handled via toast inside gigs manager
+      })
+      .finally(() => {
+        setIsSearching(false);
+      });
+  }, [searchQuery, actions, buildSearchParams]);
+
+  // Handle Enter key in search input
+  const handleSearchKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleSearch();
+    }
+  }, [handleSearch]);
+
+  // Only auto-fetch when filters change (not search query - that's handled by button)
   useEffect(() => {
     if (!filtersInitializedRef.current) {
       filtersInitializedRef.current = true;
@@ -210,8 +227,26 @@ export default function EnhancedGigsListing() {
       return;
     }
     
-    // Only fetch if filter signature actually changed
-    if (lastFilterSignatureRef.current !== filterSignature) {
+    // Only fetch if filter signature actually changed (excluding search query changes)
+    const currentSignatureWithoutSearch = JSON.stringify({
+      category: state.filters.category,
+      sortBy: state.sortBy,
+      location: locationFilter,
+      skills: skillsFilter,
+      minBudget: budgetMin,
+      maxBudget: budgetMax
+    });
+    const lastSignatureWithoutSearch = JSON.parse(lastFilterSignatureRef.current || '{}');
+    const lastSignatureWithoutSearchStr = JSON.stringify({
+      category: lastSignatureWithoutSearch.category,
+      sortBy: lastSignatureWithoutSearch.sortBy,
+      location: lastSignatureWithoutSearch.location,
+      skills: lastSignatureWithoutSearch.skills,
+      minBudget: lastSignatureWithoutSearch.minBudget,
+      maxBudget: lastSignatureWithoutSearch.maxBudget
+    });
+    
+    if (lastSignatureWithoutSearchStr !== currentSignatureWithoutSearch) {
       lastFilterSignatureRef.current = filterSignature;
       setCurrentPage(1);
       const params = buildSearchParams(1);
@@ -223,9 +258,11 @@ export default function EnhancedGigsListing() {
         .finally(() => {
           setIsSearching(false);
         });
+    } else {
+      lastFilterSignatureRef.current = filterSignature;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filterSignature]); // Only depend on filterSignature to prevent infinite loops
+  }, [state.filters.category, state.sortBy, locationFilter, skillsFilter, budgetMin, budgetMax]);
 
   useEffect(() => {
     const managerPage = gigsManager.pagination.page || 1;
@@ -535,15 +572,26 @@ export default function EnhancedGigsListing() {
       });
   };
 
-  const handleClearFilters = () => {
+  const handleClearFilters = useCallback(() => {
     setSearchQuery('');
+    setActiveSearchQuery('');
     setLocationFilter('');
     setSkillsFilter('');
     setBudgetMin('');
     setBudgetMax('');
     actions.resetFilters();
     actions.setSortBy('recent');
-  };
+    setCurrentPage(1);
+    setIsSearching(true);
+    const params = buildSearchParams(1, '');
+    fetchGigsRef.current(params)
+      .catch(() => {
+        // handled via toast inside gigs manager
+      })
+      .finally(() => {
+        setIsSearching(false);
+      });
+  }, [actions, buildSearchParams]);
 
   // Show payment screen if payment is in progress
   if (showPayment && paymentGig) {
@@ -628,8 +676,8 @@ export default function EnhancedGigsListing() {
           <CardContent className="space-y-4">
             {/* Desktop Layout */}
             <div className="hidden lg:grid lg:grid-cols-4 gap-4">
-              <div className="lg:col-span-2">
-                <InputGroup className="professional-input">
+              <div className="lg:col-span-2 flex gap-2">
+                <InputGroup className="professional-input flex-1">
                   <InputPrefix>
                     <Search className="h-4 w-4 text-muted-foreground" />
                   </InputPrefix>
@@ -637,6 +685,7 @@ export default function EnhancedGigsListing() {
                     placeholder="Search gigs, skills, or keywords..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={handleSearchKeyDown}
                     className="pl-10"
                   />
                   <InputSuffix>
@@ -645,6 +694,23 @@ export default function EnhancedGigsListing() {
                     )}
                   </InputSuffix>
                 </InputGroup>
+                <Button
+                  onClick={handleSearch}
+                  disabled={isSearching}
+                  className="px-6"
+                >
+                  {isSearching ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Searching...
+                    </>
+                  ) : (
+                    <>
+                      <Search className="h-4 w-4 mr-2" />
+                      Search
+                    </>
+                  )}
+                </Button>
               </div>
 
               <Select
@@ -685,22 +751,36 @@ export default function EnhancedGigsListing() {
 
             {/* Mobile Layout */}
             <div className="lg:hidden space-y-4">
-              <InputGroup className="professional-input">
-                <InputPrefix>
-                  <Search className="h-4 w-4 text-muted-foreground" />
-                </InputPrefix>
-                <Input
-                  placeholder="Search gigs, skills, or keywords..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
-                <InputSuffix>
-                  {isSearching && (
-                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+              <div className="flex gap-2">
+                <InputGroup className="professional-input flex-1">
+                  <InputPrefix>
+                    <Search className="h-4 w-4 text-muted-foreground" />
+                  </InputPrefix>
+                  <Input
+                    placeholder="Search gigs, skills, or keywords..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={handleSearchKeyDown}
+                    className="pl-10"
+                  />
+                  <InputSuffix>
+                    {isSearching && (
+                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                    )}
+                  </InputSuffix>
+                </InputGroup>
+                <Button
+                  onClick={handleSearch}
+                  disabled={isSearching}
+                  className="px-4"
+                >
+                  {isSearching ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Search className="h-4 w-4" />
                   )}
-                </InputSuffix>
-              </InputGroup>
+                </Button>
+              </div>
 
               <div className="flex gap-2">
                 <Dialog open={showFilters} onOpenChange={setShowFilters}>
