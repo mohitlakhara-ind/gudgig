@@ -1044,23 +1044,26 @@ export default function EnhancedGigsListing() {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-6">
                           {/* Skills */}
-                          {gig.requirements && gig.requirements.length > 0 && (
-                            <div className="flex items-center gap-2">
-                              <Award className="h-4 w-4 text-muted-foreground" />
-                              <div className="flex flex-wrap gap-1">
-                                {gig.requirements.slice(0, 2).map((skill, index) => (
-                                  <Badge key={index} variant="outline" className="text-xs px-2 py-1 bg-muted/50">
-                                    {skill}
-                                  </Badge>
-                                ))}
-                                {gig.requirements.length > 2 && (
-                                  <Badge variant="outline" className="text-xs px-2 py-1 bg-muted/50">
-                                    +{gig.requirements.length - 2}
-                                  </Badge>
-                                )}
+                          {(() => {
+                            const validRequirements = gig.requirements?.filter((skill): skill is string => typeof skill === 'string' && skill.trim() !== '') || [];
+                            return validRequirements.length > 0 && (
+                              <div className="flex items-center gap-2">
+                                <Award className="h-4 w-4 text-muted-foreground" />
+                                <div className="flex flex-wrap gap-1">
+                                  {validRequirements.slice(0, 2).map((skill, index) => (
+                                    <Badge key={index} variant="outline" className="text-xs px-2 py-1 bg-muted/50">
+                                      {skill}
+                                    </Badge>
+                                  ))}
+                                  {validRequirements.length > 2 && (
+                                    <Badge variant="outline" className="text-xs px-2 py-1 bg-muted/50">
+                                      +{validRequirements.length - 2}
+                                    </Badge>
+                                  )}
+                                </div>
                               </div>
-                            </div>
-                          )}
+                            );
+                          })()}
 
                           {/* Budget */}
                           <div className="flex items-center gap-2">
@@ -1113,26 +1116,29 @@ export default function EnhancedGigsListing() {
                       // Grid view layout
                       <>
                         {/* Skills */}
-                        {gig.requirements && gig.requirements.length > 0 && (
-                          <div>
-                            <div className="flex items-center gap-1 mb-2">
-                              <Award className="h-4 w-4 text-muted-foreground" />
-                              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Skills Required</span>
+                        {(() => {
+                          const validRequirements = gig.requirements?.filter((skill): skill is string => typeof skill === 'string' && skill.trim() !== '') || [];
+                          return validRequirements.length > 0 && (
+                            <div>
+                              <div className="flex items-center gap-1 mb-2">
+                                <Award className="h-4 w-4 text-muted-foreground" />
+                                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Skills Required</span>
+                              </div>
+                              <div className="flex flex-wrap gap-1.5">
+                                {validRequirements.slice(0, 3).map((skill, index) => (
+                                  <Badge key={index} variant="outline" className="text-xs px-2 py-1 bg-muted/50">
+                                    {skill}
+                                  </Badge>
+                                ))}
+                                {validRequirements.length > 3 && (
+                                  <Badge variant="outline" className="text-xs px-2 py-1 bg-muted/50">
+                                    +{validRequirements.length - 3} more
+                                  </Badge>
+                                )}
+                              </div>
                             </div>
-                            <div className="flex flex-wrap gap-1.5">
-                              {gig.requirements.slice(0, 3).map((skill, index) => (
-                                <Badge key={index} variant="outline" className="text-xs px-2 py-1 bg-muted/50">
-                                  {skill}
-                                </Badge>
-                              ))}
-                              {gig.requirements.length > 3 && (
-                                <Badge variant="outline" className="text-xs px-2 py-1 bg-muted/50">
-                                  +{gig.requirements.length - 3} more
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-                        )}
+                          );
+                        })()}
 
                         {/* Gig Stats */}
                         <div className="grid grid-cols-2 gap-3 text-sm">
@@ -1222,23 +1228,29 @@ export default function EnhancedGigsListing() {
                     <ArrowLeft className="h-4 w-4 mr-1" />
                     Previous
                   </Button>
-                  {pageNumbers.map((page, index) =>
-                    typeof page === 'string' ? (
-                      <span key={`${page}-${index}`} className="px-2 text-muted-foreground select-none">
-                        …
-                      </span>
-                    ) : (
-                      <Button
-                        key={page}
-                        variant={page === currentPage ? 'default' : 'outline'}
-                        size="sm"
-                        onClick={() => handlePageChange(page)}
-                        className="min-w-[40px]"
-                      >
-                        {page}
-                      </Button>
-                    )
-                  )}
+                  {pageNumbers.map((page, index) => {
+                    if (typeof page === 'string') {
+                      return (
+                        <span key={`${page}-${index}`} className="px-2 text-muted-foreground select-none">
+                          …
+                        </span>
+                      );
+                    }
+                    if (typeof page === 'number') {
+                      return (
+                        <Button
+                          key={page}
+                          variant={page === currentPage ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => handlePageChange(page)}
+                          className="min-w-[40px]"
+                        >
+                          {page}
+                        </Button>
+                      );
+                    }
+                    return null;
+                  })}
                   <Button
                     variant="outline"
                     size="sm"
