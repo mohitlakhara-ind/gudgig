@@ -9,6 +9,10 @@ const nextConfig: NextConfig = {
     return [
       // Keep local API routes that should not be proxied to backend
       {
+        source: '/api/gigs',
+        destination: '/api/gigs', // Keep local - handled by route.ts
+      },
+      {
         source: '/api/gigs/:id/bid',
         destination: '/api/gigs/:id/bid', // Keep local
       },
