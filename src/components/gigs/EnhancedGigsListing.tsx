@@ -100,6 +100,7 @@ export default function EnhancedGigsListing() {
   const [budgetMax, setBudgetMax] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const filtersInitializedRef = useRef(false);
+  const lastFilterSignatureRef = useRef<string>('');
 
   // Store fetchGigs in a ref to avoid dependency issues
   const fetchGigsRef = useRef(gigsManager.fetchGigs);
@@ -193,7 +194,8 @@ export default function EnhancedGigsListing() {
     }
     setIsSearching(true);
     try {
-      await fetchGigsRef.current(buildSearchParams(page));
+      const params = buildSearchParams(page);
+      await fetchGigsRef.current(params);
     } catch {
       // handled via toast inside gigs manager
     } finally {
@@ -204,11 +206,26 @@ export default function EnhancedGigsListing() {
   useEffect(() => {
     if (!filtersInitializedRef.current) {
       filtersInitializedRef.current = true;
+      lastFilterSignatureRef.current = filterSignature;
       return;
     }
-    setCurrentPage(1);
-    fetchPage(1, { keepPageState: true });
-  }, [filterSignature, fetchPage]);
+    
+    // Only fetch if filter signature actually changed
+    if (lastFilterSignatureRef.current !== filterSignature) {
+      lastFilterSignatureRef.current = filterSignature;
+      setCurrentPage(1);
+      const params = buildSearchParams(1);
+      setIsSearching(true);
+      fetchGigsRef.current(params)
+        .catch(() => {
+          // handled via toast inside gigs manager
+        })
+        .finally(() => {
+          setIsSearching(false);
+        });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterSignature]); // Only depend on filterSignature to prevent infinite loops
 
   useEffect(() => {
     const managerPage = gigsManager.pagination.page || 1;

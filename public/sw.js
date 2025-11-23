@@ -4,8 +4,6 @@
 const CACHE_NAME = 'gigs-mint-v1';
 const urlsToCache = [
   '/',
-  '/static/js/bundle.js',
-  '/static/css/main.css',
   '/manifest.json'
 ];
 
@@ -14,7 +12,19 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        return cache.addAll(urlsToCache);
+        // Add each URL individually and catch errors to prevent cache.addAll from failing
+        return Promise.allSettled(
+          urlsToCache.map(url => 
+            cache.add(url).catch(err => {
+              console.warn(`Failed to cache ${url}:`, err);
+              return null; // Continue even if one fails
+            })
+          )
+        );
+      })
+      .then(() => {
+        // Skip waiting to activate immediately
+        return self.skipWaiting();
       })
   );
 });
@@ -36,11 +46,40 @@ self.addEventListener('activate', (event) => {
 
 // Fetch event - serve from cache when offline
 self.addEventListener('fetch', (event) => {
+  // Only cache GET requests
+  if (event.request.method !== 'GET') {
+    return;
+  }
+  
+  // Don't cache API requests or external resources
+  const url = new URL(event.request.url);
+  if (url.pathname.startsWith('/api/') || 
+      url.pathname.startsWith('/_next/') ||
+      url.origin !== self.location.origin) {
+    return;
+  }
+  
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
         // Return cached version or fetch from network
-        return response || fetch(event.request);
+        return response || fetch(event.request).then((fetchResponse) => {
+          // Cache successful responses
+          if (fetchResponse && fetchResponse.status === 200) {
+            const responseToCache = fetchResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseToCache).catch(() => {
+                // Ignore cache errors
+              });
+            });
+          }
+          return fetchResponse;
+        }).catch(() => {
+          // If network fails and no cache, return offline page if available
+          if (event.request.destination === 'document') {
+            return caches.match('/');
+          }
+        });
       })
   );
 });
