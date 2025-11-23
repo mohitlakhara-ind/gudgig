@@ -219,11 +219,21 @@ export default function EnhancedGigsListing() {
     }
   }, [handleSearch]);
 
-  // Only auto-fetch when filters change (not search query - that's handled by button)
+  // Initial fetch on mount and auto-fetch when filters change (not search query - that's handled by button)
   useEffect(() => {
     if (!filtersInitializedRef.current) {
       filtersInitializedRef.current = true;
       lastFilterSignatureRef.current = filterSignature;
+      // Fetch initial gigs on mount
+      const params = buildSearchParams(1);
+      setIsSearching(true);
+      fetchGigsRef.current(params)
+        .catch(() => {
+          // handled via toast inside gigs manager
+        })
+        .finally(() => {
+          setIsSearching(false);
+        });
       return;
     }
     
@@ -261,8 +271,7 @@ export default function EnhancedGigsListing() {
     } else {
       lastFilterSignatureRef.current = filterSignature;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.filters.category, state.sortBy, locationFilter, skillsFilter, budgetMin, budgetMax]);
+  }, [state.filters.category, state.sortBy, locationFilter, skillsFilter, budgetMin, budgetMax, buildSearchParams]);
 
   useEffect(() => {
     const managerPage = gigsManager.pagination.page || 1;
