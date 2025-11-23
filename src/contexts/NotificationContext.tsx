@@ -310,7 +310,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       setUnreadCount(0);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id || user?._id]); // Only depend on user ID to prevent infinite loops
+  }, [user?._id]); // Only depend on user ID to prevent infinite loops
 
   // Listen for service worker push messages
   useEffect(() => {
