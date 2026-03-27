@@ -23,7 +23,7 @@ function minLen(name, len = 1, { allowDevFallback = false, fallback = '' } = {})
 export const env = {
   node: process.env.NODE_ENV || 'development',
   port: parseInt(process.env.PORT || '5000', 10),
-  clientUrl: required('CLIENT_URL', { allowDevFallback: true, fallback: 'http://localhost:3000' }),
+  clientUrl: required('CLIENT_URL', { allowDevFallback: true, fallback: 'https://gudgig.com' }),
   mongoUri: required('MONGODB_URI', { allowDevFallback: true, fallback: 'mongodb://localhost:27017/job-portal' }),
   jwtSecret: minLen('JWT_SECRET', 32, { allowDevFallback: true, fallback: 'dev_jwt_secret_dev_jwt_secret_dev_jwt!' }),
   refreshSecret: minLen('REFRESH_TOKEN_SECRET', 32, { allowDevFallback: true, fallback: 'dev_refresh_secret_dev_refresh_secret!!!' }),

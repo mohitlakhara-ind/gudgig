@@ -32,7 +32,16 @@ const connectDB = async () => {
     });
 
   } catch (error) {
-    console.error('❌ Database connection error:', error.message);
+    console.error('❌ Database connection error details:');
+    console.error(`   Message: ${error.message}`);
+    console.error(`   Code: ${error.code}`);
+    console.error(`   Stack: ${error.stack}`);
+    
+    if (process.env.NODE_ENV === 'production') {
+      console.error('💡 TIP: Check if MONGODB_URI is correctly set in your production environment variables.');
+      console.error('💡 TIP: Ensure your MongoDB cluster allows connections from your production server IP.');
+    }
+    
     process.exit(1);
   }
 };

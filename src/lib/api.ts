@@ -41,16 +41,19 @@ export class ApiClientError extends Error {
 // Resolve API base URL via backend-url utility: compose BACKEND_URL + API_URL
 import { getBackendUrl } from '@/lib/backend-url';
 const API_BASE_URL = (() => {
-  // Compose BASE + API prefix from envs
-  const backend = (process.env.NEXT_PUBLIC_BACKEND_URL || '').trim().replace(/\/$/, '');
+  const isBrowser = typeof window !== 'undefined';
   const apiPath = (process.env.NEXT_PUBLIC_API_URL || '/api').trim();
   const apiPrefix = apiPath.startsWith('/') ? apiPath : `/${apiPath}`;
-  const composed = backend ? `${backend}${apiPrefix}` : '';
-  if (composed) return composed;
-  // Browser fallback to current origin + API prefix
-  if (typeof window !== 'undefined') return `${window.location.origin}${apiPrefix}`;
-  // SSR fallback to internal API proxy
-  return apiPrefix;
+
+  // If in browser, ALWAYS use relative path to utilize Next.js proxy/rewrites
+  // This avoids CORS issues and ensures unified origin behavior
+  if (isBrowser) {
+    return apiPrefix;
+  }
+
+  // If in SSR/Node environment, use full backend URL if available
+  const backend = (process.env.NEXT_PUBLIC_BACKEND_URL || '').trim().replace(/\/$/, '');
+  return backend ? `${backend}${apiPrefix}` : apiPrefix;
 })();
 
 class ApiClient {

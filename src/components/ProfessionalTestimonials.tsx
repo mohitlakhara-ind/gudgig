@@ -21,26 +21,22 @@ const BACKEND_ORIGIN =
   (process.env.NEXT_PUBLIC_BACKEND_URL || '').replace(/\/$/, '');
 
 async function fetchFromSources(limit = 6): Promise<RemoteTestimonial[]> {
-  const sources = [
-    `/api/testimonials?limit=${limit}`,
-    BACKEND_ORIGIN ? `${BACKEND_ORIGIN}/api/testimonials/public?limit=${limit}` : null,
-  ].filter(Boolean) as string[];
+  const url = `/api/testimonials?limit=${limit}`;
 
-  for (const url of sources) {
-    try {
-      const resp = await fetch(url, {
-        headers: { 'Content-Type': 'application/json' },
-        cache: 'no-cache',
-      });
-      if (!resp.ok) continue;
+  try {
+    const resp = await fetch(url, {
+      headers: { 'Content-Type': 'application/json' },
+      cache: 'no-cache',
+    });
+    if (resp.ok) {
       const data = await resp.json();
       const list = Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : [];
       if (list.length > 0) {
         return list;
       }
-    } catch (err) {
-      console.warn(`Testimonials fetch failed for ${url}`, err);
     }
+  } catch (err) {
+    console.warn(`Testimonials fetch failed for ${url}`, err);
   }
 
   return [];

@@ -125,7 +125,9 @@ validateSecret('REFRESH_TOKEN_SECRET', env.refreshSecret);
 const allowedOrigins = [
   env.clientUrl || 'http://localhost:3000',
   process.env.CLIENT_URL,
-  'http://localhost:3001'
+  'http://localhost:3001',
+  'https://gudgig.com',
+  'https://www.gudgig.com'
 ].filter(Boolean);
 
 const io = new Server(server, {
@@ -182,16 +184,29 @@ const extraOrigins = (process.env.CORS_ORIGINS || '')
 
 const vercelPreviewRegex = /^https?:\/\/[^/]*vercel\.app$/i;
 const renderAppRegex = /^https?:\/\/[^/]*onrender\.com$/i;
+const gudgigRegex = /^https?:\/\/(www\.)?gudgig\.com$/i;
 
 const corsOptions = {
   origin: (origin, callback) => {
-    if (!origin) return callback(null, true); // allow same-origin/non-browser
+    // allow same-origin/non-browser
+    if (!origin) return callback(null, true);
+    
+    // Normalize origin - handle trailing slashes
+    const normalizedOrigin = origin.replace(/\/$/, '');
+    
     const origins = [...allowedOrigins, ...extraOrigins];
     const isAllowed =
-      origins.includes(origin) ||
-      vercelPreviewRegex.test(origin) ||
-      renderAppRegex.test(origin);
-    return isAllowed ? callback(null, true) : callback(new Error('Not allowed by CORS'));
+      origins.includes(normalizedOrigin) ||
+      vercelPreviewRegex.test(normalizedOrigin) ||
+      renderAppRegex.test(normalizedOrigin) ||
+      gudgigRegex.test(normalizedOrigin);
+      
+    if (isAllowed) {
+      return callback(null, true);
+    } else {
+      logger.warn('cors_origin_rejected', { origin });
+      return callback(new Error('Not allowed by CORS'));
+    }
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
