@@ -50,6 +50,7 @@ import razorpayWebhookRoutes from './routes/razorpay-webhook.js';
 import contactDetailsRoutes from './routes/contactDetails.js';
 import testimonialsRoutes from './routes/testimonials.js';
 import paymentGuestRoutes from './routes/payment-guest.js';
+import healthRoutes from './routes/health.js';
 import requestId from './middleware/requestId.js';
 
 // Load environment variables
@@ -125,7 +126,7 @@ validateSecret('REFRESH_TOKEN_SECRET', env.refreshSecret);
 const allowedOrigins = [
   env.clientUrl || 'http://localhost:3000',
   process.env.CLIENT_URL,
-  'http://localhost:3001',
+  'http://localhost:3000',
   'https://gudgig.com',
   'https://www.gudgig.com'
 ].filter(Boolean);
@@ -190,17 +191,17 @@ const corsOptions = {
   origin: (origin, callback) => {
     // allow same-origin/non-browser
     if (!origin) return callback(null, true);
-    
+
     // Normalize origin - handle trailing slashes
     const normalizedOrigin = origin.replace(/\/$/, '');
-    
+
     const origins = [...allowedOrigins, ...extraOrigins];
     const isAllowed =
       origins.includes(normalizedOrigin) ||
       vercelPreviewRegex.test(normalizedOrigin) ||
       renderAppRegex.test(normalizedOrigin) ||
       gudgigRegex.test(normalizedOrigin);
-      
+
     if (isAllowed) {
       return callback(null, true);
     } else {
@@ -292,6 +293,7 @@ app.get('/dashboard/health', adminOnly, async (req, res) => {
 app.use(etag);
 app.use(setCacheHeaders(60));
 
+app.use('/api/system', healthRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/jobs', jobsRoutes);
 app.use('/api/gigs', gigsRoutes);
@@ -336,11 +338,11 @@ io.use(async (socket, next) => {
     // Verify JWT token
     const jwt = await import('jsonwebtoken');
     const decoded = jwt.default.verify(token, process.env.JWT_SECRET);
-    
+
     // Get user from database
     const User = (await import('./models/User.js')).default;
     const user = await User.findById(decoded.id);
-    
+
     if (!user) {
       return next(new Error('User not found'));
     }
@@ -358,7 +360,7 @@ io.on('connection', (socket) => {
 
   // Join user to their personal room
   socket.join(`user:${socket.userId}`);
-  
+
   // Join role-based rooms
   socket.join(`role:${socket.userRole}`);
 
@@ -395,7 +397,7 @@ io.on('connection', (socket) => {
         read: true,
         readAt: new Date()
       });
-      
+
       // Broadcast to user's room
       socket.to(`user:${socket.userId}`).emit('notification:updated', {
         id: notificationId,
@@ -432,7 +434,7 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     logger.info('socket_disconnected', { socketId: socket.id, userId: socket.userId });
-    
+
     // Broadcast user offline status
     socket.broadcast.emit('user:offline', { userId: socket.userId });
   });
