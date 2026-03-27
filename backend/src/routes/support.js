@@ -50,13 +50,13 @@ router.post('/contact', async (req, res) => {
 
     // Send email notification to admin
     try {
-      const adminEmail = process.env.ADMIN_EMAIL || process.env.FROM_EMAIL || 'support@gigsmint.com';
+      const adminEmail = process.env.ADMIN_EMAIL || process.env.FROM_EMAIL || 'support@gudgig.com';
       const emailSubject = contactSubmission.type === 'lead_request' 
         ? `[Lead Request] ${subject}` 
         : `[Contact Form] ${subject}`;
       
       const emailBody = `
-        New Contact Form Submission from Gigsmint.com
+        New Contact Form Submission from Gudgig.com
         
         Name: ${name}
         Email: ${email}

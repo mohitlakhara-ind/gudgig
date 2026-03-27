@@ -8,7 +8,7 @@ const testSavedJobs = async () => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        email: 'alice@gigsmint.com',
+        email: 'alice@gudgig.com',
         password: 'Freelancer123!'
       })
     });

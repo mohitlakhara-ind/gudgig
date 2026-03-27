@@ -55,7 +55,7 @@ export default function PrivacyPage() {
                 <section className="pb-6 border-b border-border/50">
                   <div className="bg-primary/5 rounded-lg p-6 border border-primary/20">
                     <p className="text-foreground leading-relaxed text-base font-medium">
-                      At Gigsmint.com, we value your privacy. This Privacy Policy explains how we collect, use, and protect your personal information.
+                      At Gudgig.com, we value your privacy. This Privacy Policy explains how we collect, use, and protect your personal information.
                     </p>
                   </div>
                 </section>
@@ -160,7 +160,7 @@ export default function PrivacyPage() {
                   <h2 className="text-2xl font-bold mb-3 text-foreground">4. Cookies</h2>
                   <div className="bg-muted/50 rounded-lg p-4 border border-border/50">
                     <p className="text-muted-foreground leading-relaxed text-base">
-                      Gigsmint uses cookies to enhance user experience.
+                      Gudgig uses cookies to enhance user experience.
                     </p>
                   </div>
                 </section>
@@ -178,7 +178,7 @@ export default function PrivacyPage() {
                   <h2 className="text-2xl font-bold mb-3 text-foreground">6. User Rights</h2>
                   <div className="bg-muted/50 rounded-lg p-4 border border-border/50">
                     <p className="text-muted-foreground leading-relaxed text-base">
-                      You may request data correction or deletion via <a href="mailto:support@gigsmint.com" className="text-primary hover:underline">support@gigsmint.com</a>.
+                      You may request data correction or deletion via <a href="mailto:support@gudgig.com" className="text-primary hover:underline">support@gudgig.com</a>.
                     </p>
                   </div>
                 </section>

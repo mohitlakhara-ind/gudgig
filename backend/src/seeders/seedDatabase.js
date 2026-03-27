@@ -40,7 +40,7 @@ const seedDatabase = async () => {
     // Create admin user
     const adminUser = await User.create({
       name: 'Admin User',
-      email: 'admin@gigsmint.com',
+      email: 'admin@gudgig.com',
       password: 'Admin123!',
       role: 'admin',
       isEmailVerified: true,
@@ -52,15 +52,15 @@ const seedDatabase = async () => {
 
     // Create freelancers (use create to trigger pre-save hashing)
     const freelancers = await User.create([
-      { name: 'Alice Cooper', email: 'alice@gigsmint.com', password: 'Freelancer123!', role: 'freelancer', isEmailVerified: true, phone: '+1-111-111-1111', location: 'San Francisco', avatar: '' },
-      { name: 'Bob Wilson', email: 'bob@gigsmint.com', password: 'Freelancer123!', role: 'freelancer', isEmailVerified: true, phone: '+1-222-222-2222', location: 'Los Angeles', avatar: '' },
-      { name: 'Carol Davis', email: 'carol@gigsmint.com', password: 'Freelancer123!', role: 'freelancer', isEmailVerified: true, phone: '+1-333-333-3333', location: 'New York', avatar: '' },
-      { name: 'Daniel Lee', email: 'daniel@gigsmint.com', password: 'Freelancer123!', role: 'freelancer', isEmailVerified: true, phone: '+1-444-444-4444', location: 'Austin', avatar: '' },
-      { name: 'Emily Garcia', email: 'emily@gigsmint.com', password: 'Freelancer123!', role: 'freelancer', isEmailVerified: true, phone: '+1-555-555-5555', location: 'Seattle', avatar: '' },
-      { name: 'Frank Miller', email: 'frank@gigsmint.com', password: 'Freelancer123!', role: 'freelancer', isEmailVerified: true, phone: '+1-666-666-6666', location: 'Chicago', avatar: '' },
-      { name: 'Grace Hopper', email: 'grace@gigsmint.com', password: 'Freelancer123!', role: 'freelancer', isEmailVerified: true, phone: '+1-777-777-7777', location: 'Boston', avatar: '' },
-      { name: 'Henry Ford', email: 'henry@gigsmint.com', password: 'Freelancer123!', role: 'freelancer', isEmailVerified: true, phone: '+1-888-888-8888', location: 'Miami', avatar: '' },
-      { name: 'Ivy Nguyen', email: 'ivy@gigsmint.com', password: 'Freelancer123!', role: 'freelancer', isEmailVerified: true, phone: '+1-999-999-9999', location: 'Denver', avatar: '' }
+      { name: 'Alice Cooper', email: 'alice@gudgig.com', password: 'Freelancer123!', role: 'freelancer', isEmailVerified: true, phone: '+1-111-111-1111', location: 'San Francisco', avatar: '' },
+      { name: 'Bob Wilson', email: 'bob@gudgig.com', password: 'Freelancer123!', role: 'freelancer', isEmailVerified: true, phone: '+1-222-222-2222', location: 'Los Angeles', avatar: '' },
+      { name: 'Carol Davis', email: 'carol@gudgig.com', password: 'Freelancer123!', role: 'freelancer', isEmailVerified: true, phone: '+1-333-333-3333', location: 'New York', avatar: '' },
+      { name: 'Daniel Lee', email: 'daniel@gudgig.com', password: 'Freelancer123!', role: 'freelancer', isEmailVerified: true, phone: '+1-444-444-4444', location: 'Austin', avatar: '' },
+      { name: 'Emily Garcia', email: 'emily@gudgig.com', password: 'Freelancer123!', role: 'freelancer', isEmailVerified: true, phone: '+1-555-555-5555', location: 'Seattle', avatar: '' },
+      { name: 'Frank Miller', email: 'frank@gudgig.com', password: 'Freelancer123!', role: 'freelancer', isEmailVerified: true, phone: '+1-666-666-6666', location: 'Chicago', avatar: '' },
+      { name: 'Grace Hopper', email: 'grace@gudgig.com', password: 'Freelancer123!', role: 'freelancer', isEmailVerified: true, phone: '+1-777-777-7777', location: 'Boston', avatar: '' },
+      { name: 'Henry Ford', email: 'henry@gudgig.com', password: 'Freelancer123!', role: 'freelancer', isEmailVerified: true, phone: '+1-888-888-8888', location: 'Miami', avatar: '' },
+      { name: 'Ivy Nguyen', email: 'ivy@gudgig.com', password: 'Freelancer123!', role: 'freelancer', isEmailVerified: true, phone: '+1-999-999-9999', location: 'Denver', avatar: '' }
     ]);
     console.log(`👨‍💻 Created ${freelancers.length} freelancer users`);
 
@@ -75,7 +75,7 @@ const seedDatabase = async () => {
     console.log(`👔 Created ${employers.length} employer users`);
 
     // AdminSettings with bid fee options
-    const settings = await AdminSettings.create({ key: 'gm-config', bidFeeOptions: [1, 5, 10, 20], currentBidFee: 10 });
+    const settings = await AdminSettings.create({ key: 'gg-config', bidFeeOptions: [1, 5, 10, 20], currentBidFee: 10 });
     console.log('⚙️  Created AdminSettings');
 
     // Sample jobs across 7 categories
@@ -871,11 +871,11 @@ const seedDatabase = async () => {
     console.log(`   - Notifications: ${await Notification.countDocuments()}`);
 
     console.log('\n🔐 Sample Login Credentials:');
-    console.log('   Admin: admin@gigsmint.com / Admin123!');
+    console.log('   Admin: admin@gudgig.com / Admin123!');
     console.log('   Freelancers:');
-    console.log('     - alice@gigsmint.com / Freelancer123!');
-    console.log('     - bob@gigsmint.com / Freelancer123!');
-    console.log('     - carol@gigsmint.com / Freelancer123!');
+    console.log('     - alice@gudgig.com / Freelancer123!');
+    console.log('     - bob@gudgig.com / Freelancer123!');
+    console.log('     - carol@gudgig.com / Freelancer123!');
     console.log('   Employers:');
     console.log('     - john@techcorp.com / Employer123!');
     console.log('     - sarah@designagency.com / Employer123!');

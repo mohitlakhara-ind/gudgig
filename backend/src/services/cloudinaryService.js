@@ -17,7 +17,7 @@ export const uploadToCloudinary = (buffer, options = {}) => {
   return new Promise((resolve, reject) => {
     const uploadOptions = {
       resource_type: 'auto',
-      folder: 'gigs-mint',
+      folder: 'gudgig',
       ...options
     };
 

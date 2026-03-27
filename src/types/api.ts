@@ -1,4 +1,4 @@
-// Simplified API Types for Gigs Mint
+// Simplified API Types for Gudgig
 
 export interface ContactDetails {
   _id: string;

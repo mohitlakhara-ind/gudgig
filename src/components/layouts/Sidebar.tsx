@@ -318,9 +318,9 @@ export default function Sidebar({ isOpen, onToggle, isMobile = false }: SidebarP
         {!isCollapsed && (
           <Link href="/" className="flex items-center gap-2 min-w-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg">
             <div className="w-9 h-9 dark:bg-accent-foreground rounded-lg flex items-center justify-center">
-              <Image src="/logo.png" height={36} width={36} alt='gigsmint logo' />
+              <Image src="/logo.png" height={36} width={36} alt='gudgig logo' />
             </div>
-            <span className="font-semibold text-base sm:text-lg truncate">Gigs Mint</span>
+            <span className="font-semibold text-base sm:text-lg truncate">Gudgig</span>
           </Link>
         )}
 

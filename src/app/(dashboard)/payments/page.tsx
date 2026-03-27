@@ -192,7 +192,7 @@ export default function PaymentsPage() {
   <body>
     <div class="receipt">
       <div class="header">
-        <div class="brand">Gigs Mint <span class="muted">Payment Receipt</span></div>
+        <div class="brand">Gudgig <span class="muted">Payment Receipt</span></div>
         <div class="muted">${createdAt}</div>
       </div>
       <div class="row"><span class="label">Payment ID</span><span class="value">${payment.paymentId}</span></div>

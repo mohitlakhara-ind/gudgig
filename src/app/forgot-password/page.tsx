@@ -93,14 +93,14 @@ export default function ForgotPasswordPage() {
                 <div className="size-9 rounded-lg bg-primary/10 flex items-center justify-center">
                   <ShieldCheck className="h-5 w-5 text-primary" />
                 </div>
-                <span className="text-lg font-bold text-foreground">Gigs Mint</span>
+                <span className="text-lg font-bold text-foreground">Gudgig</span>
               </Link>
             </div>
             <div>
               <h2 className="text-3xl font-bold text-foreground mb-3">Verify your identity</h2>
               <p className="text-muted-foreground mb-6">Enter the OTP sent to your email.</p>
             </div>
-            <div className="text-xs text-muted-foreground">© {new Date().getFullYear()} Gigs Mint. All rights reserved.</div>
+            <div className="text-xs text-muted-foreground">© {new Date().getFullYear()} Gudgig. All rights reserved.</div>
           </div>
 
           {/* OTP Verification Panel */}
@@ -111,7 +111,7 @@ export default function ForgotPasswordPage() {
                   <div className="size-9 rounded-lg bg-primary/10 flex items-center justify-center">
                     <ShieldCheck className="h-5 w-5 text-primary" />
                   </div>
-                  <span className="text-lg font-bold text-foreground">Gigs Mint</span>
+                  <span className="text-lg font-bold text-foreground">Gudgig</span>
                 </Link>
               </div>
               
@@ -140,14 +140,14 @@ export default function ForgotPasswordPage() {
                 <div className="size-9 rounded-lg bg-primary/10 flex items-center justify-center">
                   <ShieldCheck className="h-5 w-5 text-primary" />
                 </div>
-                <span className="text-lg font-bold text-foreground">Gigs Mint</span>
+                <span className="text-lg font-bold text-foreground">Gudgig</span>
               </Link>
             </div>
             <div>
               <h2 className="text-3xl font-bold text-foreground mb-3">Check your email</h2>
               <p className="text-muted-foreground mb-6">We've sent you a password reset link.</p>
             </div>
-            <div className="text-xs text-muted-foreground">© {new Date().getFullYear()} Gigs Mint. All rights reserved.</div>
+            <div className="text-xs text-muted-foreground">© {new Date().getFullYear()} Gudgig. All rights reserved.</div>
           </div>
 
           {/* Success Panel */}
@@ -158,7 +158,7 @@ export default function ForgotPasswordPage() {
                   <div className="size-9 rounded-lg bg-primary/10 flex items-center justify-center">
                     <ShieldCheck className="h-5 w-5 text-primary" />
                   </div>
-                  <span className="text-lg font-bold text-foreground">Gigs Mint</span>
+                  <span className="text-lg font-bold text-foreground">Gudgig</span>
                 </Link>
               </div>
               
@@ -231,14 +231,14 @@ export default function ForgotPasswordPage() {
               <div className="size-9 rounded-lg bg-primary/10 flex items-center justify-center">
                 <ShieldCheck className="h-5 w-5 text-primary" />
               </div>
-              <span className="text-lg font-bold text-foreground">Gigs Mint</span>
+              <span className="text-lg font-bold text-foreground">Gudgig</span>
             </Link>
           </div>
           <div>
             <h2 className="text-3xl font-bold text-foreground mb-3">Forgot your password?</h2>
             <p className="text-muted-foreground mb-6">No worries! Enter your email and we'll send you a reset link.</p>
           </div>
-          <div className="text-xs text-muted-foreground">© {new Date().getFullYear()} Gigs Mint. All rights reserved.</div>
+          <div className="text-xs text-muted-foreground">© {new Date().getFullYear()} Gudgig. All rights reserved.</div>
         </div>
 
         {/* Reset Form Panel */}
@@ -249,7 +249,7 @@ export default function ForgotPasswordPage() {
                 <div className="size-9 rounded-lg bg-primary/10 flex items-center justify-center">
                   <ShieldCheck className="h-5 w-5 text-primary" />
                 </div>
-                <span className="text-lg font-bold text-foreground">Gigs Mint</span>
+                <span className="text-lg font-bold text-foreground">Gudgig</span>
               </Link>
             </div>
             

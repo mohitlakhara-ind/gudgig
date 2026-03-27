@@ -169,7 +169,7 @@ function FreelancerRegisterContent() {
                   Start Your Freelancing Journey
                 </h1>
                 <p className="text-xl text-muted-foreground mb-6">
-                  Join Gigs Mint and start bidding on amazing freelancing opportunities today.
+                  Join Gudgig and start bidding on amazing freelancing opportunities today.
                 </p>
               </div>
 

@@ -39,9 +39,9 @@ export default function Header() {
             {/* Professional Logo */}
             <Link href="/" className="flex items-center gap-1 sm:gap-2 min-w-0 flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg px-1">
               <div className="w-7 h-7 sm:w-8 sm:h-8 dark:bg-accent-foreground rounded-lg flex items-center justify-center flex-shrink-0">
-                <Image src="/logo.png" height={32} width={32} alt='gigsmint logo' />
+                <Image src="/logo.png" height={32} width={32} alt='gudgig logo' />
               </div>
-              <span className="text-sm sm:text-sm lg:text-base font-semibold text-foreground truncate">Gigs Mint</span>
+              <span className="text-sm sm:text-sm lg:text-base font-semibold text-foreground truncate">Gudgig</span>
             </Link>
 
             {/* Right utilities (minimal) */}

@@ -24,11 +24,11 @@ const openSans = Open_Sans({
 
 export const metadata: Metadata = {
   title: {
-    default: "Gigs Mint – Professional Freelancer Marketplace",
-    template: "%s | Gigs Mint",
+    default: "Gudgig – Professional Freelancer Marketplace",
+    template: "%s | Gudgig",
   },
   description:
-    "Gigs Mint is a professional freelancer marketplace with LinkedIn-inspired design. Browse gigs, submit bids, and grow your freelance career with confidence.",
+    "Gudgig is a professional freelancer marketplace with LinkedIn-inspired design. Browse gigs, submit bids, and grow your freelance career with confidence.",
   keywords: [
     "freelance",
     "marketplace",
@@ -37,44 +37,44 @@ export const metadata: Metadata = {
     "bids",
     "hire",
     "post a job",
-    "Gigs Mint",
+    "Gudgig",
   ],
-  authors: [{ name: "Gigs Mint" }],
-  creator: "Gigs Mint",
-  publisher: "Gigs Mint",
+  authors: [{ name: "Gudgig" }],
+  creator: "Gudgig",
+  publisher: "Gudgig",
   formatDetection: {
     email: false,
     address: false,
     telephone: false,
   },
-  metadataBase: new URL("https://gigsmint.com"),
+  metadataBase: new URL("https://gudgig.com"),
   alternates: {
     canonical: "/",
   },
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://gigsmint.com",
-    title: "Gigs Mint – Futuristic Freelancer Marketplace",
+    url: "https://gudgig.com",
+    title: "Gudgig – Futuristic Freelancer Marketplace",
     description:
-      "Browse jobs and hire talent on Gigs Mint. A modern, professional marketplace with bid-based workflows and LinkedIn-blue styling.",
-    siteName: "Gigs Mint",
+      "Browse jobs and hire talent on Gudgig. A modern, professional marketplace with bid-based workflows and LinkedIn-blue styling.",
+    siteName: "Gudgig",
     images: [
       {
         url: "/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "Gigs Mint – Futuristic Freelancer Marketplace",
+        alt: "Gudgig – Futuristic Freelancer Marketplace",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Gigs Mint – Futuristic Freelancer Marketplace",
+    title: "Gudgig – Futuristic Freelancer Marketplace",
     description:
-      "Gigs Mint is the professional way to browse jobs, post a job, and bid confidently.",
+      "Gudgig is the professional way to browse jobs, post a job, and bid confidently.",
     images: ["/og-image.jpg"],
-    creator: "@gigsmint",
+    creator: "@gudgig",
   },
   robots: {
     index: true,
@@ -100,14 +100,14 @@ export default function RootLayout({
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Organization",
-    "name": "Gigs Mint",
-    "url": "https://gigsmint.com",
-    "logo": "https://gigsmint.com/logo.png",
-    "description": "Gigs Mint is a futuristic freelancer marketplace. Browse jobs, post a job, and bid with confidence.",
+    "name": "Gudgig",
+    "url": "https://gudgig.com",
+    "logo": "https://gudgig.com/logo.png",
+    "description": "Gudgig is a futuristic freelancer marketplace. Browse jobs, post a job, and bid with confidence.",
     "sameAs": [
-      "https://www.facebook.com/gigsmint",
-      "https://www.twitter.com/gigsmint",
-      "https://www.linkedin.com/company/gigsmint"
+      "https://www.facebook.com/gudgig",
+      "https://www.twitter.com/gudgig",
+      "https://www.linkedin.com/company/gudgig"
     ],
     "contactPoint": {
       "@type": "ContactPoint",
@@ -124,7 +124,7 @@ export default function RootLayout({
         <meta name="theme-color" content="#0966C2" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="Gigs Mint" />
+        <meta name="apple-mobile-web-app-title" content="Gudgig" />
         <link rel="apple-touch-icon" href="/logo.png" />
         <script
           type="application/ld+json"

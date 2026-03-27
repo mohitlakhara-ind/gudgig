@@ -80,7 +80,7 @@ function LoginContent() {
               <div className="size-9 rounded-lg bg-primary/10 flex items-center justify-center">
                 <ShieldCheck className="h-5 w-5 text-primary" />
               </div>
-              <span className="text-lg font-bold text-foreground">Gigs Mint</span>
+              <span className="text-lg font-bold text-foreground">Gudgig</span>
             </Link>
           </div>
           <div>
@@ -92,7 +92,7 @@ function LoginContent() {
               <li className="flex items-center gap-2"><Users className="h-4 w-4 text-primary" /> Grow your portfolio</li>
             </ul>
           </div>
-          <div className="text-xs text-muted-foreground">© {new Date().getFullYear()} Gigs Mint. All rights reserved.</div>
+          <div className="text-xs text-muted-foreground">© {new Date().getFullYear()} Gudgig. All rights reserved.</div>
         </div>
 
         {/* Sign-in Panel */}
@@ -103,7 +103,7 @@ function LoginContent() {
                 <div className="size-9 rounded-lg bg-primary/10 flex items-center justify-center">
                   <ShieldCheck className="h-5 w-5 text-primary" />
                 </div>
-                <span className="text-lg font-bold text-foreground">Gigs Mint</span>
+                <span className="text-lg font-bold text-foreground">Gudgig</span>
               </Link>
             </div>
             <Card>

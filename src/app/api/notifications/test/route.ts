@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     // Send test notification
     const payload = {
       title: 'Test Notification',
-      body: 'This is a test notification from Gigs Mint!',
+      body: 'This is a test notification from Gudgig!',
       icon: '/favicon.ico',
       badge: '/favicon.ico',
       tag: 'test-notification',

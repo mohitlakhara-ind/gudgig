@@ -22,7 +22,7 @@ const GigSchema = new mongoose.Schema({
         'app development',
         'game development'
       ],
-      message: 'Category must be one of the Gigs Mint categories'
+      message: 'Category must be one of the Gudgig categories'
     }
   },
   description: {

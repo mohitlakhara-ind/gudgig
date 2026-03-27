@@ -87,7 +87,7 @@ export default function RazorpayPayment({
         key: keyId || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
         amount: amount,
         currency: currency,
-        name: 'Gigs Mint',
+        name: 'Gudgig',
         description: description,
         order_id: orderId,
         image: '/logo.png', // Add your logo path
@@ -108,7 +108,7 @@ export default function RazorpayPayment({
         remember_customer: true,
         notes: {
           order_id: orderId,
-          platform: 'gigs-mint',
+          platform: 'gudgig',
           tempUserId: tempUserId || '',
         },
         theme: {

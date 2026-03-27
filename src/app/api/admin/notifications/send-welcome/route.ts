@@ -7,10 +7,10 @@ export async function POST(request: NextRequest) {
   try {
     // Default welcome message
     const welcomeMessage = {
-      title: 'Welcome to Gigs Mint! 🎉',
-      message: `Welcome to Gigs Mint! We're excited to have you join our professional freelancer marketplace!
+      title: 'Welcome to Gudgig! 🎉',
+      message: `Welcome to Gudgig! We're excited to have you join our professional freelancer marketplace!
 
-Here's what you can do on Gigs Mint:
+Here's what you can do on Gudgig:
 • Browse and apply to amazing freelance opportunities
 • Connect with top-tier clients and employers  
 • Build your professional portfolio
@@ -19,17 +19,17 @@ Here's what you can do on Gigs Mint:
 Start exploring gigs and take your freelance career to the next level!
 
 Best regards,
-The Gigs Mint Team`
+The Gudgig Team`
     };
 
     // Mock user data - in production, fetch from database
     const users = [
-      { id: 'user_1', email: 'alice@gigsmint.com', name: 'Alice Cooper', role: 'freelancer' },
-      { id: 'user_2', email: 'bob@gigsmint.com', name: 'Bob Smith', role: 'employer' },
-      { id: 'user_3', email: 'charlie@gigsmint.com', name: 'Charlie Brown', role: 'freelancer' },
-      { id: 'admin_1', email: 'admin@gigsmint.com', name: 'Admin User', role: 'admin' },
-      { id: 'user_4', email: 'diana@gigsmint.com', name: 'Diana Prince', role: 'employer' },
-      { id: 'user_5', email: 'eve@gigsmint.com', name: 'Eve Wilson', role: 'freelancer' },
+      { id: 'user_1', email: 'alice@gudgig.com', name: 'Alice Cooper', role: 'freelancer' },
+      { id: 'user_2', email: 'bob@gudgig.com', name: 'Bob Smith', role: 'employer' },
+      { id: 'user_3', email: 'charlie@gudgig.com', name: 'Charlie Brown', role: 'freelancer' },
+      { id: 'admin_1', email: 'admin@gudgig.com', name: 'Admin User', role: 'admin' },
+      { id: 'user_4', email: 'diana@gudgig.com', name: 'Diana Prince', role: 'employer' },
+      { id: 'user_5', email: 'eve@gudgig.com', name: 'Eve Wilson', role: 'freelancer' },
     ];
 
     let successCount = 0;

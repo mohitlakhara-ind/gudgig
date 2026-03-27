@@ -133,14 +133,14 @@ function ResetPasswordContent() {
                 <div className="size-9 rounded-lg bg-primary/10 flex items-center justify-center">
                   <ShieldCheck className="h-5 w-5 text-primary" />
                 </div>
-                <span className="text-lg font-bold text-foreground">Gigs Mint</span>
+                <span className="text-lg font-bold text-foreground">Gudgig</span>
               </Link>
             </div>
             <div>
               <h2 className="text-3xl font-bold text-foreground mb-3">Password updated!</h2>
               <p className="text-muted-foreground mb-6">Your password has been successfully reset.</p>
             </div>
-            <div className="text-xs text-muted-foreground">© {new Date().getFullYear()} Gigs Mint. All rights reserved.</div>
+            <div className="text-xs text-muted-foreground">© {new Date().getFullYear()} Gudgig. All rights reserved.</div>
           </div>
 
           {/* Success Panel */}
@@ -151,7 +151,7 @@ function ResetPasswordContent() {
                   <div className="size-9 rounded-lg bg-primary/10 flex items-center justify-center">
                     <ShieldCheck className="h-5 w-5 text-primary" />
                   </div>
-                  <span className="text-lg font-bold text-foreground">Gigs Mint</span>
+                  <span className="text-lg font-bold text-foreground">Gudgig</span>
                 </Link>
               </div>
               
@@ -202,14 +202,14 @@ function ResetPasswordContent() {
               <div className="size-9 rounded-lg bg-primary/10 flex items-center justify-center">
                 <ShieldCheck className="h-5 w-5 text-primary" />
               </div>
-              <span className="text-lg font-bold text-foreground">Gigs Mint</span>
+              <span className="text-lg font-bold text-foreground">Gudgig</span>
             </Link>
           </div>
           <div>
             <h2 className="text-3xl font-bold text-foreground mb-3">Set new password</h2>
             <p className="text-muted-foreground mb-6">Choose a strong password for your account.</p>
           </div>
-          <div className="text-xs text-muted-foreground">© {new Date().getFullYear()} Gigs Mint. All rights reserved.</div>
+          <div className="text-xs text-muted-foreground">© {new Date().getFullYear()} Gudgig. All rights reserved.</div>
         </div>
 
         {/* Reset Form Panel */}
@@ -220,7 +220,7 @@ function ResetPasswordContent() {
                 <div className="size-9 rounded-lg bg-primary/10 flex items-center justify-center">
                   <ShieldCheck className="h-5 w-5 text-primary" />
                 </div>
-                <span className="text-lg font-bold text-foreground">Gigs Mint</span>
+                <span className="text-lg font-bold text-foreground">Gudgig</span>
               </Link>
             </div>
             

@@ -18,8 +18,8 @@ async function seed() {
     }
 
     // Try to find a few users to attach to testimonials
-    const alice = await User.findOne({ email: 'alice@gigsmint.com' }).lean().catch(() => null);
-    const bob = await User.findOne({ email: 'bob@gigsmint.com' }).lean().catch(() => null);
+    const alice = await User.findOne({ email: 'alice@gudgig.com' }).lean().catch(() => null);
+    const bob = await User.findOne({ email: 'bob@gudgig.com' }).lean().catch(() => null);
     const john = await User.findOne({ email: 'john@techcorp.com' }).lean().catch(() => null);
 
     const samples = [
@@ -28,7 +28,7 @@ async function seed() {
         name: alice ? alice.name : 'Sarah Johnson',
         role: 'Freelance Designer',
         company: 'Design Studio',
-        content: 'Gigsmint helped me find consistent high-quality gigs. I unlocked contacts with confidence and landed two clients in a week.',
+        content: 'Gudgig helped me find consistent high-quality gigs. I unlocked contacts with confidence and landed two clients in a week.',
         rating: 5,
         approved: true
       },
@@ -62,7 +62,7 @@ async function seed() {
         name: 'David Kim',
         role: 'Content Writer',
         company: 'Writesmith',
-        content: 'I landed a steady client via Gigsmint and the platform fees are very reasonable for the value.',
+        content: 'I landed a steady client via Gudgig and the platform fees are very reasonable for the value.',
         rating: 5,
         approved: true
       }

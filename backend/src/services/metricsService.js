@@ -118,7 +118,7 @@ function resolveServiceAccountCredentials() {
   const configuredPath =
     process.env.GA_SERVICE_ACCOUNT_PATH ||
     process.env.GOOGLE_APPLICATION_CREDENTIALS;
-  const fallbackPath = path.resolve(process.cwd(), 'gigsmint-dev-4c4a322d0087.json');
+  const fallbackPath = path.resolve(process.cwd(), 'gudgig-dev-4c4a322d0087.json');
   const candidatePaths = [configuredPath, fallbackPath].filter(Boolean);
   for (const candidate of candidatePaths) {
     try {

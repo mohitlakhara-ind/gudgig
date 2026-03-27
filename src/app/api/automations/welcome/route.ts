@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
     }
     const notif = notificationService.createNotification({
       type: 'welcome',
-      title: `Welcome to Gigs Mint, ${userName || 'there'}!`,
+      title: `Welcome to Gudgig, ${userName || 'there'}!`,
       message: 'Thanks for joining. Explore gigs and start bidding!',
       userId,
       data: { userName }

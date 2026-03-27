@@ -4,16 +4,16 @@ export async function GET() {
   try {
     // In a real application, this would fetch from your database or environment variables
     const config = {
-      platformName: 'Gigs Mint',
+      platformName: 'Gudgig',
       platformDescription: 'Professional freelancer marketplace connecting talented freelancers with clients seeking quality work.',
-      contactEmail: 'support@gigsmint.com',
+      contactEmail: 'support@gudgig.com',
       contactPhone: '+1 (555) 123-4567',
       address: '123 Business Street, Suite 100, City, State 12345',
       socialLinks: {
-        twitter: 'https://twitter.com/gigsmint',
-        linkedin: 'https://linkedin.com/company/gigsmint',
-        facebook: 'https://facebook.com/gigsmint',
-        instagram: 'https://instagram.com/gigsmint',
+        twitter: 'https://twitter.com/gudgig',
+        linkedin: 'https://linkedin.com/company/gudgig',
+        facebook: 'https://facebook.com/gudgig',
+        instagram: 'https://instagram.com/gudgig',
       },
       features: {
         guestBrowsing: true,

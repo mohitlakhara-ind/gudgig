@@ -10,11 +10,11 @@ import {
 import Image from 'next/image';
 
 export const metadata: Metadata = {
-  title: 'About Us - Gigsmint.com | Connecting Freelancers with Opportunities',
-  description: 'Learn about Gigsmint.com - where opportunities meet talent, one lead at a time. A simple, transparent, and affordable platform connecting clients with freelancers.',
+  title: 'About Us - Gudgig.com | Connecting Freelancers with Opportunities',
+  description: 'Learn about Gudgig.com - where opportunities meet talent, one lead at a time. A simple, transparent, and affordable platform connecting clients with freelancers.',
   openGraph: {
-    title: 'About Gigsmint.com - Your Freelancing Success Partner',
-    description: 'Discover how Gigsmint.com is revolutionizing the freelancing experience with verified leads and affordable access.',
+    title: 'About Gudgig.com - Your Freelancing Success Partner',
+    description: 'Discover how Gudgig.com is revolutionizing the freelancing experience with verified leads and affordable access.',
     type: 'website',
   },
 };
@@ -30,18 +30,18 @@ export default function AboutPage() {
           <div className="max-w-4xl mx-auto text-center">
             <div className="inline-flex items-center justify-center gap-3 mb-8 p-4 bg-primary/10 rounded-2xl">
               <div className="w-14 h-14 dark:bg-accent-foreground rounded-lg flex items-center justify-center">
-                <Image src="/logo.png" height={100} width={100} alt='gigsmint logo' />
+                <Image src="/logo.png" height={100} width={100} alt='gudgig logo' />
               </div>
               <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
-                About Gigsmint
+                About Gudgig
               </h1>
             </div>
             <div className="space-y-6 max-w-3xl mx-auto">
               <p className="text-xl md:text-2xl text-foreground font-medium leading-relaxed">
-                Welcome to Gigsmint.com — where opportunities meet talent, one lead at a time.
+                Welcome to Gudgig.com — where opportunities meet talent, one lead at a time.
               </p>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                We're building a simple, transparent, and affordable platform that connects clients looking for remote services with freelancers and professionals ready to work. Whether it's web development, graphic design, digital marketing, content writing, app development, or virtual assistance, Gigsmint brings everyone under one roof.
+                We're building a simple, transparent, and affordable platform that connects clients looking for remote services with freelancers and professionals ready to work. Whether it's web development, graphic design, digital marketing, content writing, app development, or virtual assistance, Gudgig brings everyone under one roof.
               </p>
               <p className="text-lg text-muted-foreground leading-relaxed">
                 Our goal is to make the process of finding work and clients as easy as possible. No complicated bidding, no long waiting periods — just real, verified leads available instantly. Freelancers can browse leads for free and pay a nominal ₹5 to unlock the client's contact details.
@@ -64,7 +64,7 @@ export default function AboutPage() {
                 </div>
               </div>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                At Gigsmint, we believe in equal opportunities for every skill and fair access to potential clients. By keeping the cost minimal and the process transparent, we empower independent professionals to grow their careers on their own terms.
+                At Gudgig, we believe in equal opportunities for every skill and fair access to potential clients. By keeping the cost minimal and the process transparent, we empower independent professionals to grow their careers on their own terms.
               </p>
             </div>
           </div>
@@ -142,9 +142,9 @@ export default function AboutPage() {
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">Why Choose Gigsmint</h2>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">Why Choose Gudgig</h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Discover what makes Gigsmint the preferred choice for freelancers and clients
+                Discover what makes Gudgig the preferred choice for freelancers and clients
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -212,10 +212,10 @@ export default function AboutPage() {
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-3xl md:text-4xl font-bold mb-6 text-primary-foreground">
-              Join the Gigsmint Community
+              Join the Gudgig Community
             </h2>
             <p className="text-lg md:text-xl text-primary-foreground/90 mb-10 leading-relaxed max-w-3xl mx-auto">
-              Whether you're a freelancer searching for new clients or a business looking for skilled professionals, Gigsmint makes the connection simple, fast, and fair. Start browsing leads, connect directly, and grow your work — one gig at a time.
+              Whether you're a freelancer searching for new clients or a business looking for skilled professionals, Gudgig makes the connection simple, fast, and fair. Start browsing leads, connect directly, and grow your work — one gig at a time.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link

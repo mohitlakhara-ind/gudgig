@@ -19,7 +19,7 @@ const GM_CATEGORIES = [
 
 function validateCategoryOrThrow(category) {
   if (!GM_CATEGORIES.includes(String(category).trim())) {
-    const err = new Error('Category must be one of the Gigs Mint categories');
+    const err = new Error('Category must be one of the Gudgig categories');
     err.statusCode = 400;
     throw err;
   }

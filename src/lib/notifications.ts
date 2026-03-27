@@ -1,4 +1,4 @@
-// Simple notification system for Gigs Mint
+// Simple notification system for Gudgig
 // This can be extended with email services like SendGrid, AWS SES, etc.
 
 export interface Notification {
@@ -74,9 +74,9 @@ class NotificationService {
     switch (type) {
       case 'welcome':
         return {
-          subject: `Welcome to Gigs Mint, ${data.userName || 'there'}!`,
-          html: `<p>Welcome to Gigs Mint! We are glad you're here.</p>`,
-          text: `Welcome to Gigs Mint! We are glad you're here.`
+          subject: `Welcome to Gudgig, ${data.userName || 'there'}!`,
+          html: `<p>Welcome to Gudgig! We are glad you're here.</p>`,
+          text: `Welcome to Gudgig! We are glad you're here.`
         };
 
       case 'gig_sent':
@@ -97,11 +97,11 @@ class NotificationService {
               <p><strong>Bid Fee Paid:</strong> ₹${data.bidFee}</p>
               <p>You will be notified when the client reviews your bid.</p>
               <div style="margin-top: 30px; padding: 20px; background-color: #f8f9fa; border-radius: 8px;">
-                <p style="margin: 0; color: #666;">Thank you for using Gigs Mint!</p>
+                <p style="margin: 0; color: #666;">Thank you for using Gudgig!</p>
               </div>
             </div>
           `,
-          text: `Bid Submitted Successfully!\n\nHello ${data.userName},\n\nYour bid has been successfully submitted for the project: ${data.jobTitle}\n\nYour Quotation: ₹${data.quotation}\nBid Fee Paid: ₹${data.bidFee}\n\nYou will be notified when the client reviews your bid.\n\nThank you for using Gigs Mint!`
+          text: `Bid Submitted Successfully!\n\nHello ${data.userName},\n\nYour bid has been successfully submitted for the project: ${data.jobTitle}\n\nYour Quotation: ₹${data.quotation}\nBid Fee Paid: ₹${data.bidFee}\n\nYou will be notified when the client reviews your bid.\n\nThank you for using Gudgig!`
         };
 
       case 'bid_accepted':
@@ -124,7 +124,7 @@ class NotificationService {
               </div>
             </div>
           `,
-          text: `🎉 Congratulations!\n\nHello ${data.userName},\n\nGreat news! Your bid has been accepted for the project: ${data.jobTitle}\n\nYour Quotation: ₹${data.quotation}\n\nThe client will contact you soon to discuss the project details.\n\nNext Steps:\n- Check your messages for client communication\n- Review project requirements carefully\n- Prepare to start the project\n\nThank you for using Gigs Mint!`
+          text: `🎉 Congratulations!\n\nHello ${data.userName},\n\nGreat news! Your bid has been accepted for the project: ${data.jobTitle}\n\nYour Quotation: ₹${data.quotation}\n\nThe client will contact you soon to discuss the project details.\n\nNext Steps:\n- Check your messages for client communication\n- Review project requirements carefully\n- Prepare to start the project\n\nThank you for using Gudgig!`
         };
 
       case 'bid_rejected':
@@ -147,7 +147,7 @@ class NotificationService {
               </div>
             </div>
           `,
-          text: `Bid Update\n\nHello ${data.userName},\n\nWe wanted to let you know that your bid for ${data.jobTitle} was not selected this time.\n\nYour Quotation: ₹${data.quotation}\n\nDon't worry! There are many more opportunities available on our platform.\n\nKeep Going:\n- Browse more available projects\n- Improve your proposal writing skills\n- Consider adjusting your pricing strategy\n\nThank you for using Gigs Mint!`
+          text: `Bid Update\n\nHello ${data.userName},\n\nWe wanted to let you know that your bid for ${data.jobTitle} was not selected this time.\n\nYour Quotation: ₹${data.quotation}\n\nDon't worry! There are many more opportunities available on our platform.\n\nKeep Going:\n- Browse more available projects\n- Improve your proposal writing skills\n- Consider adjusting your pricing strategy\n\nThank you for using Gudgig!`
         };
 
       case 'payment_success':
@@ -187,9 +187,9 @@ class NotificationService {
 
       default:
         return {
-          subject: 'Notification from Gigs Mint',
-          html: '<p>You have a new notification from Gigs Mint.</p>',
-          text: 'You have a new notification from Gigs Mint.'
+          subject: 'Notification from Gudgig',
+          html: '<p>You have a new notification from Gudgig.</p>',
+          text: 'You have a new notification from Gudgig.'
         };
     }
   }

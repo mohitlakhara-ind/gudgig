@@ -63,7 +63,7 @@ export default function ShippingPage() {
                           Digital Services Only
                         </p>
                         <p className="text-blue-800 dark:text-blue-200 leading-relaxed text-base">
-                          Gigsmint.com provides only digital services. No physical products are shipped.
+                          Gudgig.com provides only digital services. No physical products are shipped.
                         </p>
                       </div>
                     </div>
@@ -97,7 +97,7 @@ export default function ShippingPage() {
                       <h2 className="text-2xl font-bold mb-3 text-foreground">2. Delivery Time</h2>
                       <div className="bg-muted/50 rounded-lg p-4 border border-border/50">
                         <p className="text-muted-foreground leading-relaxed text-base">
-                          Access is immediate. Technical delays can be reported to <a href="mailto:support@gigsmint.com" className="text-primary hover:underline">support@gigsmint.com</a>.
+                          Access is immediate. Technical delays can be reported to <a href="mailto:support@gudgig.com" className="text-primary hover:underline">support@gudgig.com</a>.
                         </p>
                       </div>
                     </div>
@@ -109,7 +109,7 @@ export default function ShippingPage() {
                   <h2 className="text-2xl font-bold mb-3 text-foreground">3. No Physical Shipping</h2>
                   <div className="bg-muted/50 rounded-lg p-4 border border-border/50">
                     <p className="text-muted-foreground leading-relaxed text-base">
-                      Gigsmint does not deliver any physical items. All services are digital and delivered electronically.
+                      Gudgig does not deliver any physical items. All services are digital and delivered electronically.
                     </p>
                   </div>
                 </section>
@@ -130,7 +130,7 @@ export default function ShippingPage() {
                     <div className="bg-primary/5 rounded-lg p-4 border border-primary/20">
                       <p className="text-sm font-semibold text-foreground mb-2">Technical Support:</p>
                       <p className="text-muted-foreground leading-relaxed text-sm">
-                        If you experience any technical issues accessing your unlocked leads, please contact our support team at <a href="mailto:support@gigsmint.com" className="text-primary hover:underline">support@gigsmint.com</a> with your transaction ID. We typically respond within 24 hours.
+                        If you experience any technical issues accessing your unlocked leads, please contact our support team at <a href="mailto:support@gudgig.com" className="text-primary hover:underline">support@gudgig.com</a> with your transaction ID. We typically respond within 24 hours.
                       </p>
                     </div>
                   </div>

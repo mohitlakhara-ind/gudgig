@@ -1,7 +1,7 @@
 // Service Worker for Push Notifications
 // This service worker handles push notifications and background sync
 
-const CACHE_NAME = 'gigs-mint-v1';
+const CACHE_NAME = 'gudgig-v1';
 const urlsToCache = [
   '/',
   '/manifest.json'
@@ -89,11 +89,11 @@ self.addEventListener('push', (event) => {
   console.log('Push event received:', event);
 
   let notificationData = {
-    title: 'Gigs Mint',
+    title: 'Gudgig',
     body: 'You have a new notification',
     icon: '/favicon.ico',
     badge: '/favicon.ico',
-    tag: 'gigs-mint-notification',
+    tag: 'gudgig-notification',
     requireInteraction: false,
     vibrate: [200, 100, 200],
     actions: [

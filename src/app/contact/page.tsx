@@ -3,17 +3,17 @@ import ContactForm from '@/components/ContactForm';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Contact Us | Gigsmint.com',
-  description: "Get in touch with Gigsmint.com support and admin team. Contact us to post leads or for support.",
-  openGraph: { title: 'Contact Us | Gigsmint.com', description: 'Contact Gigsmint.com admin to post leads or for support', type: 'website' },
-  twitter: { card: 'summary_large_image', title: 'Contact Us | Gigsmint.com', description: 'Contact Gigsmint.com admin team' },
+  title: 'Contact Us | Gudgig.com',
+  description: "Get in touch with Gudgig.com support and admin team. Contact us to post leads or for support.",
+  openGraph: { title: 'Contact Us | Gudgig.com', description: 'Contact Gudgig.com admin to post leads or for support', type: 'website' },
+  twitter: { card: 'summary_large_image', title: 'Contact Us | Gudgig.com', description: 'Contact Gudgig.com admin team' },
 };
 
 export default function Contact() {
   const contactJsonLd = {
     "@context": "https://schema.org",
     "@type": "Organization",
-    "name": "Gigsmint.com",
+    "name": "Gudgig.com",
     "contactPoint": [
       {
         "@type": "ContactPoint",
@@ -54,7 +54,7 @@ export default function Contact() {
                       </div>
                       <div>
                         <h3 className="font-semibold text-foreground mb-1">Email</h3>
-                        <p className="text-muted-foreground">support@gigsmint.com</p>
+                        <p className="text-muted-foreground">support@gudgig.com</p>
                         <p className="text-sm text-muted-foreground">We&apos;ll get back to you within 24 hours</p>
                         <p className="text-sm text-primary font-medium mt-1">For posting leads, please mention "Post Lead" in subject</p>
                       </div>
@@ -112,7 +112,7 @@ export default function Contact() {
                     Clients and businesses can contact our admin team to post verified leads on the platform. Our team will review your requirements and create a lead listing.
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    <strong className="text-foreground">Email:</strong> support@gigsmint.com<br />
+                    <strong className="text-foreground">Email:</strong> support@gudgig.com<br />
                     <strong className="text-foreground">Subject:</strong> Post Lead Request
                   </p>
                 </div>

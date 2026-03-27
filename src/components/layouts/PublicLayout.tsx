@@ -54,9 +54,9 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
             <div className="flex items-center gap-2">
               <Link href="/" className="flex items-center gap-2">
                 <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                  <span className="text-primary-foreground font-bold text-sm">GM</span>
+                  <span className="text-primary-foreground font-bold text-sm">GG</span>
                 </div>
-                <span className="font-semibold text-lg text-foreground">Gigsmint</span>
+                <span className="font-semibold text-lg text-foreground">Gudgig</span>
               </Link>
             </div>
 
@@ -203,9 +203,9 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
             <div className="col-span-1 md:col-span-2">
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                  <span className="text-primary-foreground font-bold text-sm">GM</span>
+                  <span className="text-primary-foreground font-bold text-sm">GG</span>
                 </div>
-                <span className="font-semibold text-lg">Gigsmint</span>
+                <span className="font-semibold text-lg">Gudgig</span>
               </div>
               <p className="text-muted-foreground mb-4 max-w-md">
                 Where opportunities meet talent, one lead at a time. A simple, transparent, and affordable platform connecting clients with freelancers.
@@ -236,7 +236,7 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
           </div>
 
           <div className="border-t border-border mt-8 pt-8 text-center text-sm text-muted-foreground">
-            <p>&copy; 2024 Gigsmint.com. All rights reserved.</p>
+            <p>&copy; 2024 Gudgig.com. All rights reserved.</p>
           </div>
         </div>
       </footer>

@@ -52,16 +52,16 @@ export default function TermsPage() {
             </CardHeader>
             <CardContent className="p-8">
               <div className="space-y-10">
-                {/* About Gigsmint */}
+                {/* About Gudgig */}
                 <section className="pb-6 border-b border-border/50">
                   <div className="flex items-start gap-4 mb-4">
                     <div className="p-2 bg-primary/10 rounded-lg mt-1">
                       <Users className="h-5 w-5 text-primary" />
                     </div>
                     <div className="flex-1">
-                      <h2 className="text-2xl font-bold mb-3 text-foreground">1. About Gigsmint</h2>
+                      <h2 className="text-2xl font-bold mb-3 text-foreground">1. About Gudgig</h2>
                       <p className="text-muted-foreground leading-relaxed text-base">
-                        Gigsmint.com is an online platform that connects clients seeking remote work services with freelancers and professionals offering those services. Users can browse publicly listed leads and pay a nominal fee to unlock contact information.
+                        Gudgig.com is an online platform that connects clients seeking remote work services with freelancers and professionals offering those services. Users can browse publicly listed leads and pay a nominal fee to unlock contact information.
                       </p>
                     </div>
                   </div>
@@ -72,7 +72,7 @@ export default function TermsPage() {
                   <h2 className="text-2xl font-bold mb-3 text-foreground">2. Eligibility</h2>
                   <div className="bg-muted/50 rounded-lg p-4 border border-border/50">
                     <p className="text-muted-foreground leading-relaxed text-base">
-                      You must be at least 18 years of age to use Gigsmint.
+                      You must be at least 18 years of age to use Gudgig.
                     </p>
                   </div>
                 </section>
@@ -106,7 +106,7 @@ export default function TermsPage() {
                     <div className="flex-1">
                       <h2 className="text-2xl font-bold mb-3 text-foreground">4. Lead Purchase</h2>
                       <p className="text-muted-foreground leading-relaxed text-base">
-                        Each lead represents contact details of a potential client verified by our team to the best of our ability. However, Gigsmint does not guarantee that every lead will result in a successful project.
+                        Each lead represents contact details of a potential client verified by our team to the best of our ability. However, Gudgig does not guarantee that every lead will result in a successful project.
                       </p>
                     </div>
                   </div>
@@ -117,7 +117,7 @@ export default function TermsPage() {
                   <h2 className="text-2xl font-bold mb-3 text-foreground">5. Payments</h2>
                   <div className="space-y-4">
                     <p className="text-muted-foreground leading-relaxed text-base">
-                      All payments made on Gigsmint.com are final and non-transferable.
+                      All payments made on Gudgig.com are final and non-transferable.
                     </p>
                     <div className="bg-muted/50 rounded-lg p-4 border border-border/50">
                       <p className="text-sm font-semibold text-foreground mb-2">Payment Details:</p>
@@ -137,7 +137,7 @@ export default function TermsPage() {
                   <h2 className="text-2xl font-bold mb-3 text-foreground">6. Prohibited Activities</h2>
                   <div className="space-y-4">
                     <p className="text-muted-foreground leading-relaxed text-base">
-                      You agree not to misuse lead data or use Gigsmint for unlawful purposes. Specifically, you must not:
+                      You agree not to misuse lead data or use Gudgig for unlawful purposes. Specifically, you must not:
                     </p>
                     <div className="bg-red-50 dark:bg-red-950/20 rounded-lg p-4 border border-red-200 dark:border-red-800">
                       <ul className="list-disc list-inside text-muted-foreground space-y-2 text-sm ml-2">
@@ -161,7 +161,7 @@ export default function TermsPage() {
                 <section className="pb-6 border-b border-border/50">
                   <h2 className="text-2xl font-bold mb-3 text-foreground">7. Intellectual Property</h2>
                   <p className="text-muted-foreground leading-relaxed text-base">
-                    All content and data on Gigsmint.com are the property of Gigsmint.
+                    All content and data on Gudgig.com are the property of Gudgig.
                   </p>
                 </section>
 
@@ -169,7 +169,7 @@ export default function TermsPage() {
                 <section className="pb-6 border-b border-border/50">
                   <h2 className="text-2xl font-bold mb-3 text-foreground">8. Disclaimer of Warranties</h2>
                   <p className="text-muted-foreground leading-relaxed text-base">
-                    Gigsmint provides leads "as is" and makes no guarantees regarding their accuracy or results.
+                    Gudgig provides leads "as is" and makes no guarantees regarding their accuracy or results.
                   </p>
                 </section>
 
@@ -177,7 +177,7 @@ export default function TermsPage() {
                 <section className="pb-6 border-b border-border/50">
                   <h2 className="text-2xl font-bold mb-3 text-foreground">9. Limitation of Liability</h2>
                   <p className="text-muted-foreground leading-relaxed text-base">
-                    Gigsmint shall not be liable for any direct, indirect, or consequential loss arising from the use of our services.
+                    Gudgig shall not be liable for any direct, indirect, or consequential loss arising from the use of our services.
                   </p>
                 </section>
 
@@ -185,7 +185,7 @@ export default function TermsPage() {
                 <section>
                   <h2 className="text-2xl font-bold mb-3 text-foreground">10. Changes to Terms</h2>
                   <p className="text-muted-foreground leading-relaxed text-base">
-                    Gigsmint reserves the right to update or modify these terms at any time.
+                    Gudgig reserves the right to update or modify these terms at any time.
                   </p>
                 </section>
               </div>

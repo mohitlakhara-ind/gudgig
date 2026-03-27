@@ -2,17 +2,17 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: "FAQ - Frequently Asked Questions | Gigs Mint",
-  description: "Find answers to common questions about Gigs Mint. Get help with gig browsing, bidding, account management, and more.",
+  title: "FAQ - Frequently Asked Questions | Gudgig",
+  description: "Find answers to common questions about Gudgig. Get help with gig browsing, bidding, account management, and more.",
   openGraph: {
-    title: "FAQ - Frequently Asked Questions | Gigs Mint",
-    description: "Find answers to common questions about Gigs Mint. Get help with gig browsing, bidding, account management, and more.",
+    title: "FAQ - Frequently Asked Questions | Gudgig",
+    description: "Find answers to common questions about Gudgig. Get help with gig browsing, bidding, account management, and more.",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "FAQ - Frequently Asked Questions | Gigs Mint",
-    description: "Find answers to common questions about Gigs Mint. Get help with gig browsing, bidding, account management, and more.",
+    title: "FAQ - Frequently Asked Questions | Gudgig",
+    description: "Find answers to common questions about Gudgig. Get help with gig browsing, bidding, account management, and more.",
   },
 };
 
@@ -57,7 +57,7 @@ export default function FAQ() {
           answer: "Click the 'Sign Up' button on the homepage, select 'Freelancer' as your role, fill in your details, and verify your email address. It's completely free to create an account."
         },
         {
-          question: "Do I need to pay to join Gigs Mint?",
+          question: "Do I need to pay to join Gudgig?",
           answer: "No, creating an account is completely free. You only pay a small bid fee (₹1-₹10) when you place a bid on a gig."
         },
         {
@@ -152,7 +152,7 @@ export default function FAQ() {
             <div className="text-center mb-12">
               <h1 className="text-4xl font-bold mb-6 text-foreground">Frequently Asked Questions</h1>
               <p className="text-lg text-muted-foreground">
-                Find answers to common questions about using Gigs Mint
+                Find answers to common questions about using Gudgig
               </p>
             </div>
 

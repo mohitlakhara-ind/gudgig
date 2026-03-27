@@ -18,12 +18,12 @@ export async function POST(request: NextRequest) {
     // In a real application, you would fetch all users from your database
     // For now, we'll use mock user data
     const mockUsers = [
-      { id: 'user_1', email: 'alice@gigsmint.com', name: 'Alice Cooper', role: 'freelancer' },
-      { id: 'user_2', email: 'bob@gigsmint.com', name: 'Bob Smith', role: 'employer' },
-      { id: 'user_3', email: 'charlie@gigsmint.com', name: 'Charlie Brown', role: 'freelancer' },
-      { id: 'admin_1', email: 'admin@gigsmint.com', name: 'Admin User', role: 'admin' },
-      { id: 'user_4', email: 'diana@gigsmint.com', name: 'Diana Prince', role: 'employer' },
-      { id: 'user_5', email: 'eve@gigsmint.com', name: 'Eve Wilson', role: 'freelancer' },
+      { id: 'user_1', email: 'alice@gudgig.com', name: 'Alice Cooper', role: 'freelancer' },
+      { id: 'user_2', email: 'bob@gudgig.com', name: 'Bob Smith', role: 'employer' },
+      { id: 'user_3', email: 'charlie@gudgig.com', name: 'Charlie Brown', role: 'freelancer' },
+      { id: 'admin_1', email: 'admin@gudgig.com', name: 'Admin User', role: 'admin' },
+      { id: 'user_4', email: 'diana@gudgig.com', name: 'Diana Prince', role: 'employer' },
+      { id: 'user_5', email: 'eve@gudgig.com', name: 'Eve Wilson', role: 'freelancer' },
     ];
 
     // Filter users based on includeAdmins flag

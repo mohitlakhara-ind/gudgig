@@ -31,10 +31,10 @@ interface BroadcastResult {
 }
 
 export default function BroadcastNotificationsPage() {
-  const [title, setTitle] = useState('Welcome to Gigs Mint! 🎉');
+  const [title, setTitle] = useState('Welcome to Gudgig! 🎉');
   const [message, setMessage] = useState(`We're excited to have you join our professional freelancer marketplace! 
 
-Here's what you can do on Gigs Mint:
+Here's what you can do on Gudgig:
 • Browse and apply to amazing freelance opportunities
 • Connect with top-tier clients and employers
 • Build your professional portfolio
@@ -43,7 +43,7 @@ Here's what you can do on Gigs Mint:
 Start exploring gigs and take your freelance career to the next level!
 
 Best regards,
-The Gigs Mint Team`);
+The Gudgig Team`);
   const [includeAdmins, setIncludeAdmins] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState<BroadcastResult[]>([]);
@@ -275,8 +275,8 @@ The Gigs Mint Team`);
             <Button
               variant="outline"
               onClick={() => {
-                setTitle('Welcome to Gigs Mint! 🎉');
-                setMessage(`Welcome to Gigs Mint! We're thrilled to have you join our professional freelancer marketplace.
+                setTitle('Welcome to Gudgig! 🎉');
+                setMessage(`Welcome to Gudgig! We're thrilled to have you join our professional freelancer marketplace.
 
 Get started by:
 • Completing your profile
@@ -285,7 +285,7 @@ Get started by:
 • Building your portfolio
 
 Happy freelancing!
-The Gigs Mint Team`);
+The Gudgig Team`);
               }}
               className="justify-start"
             >
@@ -297,7 +297,7 @@ The Gigs Mint Team`);
               variant="outline"
               onClick={() => {
                 setTitle('New Features Available! 🚀');
-                setMessage(`Exciting news! We've just launched new features on Gigs Mint:
+                setMessage(`Exciting news! We've just launched new features on Gudgig:
 
 ✨ Enhanced notification system
 🔔 Real-time push notifications
@@ -307,7 +307,7 @@ The Gigs Mint Team`);
 Update your app to enjoy these new features!
 
 Best regards,
-The Gigs Mint Team`);
+The Gudgig Team`);
               }}
               className="justify-start"
             >
@@ -319,7 +319,7 @@ The Gigs Mint Team`);
               variant="outline"
               onClick={() => {
                 setTitle('Thank You for Being Part of Our Community! 🙏');
-                setMessage(`Dear Gigs Mint Community,
+                setMessage(`Dear Gudgig Community,
 
 Thank you for being an integral part of our growing platform. Your success is our success!
 
@@ -328,7 +328,7 @@ We're constantly working to improve your experience and provide better opportuni
 Keep up the great work!
 
 With gratitude,
-The Gigs Mint Team`);
+The Gudgig Team`);
               }}
               className="justify-start"
             >

@@ -1,4 +1,4 @@
-// Mock payment service for Gigs Mint bids
+// Mock payment service for Gudgig bids
 
 export async function createPaymentIntent({ amountInPaise, currency = 'INR', metadata = {} }) {
   // Simulate a payment intent creation

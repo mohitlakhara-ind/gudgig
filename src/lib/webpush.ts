@@ -9,7 +9,7 @@ type VapidState = {
 
 declare global {
   // eslint-disable-next-line no-var
-  var __GIGSMINT_VAPID_STATE__: VapidState | undefined;
+  var __GUDGIG_VAPID_STATE__: VapidState | undefined;
 }
 
 const PLACEHOLDER_SNIPPETS = ['...', 'abc', 'xyz', 'yourdomain'];
@@ -32,8 +32,8 @@ const isValidVapidKey = (value: string) =>
   !looksLikePlaceholder(value);
 
 function bootstrapVapidState(): VapidState {
-  if (globalThis.__GIGSMINT_VAPID_STATE__) {
-    return globalThis.__GIGSMINT_VAPID_STATE__;
+  if (globalThis.__GUDGIG_VAPID_STATE__) {
+    return globalThis.__GUDGIG_VAPID_STATE__;
   }
 
   let publicKey = sanitize(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY) || sanitize(process.env.VAPID_PUBLIC_KEY);
@@ -57,7 +57,7 @@ function bootstrapVapidState(): VapidState {
         configured: false,
         source: 'invalid',
       };
-      globalThis.__GIGSMINT_VAPID_STATE__ = invalidState;
+      globalThis.__GUDGIG_VAPID_STATE__ = invalidState;
       return invalidState;
     }
   }
@@ -78,7 +78,7 @@ function bootstrapVapidState(): VapidState {
         configured: false,
         source: 'invalid',
       };
-      globalThis.__GIGSMINT_VAPID_STATE__ = invalidState;
+      globalThis.__GUDGIG_VAPID_STATE__ = invalidState;
       return invalidState;
     }
   } else {
@@ -94,7 +94,7 @@ function bootstrapVapidState(): VapidState {
     source: configured ? source : 'invalid',
   };
 
-  globalThis.__GIGSMINT_VAPID_STATE__ = state;
+  globalThis.__GUDGIG_VAPID_STATE__ = state;
   return state;
 }
 

@@ -74,7 +74,7 @@ export default function Hero() {
               <span className="text-foreground">Welcome to</span>
               <br />
               <span className="text-primary">
-                Gigsmint
+                Gudgig
               </span>
             </h1>
 

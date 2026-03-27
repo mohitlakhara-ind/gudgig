@@ -36,7 +36,7 @@ interface NotificationContextType {
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
-const BROADCAST_CHANNEL_NAME = 'gigsmint-notifications';
+const BROADCAST_CHANNEL_NAME = 'gudgig-notifications';
 
 type IncomingNotificationPayload = Partial<Notification> & {
   id?: string;

@@ -14,7 +14,7 @@ const createSavedJobs = async () => {
     console.log('✅ Connected to MongoDB');
 
     // Get a user and some jobs
-    const user = await User.findOne({ email: 'alice@gigsmint.com' });
+    const user = await User.findOne({ email: 'alice@gudgig.com' });
     const jobs = await Job.find().limit(3);
 
     if (!user) {

@@ -106,7 +106,7 @@ export default function HelpPage() {
     {
       id: '1',
       title: 'Getting Started Guide',
-      description: 'Complete guide to setting up your profile and finding your first job on Gigs Mint.',
+      description: 'Complete guide to setting up your profile and finding your first job on Gudgig.',
       category: 'Getting Started',
       readTime: '5 min read',
       popular: true
@@ -204,7 +204,7 @@ export default function HelpPage() {
       <div className="text-center space-y-4">
         <h1 className="text-3xl sm:text-4xl font-bold">Help & Support</h1>
         <p className="text-muted-foreground max-w-2xl mx-auto">
-          Find answers to your questions, learn best practices, and get the support you need to succeed on Gigs Mint.
+          Find answers to your questions, learn best practices, and get the support you need to succeed on Gudgig.
         </p>
       </div>
 
@@ -438,7 +438,7 @@ export default function HelpPage() {
                   <div className="space-y-3">
                     <div className="flex items-center gap-3">
                       <Mail className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm">support@gigsmint.com</span>
+                      <span className="text-sm">support@gudgig.com</span>
                     </div>
                     <div className="flex items-center gap-3">
                       <Phone className="h-4 w-4 text-muted-foreground" />
@@ -491,7 +491,7 @@ export default function HelpPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             <p className="text-sm text-muted-foreground">
-              Watch step-by-step video tutorials to learn how to use Gigs Mint effectively.
+              Watch step-by-step video tutorials to learn how to use Gudgig effectively.
             </p>
             <Button size="sm" variant="outline">
               <Video className="h-4 w-4 mr-2" />

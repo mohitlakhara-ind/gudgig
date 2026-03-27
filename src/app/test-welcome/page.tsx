@@ -81,11 +81,11 @@ export default function TestWelcomePage() {
             <div className="p-4 bg-muted/50 rounded-lg">
               <h4 className="font-medium mb-2">Message Preview:</h4>
               <div className="text-sm space-y-2">
-                <div className="font-medium">Title: Welcome to Gigs Mint! 🎉</div>
+                <div className="font-medium">Title: Welcome to Gudgig! 🎉</div>
                 <div className="text-muted-foreground">
-                  Welcome to Gigs Mint! We're excited to have you join our professional freelancer marketplace!
+                  Welcome to Gudgig! We're excited to have you join our professional freelancer marketplace!
                   <br /><br />
-                  Here's what you can do on Gigs Mint:
+                  Here's what you can do on Gudgig:
                   <br />• Browse and apply to amazing freelance opportunities
                   <br />• Connect with top-tier clients and employers
                   <br />• Build your professional portfolio
@@ -94,7 +94,7 @@ export default function TestWelcomePage() {
                   Start exploring gigs and take your freelance career to the next level!
                   <br /><br />
                   Best regards,
-                  <br />The Gigs Mint Team
+                  <br />The Gudgig Team
                 </div>
               </div>
             </div>

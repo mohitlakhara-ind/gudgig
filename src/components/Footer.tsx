@@ -56,9 +56,9 @@ export default function Footer() {
           <div className="lg:col-span-2">
             <div className="flex items-center space-x-2 mb-4">
               <div className="w-9 h-9 dark:bg-accent-foreground rounded-lg flex items-center justify-center">
-                <Image src="/logo.png" height={36} width={36} alt='gigsmint footer logo' />
+                <Image src="/logo.png" height={36} width={36} alt='gudgig footer logo' />
               </div>
-              <span className="text-xl font-bold">Gigsmint</span>
+              <span className="text-xl font-bold">Gudgig</span>
             </div>
             <p className="text-muted-foreground mb-6 leading-relaxed">
               Where opportunities meet talent, one lead at a time. A simple, transparent, and affordable platform connecting clients with freelancers.
@@ -68,7 +68,7 @@ export default function Footer() {
             <div className="space-y-2">
               <div className="flex items-center text-muted-foreground">
                 <Mail className="h-4 w-4 mr-2" />
-                <span>hello@gigsmint.com</span>
+                <span>hello@gudgig.com</span>
               </div>
               <div className="flex items-center text-muted-foreground">
                 <Phone className="h-4 w-4 mr-2" />
@@ -140,7 +140,7 @@ export default function Footer() {
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-6">
               <p className="text-muted-foreground text-sm">
-                © 2024 Gigsmint.com. All rights reserved.
+                © 2024 Gudgig.com. All rights reserved.
               </p>
               <div className="flex space-x-4">
                 {footerLinks.support.map((link) => (

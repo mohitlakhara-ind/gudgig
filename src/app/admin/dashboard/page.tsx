@@ -34,7 +34,7 @@ export default function AdminDashboardPage() {
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">Admin Dashboard</h1>
-            <p className="text-sm sm:text-base text-muted-foreground">Manage your Gigs Mint platform</p>
+            <p className="text-sm sm:text-base text-muted-foreground">Manage your Gudgig platform</p>
           </div>
           <Badge variant="outline" className="flex items-center gap-1 border-primary/40">
             <Crown className="h-3 w-3 text-primary" />
