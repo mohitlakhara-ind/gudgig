@@ -12,7 +12,6 @@ import {
   HelpCircle, 
   MessageCircle, 
   Mail, 
-  Phone, 
   BookOpen, 
   Video, 
   FileText,
@@ -247,16 +246,7 @@ export default function HelpPage() {
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-md transition-shadow cursor-pointer">
-          <CardContent className="p-6 text-center">
-            <Phone className="h-8 w-8 text-primary mx-auto mb-3" />
-            <h3 className="font-semibold mb-2">Phone Support</h3>
-            <p className="text-sm text-muted-foreground mb-3">Call us for urgent issues</p>
-            <Button size="sm" variant="outline" className="w-full">
-              Call Now
-            </Button>
-          </CardContent>
-        </Card>
+
       </div>
 
       <Tabs defaultValue="faq" className="w-full">
@@ -438,12 +428,9 @@ export default function HelpPage() {
                   <div className="space-y-3">
                     <div className="flex items-center gap-3">
                       <Mail className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm">support@gudgig.com</span>
+                      <span className="text-sm">info@gudgig.com</span>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <Phone className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm">+1 (555) 123-4567</span>
-                    </div>
+
                     <div className="flex items-center gap-3">
                       <Clock className="h-4 w-4 text-muted-foreground" />
                       <span className="text-sm">Mon-Fri 9AM-6PM EST</span>

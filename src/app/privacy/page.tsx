@@ -178,7 +178,7 @@ export default function PrivacyPage() {
                   <h2 className="text-2xl font-bold mb-3 text-foreground">6. User Rights</h2>
                   <div className="bg-muted/50 rounded-lg p-4 border border-border/50">
                     <p className="text-muted-foreground leading-relaxed text-base">
-                      You may request data correction or deletion via <a href="mailto:support@gudgig.com" className="text-primary hover:underline">support@gudgig.com</a>.
+                      You may request data correction or deletion via <a href="mailto:info@gudgig.com" className="text-primary hover:underline">info@gudgig.com</a>.
                     </p>
                   </div>
                 </section>

@@ -97,7 +97,7 @@ export default function ShippingPage() {
                       <h2 className="text-2xl font-bold mb-3 text-foreground">2. Delivery Time</h2>
                       <div className="bg-muted/50 rounded-lg p-4 border border-border/50">
                         <p className="text-muted-foreground leading-relaxed text-base">
-                          Access is immediate. Technical delays can be reported to <a href="mailto:support@gudgig.com" className="text-primary hover:underline">support@gudgig.com</a>.
+                          Access is immediate. Technical delays can be reported to <a href="mailto:info@gudgig.com" className="text-primary hover:underline">info@gudgig.com</a>.
                         </p>
                       </div>
                     </div>
@@ -130,7 +130,7 @@ export default function ShippingPage() {
                     <div className="bg-primary/5 rounded-lg p-4 border border-primary/20">
                       <p className="text-sm font-semibold text-foreground mb-2">Technical Support:</p>
                       <p className="text-muted-foreground leading-relaxed text-sm">
-                        If you experience any technical issues accessing your unlocked leads, please contact our support team at <a href="mailto:support@gudgig.com" className="text-primary hover:underline">support@gudgig.com</a> with your transaction ID. We typically respond within 24 hours.
+                        If you experience any technical issues accessing your unlocked leads, please contact our support team at <a href="mailto:info@gudgig.com" className="text-primary hover:underline">info@gudgig.com</a> with your transaction ID. We typically respond within 24 hours.
                       </p>
                     </div>
                   </div>

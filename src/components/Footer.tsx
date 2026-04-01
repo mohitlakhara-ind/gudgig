@@ -8,7 +8,6 @@ import {
   Instagram,
   Linkedin,
   Mail,
-  Phone,
   MapPin
 } from 'lucide-react';
 import Image from 'next/image';
@@ -68,15 +67,11 @@ export default function Footer() {
             <div className="space-y-2">
               <div className="flex items-center text-muted-foreground">
                 <Mail className="h-4 w-4 mr-2" />
-                <span>hello@gudgig.com</span>
-              </div>
-              <div className="flex items-center text-muted-foreground">
-                <Phone className="h-4 w-4 mr-2" />
-                <span>+1 (555) 123-4567</span>
+                <span>info@gudgig.com</span>
               </div>
               <div className="flex items-center text-muted-foreground">
                 <MapPin className="h-4 w-4 mr-2" />
-                <span>San Francisco, CA</span>
+                <span>India</span>
               </div>
             </div>
           </div>

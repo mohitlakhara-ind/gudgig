@@ -6,9 +6,9 @@ export async function GET() {
     const config = {
       platformName: 'Gudgig',
       platformDescription: 'Professional freelancer marketplace connecting talented freelancers with clients seeking quality work.',
-      contactEmail: 'support@gudgig.com',
-      contactPhone: '+1 (555) 123-4567',
-      address: '123 Business Street, Suite 100, City, State 12345',
+      contactEmail: 'info@gudgig.com',
+      contactPhone: '',
+      address: 'India',
       socialLinks: {
         twitter: 'https://twitter.com/gudgig',
         linkedin: 'https://linkedin.com/company/gudgig',

@@ -76,7 +76,7 @@ export default function RefundPage() {
                   
                   <div className="bg-primary/5 rounded-lg p-5 border border-primary/20">
                     <p className="text-foreground leading-relaxed text-base mb-3">
-                      <span className="font-semibold">Exception:</span> If a lead contains invalid or incorrect contact information, please report it within 24 hours of purchase at <a href="mailto:support@gudgig.com" className="text-primary hover:underline font-medium">support@gudgig.com</a>. Upon verification, we may offer a replacement lead or credit.
+                      <span className="font-semibold">Exception:</span> If a lead contains invalid or incorrect contact information, please report it within 24 hours of purchase at <a href="mailto:info@gudgig.com" className="text-primary hover:underline font-medium">info@gudgig.com</a>. Upon verification, we may offer a replacement lead or credit.
                     </p>
                     <div className="bg-muted/50 rounded-lg p-4 border border-border/50 mt-3">
                       <p className="text-sm font-semibold text-foreground mb-2">To Report Invalid Lead Information:</p>

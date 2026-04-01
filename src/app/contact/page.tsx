@@ -18,7 +18,7 @@ export default function Contact() {
       {
         "@type": "ContactPoint",
         "contactType": "customer service",
-        "email": "kapiketu@gmail.com",
+        "email": "info@gudgig.com",
         "availableLanguage": "English"
       }
     ]
@@ -54,7 +54,7 @@ export default function Contact() {
                       </div>
                       <div>
                         <h3 className="font-semibold text-foreground mb-1">Email</h3>
-                        <p className="text-muted-foreground">support@gudgig.com</p>
+                        <p className="text-muted-foreground">info@gudgig.com</p>
                         <p className="text-sm text-muted-foreground">We&apos;ll get back to you within 24 hours</p>
                         <p className="text-sm text-primary font-medium mt-1">For posting leads, please mention "Post Lead" in subject</p>
                       </div>
@@ -112,7 +112,7 @@ export default function Contact() {
                     Clients and businesses can contact our admin team to post verified leads on the platform. Our team will review your requirements and create a lead listing.
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    <strong className="text-foreground">Email:</strong> support@gudgig.com<br />
+                    <strong className="text-foreground">Email:</strong> info@gudgig.com<br />
                     <strong className="text-foreground">Subject:</strong> Post Lead Request
                   </p>
                 </div>
