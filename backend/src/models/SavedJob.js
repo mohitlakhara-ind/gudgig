@@ -9,7 +9,7 @@ const savedJobSchema = new mongoose.Schema({
   },
   jobId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Job',
+    ref: 'Gig',
     required: true,
     index: true
   },
@@ -45,7 +45,7 @@ savedJobSchema.index({ jobId: 1 });
 
 // Virtual for populated job data
 savedJobSchema.virtual('job', {
-  ref: 'Job',
+  ref: 'Gig',
   localField: 'jobId',
   foreignField: '_id',
   justOne: true

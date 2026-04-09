@@ -18,50 +18,50 @@ async function seed() {
     }
 
     // Try to find a few users to attach to testimonials
-    const alice = await User.findOne({ email: 'alice@gudgig.com' }).lean().catch(() => null);
-    const bob = await User.findOne({ email: 'bob@gudgig.com' }).lean().catch(() => null);
-    const john = await User.findOne({ email: 'john@techcorp.com' }).lean().catch(() => null);
+    const arjun = await User.findOne({ email: 'arjun@gudgig.com' }).lean().catch(() => null);
+    const priya = await User.findOne({ email: 'priya@gudgig.com' }).lean().catch(() => null);
+    const sanjay = await User.findOne({ email: 'sanjay@techventures.in' }).lean().catch(() => null);
 
     const samples = [
       {
-        user: alice?._id,
-        name: alice ? alice.name : 'Sarah Johnson',
-        role: 'Freelance Designer',
-        company: 'Design Studio',
+        user: arjun?._id,
+        name: arjun ? arjun.name : 'Arjun Mehta',
+        role: 'Full-Stack Developer',
+        company: 'Freelance',
         content: 'Gudgig helped me find consistent high-quality gigs. I unlocked contacts with confidence and landed two clients in a week.',
         rating: 5,
         approved: true
       },
       {
-        user: bob?._id,
-        name: bob ? bob.name : 'Michael Chen',
-        role: 'Software Developer',
-        company: 'Freelance',
+        user: priya?._id,
+        name: priya ? priya.name : 'Priya Sharma',
+        role: 'Graphic Designer',
+        company: 'CreativeFlow',
         content: 'The alerts are excellent — I get relevant gigs and the unlocking flow is quick. Highly recommended for freelancers.',
         rating: 5,
         approved: true
       },
       {
-        user: john?._id,
-        name: john ? john.name : 'John Smith',
+        user: sanjay?._id,
+        name: sanjay ? sanjay.name : 'Sanjay Kapoor',
         role: 'Hiring Manager',
-        company: 'TechCorp',
+        company: 'TechVentures',
         content: 'We hired two contractors through this platform. The dashboard and candidate previews made shortlisting easy.',
         rating: 5,
         approved: true
       },
       {
-        name: 'Emily Rodriguez',
+        name: 'Sneha Kulkarni',
         role: 'Marketing Manager',
-        company: 'BrandCo',
+        company: 'Digital Edge',
         content: 'Found talented freelancers quickly and the communication tools made onboarding painless.',
         rating: 5,
         approved: true
       },
       {
-        name: 'David Kim',
-        role: 'Content Writer',
-        company: 'Writesmith',
+        name: 'Rahul Verma',
+        role: 'Technical Writer',
+        company: 'WordSmith India',
         content: 'I landed a steady client via Gudgig and the platform fees are very reasonable for the value.',
         rating: 5,
         approved: true

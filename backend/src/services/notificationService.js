@@ -2,6 +2,7 @@ import User from '../models/User.js';
 import Job from '../models/Job.js';
 import Notification from '../models/Notification.js';
 import NotificationQueue from '../models/NotificationQueue.js';
+import { wrapInBaseLayout } from '../utils/mailTemplates.js';
 
 class NotificationService {
   constructor() {
@@ -377,108 +378,112 @@ class NotificationService {
 
   // Template system for compliance-required notifications
   jobApplicationReceivedTemplate(data) {
+    const subject = `Bid Received - ${data.jobTitle}`;
+    const content = `
+      <p>Your bid for <strong>${data.jobTitle}</strong> at <strong>${data.companyName}</strong> has been received.</p>
+      <p><strong>Bid ID:</strong> ${data.applicationId}</p>
+      <p>You will be notified of any updates regarding your bid status.</p>
+    `;
     return {
-      subject: `Bid Received - ${data.jobTitle}`,
-      html: `
-        <h2>Bid Received</h2>
-        <p>Dear ${data.applicantName},</p>
-        <p>Your bid for <strong>${data.jobTitle}</strong> at <strong>${data.companyName}</strong> has been received.</p>
-        <p>Bid ID: ${data.applicationId}</p>
-        <p>You will be notified of any updates regarding your bid status.</p>
-        <br>
-        <p>Best regards,<br>The MicroJobs Team</p>
-      `,
-      text: `Bid Received
-
-Dear ${data.applicantName},
-
-Your bid for ${data.jobTitle} at ${data.companyName} has been received.
-Bid ID: ${data.applicationId}
-
-You will be notified of any updates.
-
-Best regards,
-The MicroJobs Team`
+      subject,
+      html: wrapInBaseLayout({
+        title: 'Bid Received',
+        recipientName: data.applicantName,
+        content
+      }),
+      text: `Bid Received\n\nDear ${data.applicantName},\n\nYour bid for ${data.jobTitle} at ${data.companyName} has been received.\nBid ID: ${data.applicationId}\n\nYou will be notified of any updates.`
     };
   }
 
   interviewScheduledTemplate(data) {
+    const subject = `Interview Scheduled - ${data.jobTitle}`;
+    const content = `
+      <p>Congratulations! You have been selected for an interview.</p>
+      <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <p style="margin: 5px 0;"><strong>Position:</strong> ${data.jobTitle}</p>
+        <p style="margin: 5px 0;"><strong>Company:</strong> ${data.companyName}</p>
+        <p style="margin: 5px 0;"><strong>Date & Time:</strong> ${data.interviewDate}</p>
+        <p style="margin: 5px 0;"><strong>Location:</strong> ${data.location}</p>
+        <p style="margin: 5px 0;"><strong>Interview Type:</strong> ${data.interviewType}</p>
+        ${data.additionalInfo ? `<p style="margin: 5px 0;"><strong>Additional Info:</strong> ${data.additionalInfo}</p>` : ''}
+      </div>
+      <p>Please confirm your attendance by replying to this email or through your dashboard.</p>
+    `;
     return {
-      subject: `Interview Scheduled - ${data.jobTitle}`,
-      html: `
-        <h2>Interview Scheduled</h2>
-        <p>Congratulations! You have been selected for an interview.</p>
-        <p><strong>Position:</strong> ${data.jobTitle}</p>
-        <p><strong>Company:</strong> ${data.companyName}</p>
-        <p><strong>Date & Time:</strong> ${data.interviewDate}</p>
-        <p><strong>Location:</strong> ${data.location}</p>
-        <p><strong>Interview Type:</strong> ${data.interviewType}</p>
-        ${data.additionalInfo ? `<p><strong>Additional Information:</strong> ${data.additionalInfo}</p>` : ''}
-        <br>
-        <p>Please confirm your attendance by replying to this email.</p>
-      `,
-      text: `Interview Scheduled
-
-Congratulations! You have been selected for an interview.
-
-Position: ${data.jobTitle}
-Company: ${data.companyName}
-Date & Time: ${data.interviewDate}
-Location: ${data.location}
-Interview Type: ${data.interviewType}
-
-Please confirm your attendance.`
+      subject,
+      html: wrapInBaseLayout({
+        title: 'Interview Scheduled',
+        recipientName: data.applicantName || 'Freelancer',
+        content
+      }),
+      text: `Interview Scheduled\n\nCongratulations! You have been selected for an interview.\n\nPosition: ${data.jobTitle}\nCompany: ${data.companyName}\nDate & Time: ${data.interviewDate}\nLocation: ${data.location}\nInterview Type: ${data.interviewType}\n\nPlease confirm your attendance.`
     };
   }
 
   applicationStatusUpdateTemplate(data) {
+    const subject = `Application Status Update - ${data.jobTitle}`;
+    const content = `
+      <p>Your application status for <strong>${data.jobTitle}</strong> has been updated.</p>
+      <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #0A66C2;">
+        <p style="margin: 0;"><strong>New Status:</strong> ${data.status}</p>
+        ${data.message ? `<p style="margin-top: 10px; color: #64748b; font-style: italic;">"${data.message}"</p>` : ''}
+      </div>
+    `;
     return {
-      subject: `Application Status Update - ${data.jobTitle}`,
-      html: `
-        <h2>Application Status Update</h2>
-        <p>Dear ${data.applicantName},</p>
-        <p>Your application status for <strong>${data.jobTitle}</strong> has been updated.</p>
-        <p><strong>New Status:</strong> ${data.status}</p>
-        ${data.message ? `<p><strong>Message:</strong> ${data.message}</p>` : ''}
-        <br>
-        <p>Thank you for using our platform.</p>
-      `,
-      text: `Application Status Update
-
-Dear ${data.applicantName},
-
-Your application status for ${data.jobTitle} has been updated.
-New Status: ${data.status}
-
-Thank you for using our platform.`
+      subject,
+      html: wrapInBaseLayout({
+        title: 'Application Update',
+        recipientName: data.applicantName,
+        content,
+        actionUrl: 'https://gudgig.com/dashboard/applications',
+        actionText: 'View Application'
+      }),
+      text: `Application Status Update\n\nDear ${data.applicantName},\n\nYour application status for ${data.jobTitle} has been updated.\nNew Status: ${data.status}\n\nView details at: https://gudgig.com/dashboard/applications`
     };
   }
 
   // Subscription templates
   subscriptionActivatedTemplate(data) {
+    const subject = 'Subscription Activated - Welcome to Premium';
+    const content = `
+      <p>Your subscription is now active. You have unlocked all premium features!</p>
+      <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <p style="margin: 5px 0;"><strong>Plan:</strong> ${data.planName}</p>
+        <p style="margin: 5px 0;"><strong>Billing Cycle:</strong> ${data.billingCycle}</p>
+        <p style="margin: 5px 0;"><strong>Valid Until:</strong> ${data.currentPeriodEnd}</p>
+      </div>
+    `;
     return {
-      subject: 'Subscription Activated',
-      html: `
-        <h2>Welcome to ${data.planName}</h2>
-        <p>Your subscription is now active.</p>
-        <p><strong>Plan:</strong> ${data.planName}</p>
-        <p><strong>Billing Cycle:</strong> ${data.billingCycle}</p>
-        <p><strong>Valid Until:</strong> ${data.currentPeriodEnd}</p>
-      `,
+      subject,
+      html: wrapInBaseLayout({
+        title: 'Subscription Active',
+        recipientName: data.userName,
+        content,
+        actionUrl: 'https://gudgig.com/dashboard/subscription',
+        actionText: 'Manage Subscription'
+      }),
       text: `Subscription Activated\n\nPlan: ${data.planName}\nBilling Cycle: ${data.billingCycle}\nValid Until: ${data.currentPeriodEnd}`
     };
   }
 
   subscriptionPaymentFailedTemplate(data) {
+    const subject = 'Payment Failed - Action Required';
+    const content = `
+      <p>We couldn't process your subscription payment. Please update your payment method to avoid service interruption.</p>
+      <div style="background-color: #fef2f2; padding: 20px; border-radius: 8px; margin: 20px 0; border: 1px solid #fecaca;">
+        <p style="margin: 0; color: #991b1b;"><strong>Reason:</strong> ${data.reason || 'Unknown error'}</p>
+      </div>
+    `;
     return {
-      subject: 'Payment Failed - Action Required',
-      html: `
-        <h2>Payment Failed</h2>
-        <p>We couldn't process your subscription payment.</p>
-        <p><strong>Reason:</strong> ${data.reason || 'Unknown'}</p>
-        <p>Please update your payment method to avoid service interruption.</p>
-      `,
-      text: `Payment Failed\n\nReason: ${data.reason || 'Unknown'}\nPlease update your payment method.`
+      subject,
+      html: wrapInBaseLayout({
+        title: 'Payment Failed',
+        recipientName: data.userName,
+        content,
+        actionUrl: 'https://gudgig.com/dashboard/billing',
+        actionText: 'Update Payment Method'
+      }),
+      text: `Payment Failed\n\nReason: ${data.reason || 'Unknown'}\nPlease update your payment method at: https://gudgig.com/dashboard/billing`
     };
   }
 
@@ -506,27 +511,26 @@ Thank you for using our platform.`
   }
 
   jobPostedConfirmationTemplate(data) {
+    const subject = 'Gig Posted Successfully on GudGig';
+    const content = `
+      <p>Your gig posting has been successfully published and is now visible to freelancers.</p>
+      <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <p style="margin: 5px 0;"><strong>Gig Title:</strong> ${data.jobTitle}</p>
+        <p style="margin: 5px 0;"><strong>Gig ID:</strong> ${data.jobId}</p>
+        <p style="margin: 5px 0;"><strong>Posted on:</strong> ${data.postedDate}</p>
+      </div>
+      <p>Bids from qualified freelancers will appear in your employer dashboard shortly.</p>
+    `;
     return {
-      subject: 'MicroJob Posted Successfully',
-      html: `
-        <h2>MicroJob Posted Successfully</h2>
-        <p>Your microjob posting has been published!</p>
-        <p><strong>MicroJob Title:</strong> ${data.jobTitle}</p>
-        <p><strong>ID:</strong> ${data.jobId}</p>
-        <p><strong>Posted on:</strong> ${data.postedDate}</p>
-        <br>
-        <p>You can view and manage your microjob in your employer dashboard.</p>
-        <p>Bids will appear in your dashboard as freelancers bid.</p>
-      `,
-      text: `MicroJob Posted Successfully
-
-Your microjob posting has been published!
-
-MicroJob Title: ${data.jobTitle}
-ID: ${data.jobId}
-Posted on: ${data.postedDate}
-
-You can manage your microjob in the employer dashboard.`
+      subject,
+      html: wrapInBaseLayout({
+        title: 'Gig Published',
+        recipientName: data.userName,
+        content,
+        actionUrl: `https://gudgig.com/dashboard/gigs/${data.jobId}`,
+        actionText: 'View Dashboard'
+      }),
+      text: `Gig Posted Successfully\n\nYour gig "${data.jobTitle}" is live. Manage it here: https://gudgig.com/dashboard/gigs/${data.jobId}`
     };
   }
 
@@ -544,37 +548,56 @@ You can manage your microjob in the employer dashboard.`
   }
 
   gigUnlockedTemplate(data) {
+    const subject = `Gig Unlocked: ${data.jobTitle}`;
+    const content = `
+      <p>You have successfully unlocked the contact details for <strong>${data.jobTitle}</strong>.</p>
+      <p>You can now view the full gig details and contact the poster directly.</p>
+    `;
     return {
-      subject: `Gig Unlocked: ${data.jobTitle}`,
-      html: `
-        <h2>Gig Unlocked</h2>
-        <p>You have successfully unlocked contact details for <strong>${data.jobTitle}</strong>.</p>
-        <p>You can view the gig details and contact the poster directly here: <a href="https://gudgig.com/gigs/${data.gigId}">https://gudgig.com/gigs/${data.gigId}</a></p>
-      `,
-      text: `You have successfully unlocked contact details for ${data.jobTitle} and can view it here: https://gudgig.com/gigs/${data.gigId}`
+      subject,
+      html: wrapInBaseLayout({
+        title: 'Gig Unlocked',
+        content,
+        actionUrl: `https://gudgig.com/gigs/${data.gigId}`,
+        actionText: 'View Gig Details'
+      }),
+      text: `You have successfully unlocked contact details for ${data.jobTitle}. View it here: https://gudgig.com/gigs/${data.gigId}`
     };
   }
 
   contactUnlockedTemplate(data) {
+    const subject = `Contact Unlocked for Your Gig: ${data.jobTitle}`;
+    const content = `
+      <p>A user has recently unlocked the contact details for your gig <strong>${data.jobTitle}</strong>.</p>
+      <p>Stay tuned for potential inquiries or bids!</p>
+    `;
     return {
-      subject: `Contact Unlocked for Your Gig: ${data.jobTitle}`,
-      html: `
-        <h2>Contact Unlocked</h2>
-        <p>A user has unlocked contact details for your gig <strong>${data.jobTitle}</strong>.</p>
-        <p>User ID: ${data.buyerId}</p>
-      `,
-      text: `A user unlocked contact details for ${data.jobTitle}. User ID: ${data.buyerId}`
+      subject,
+      html: wrapInBaseLayout({
+        title: 'Interest in Your Gig',
+        content,
+        actionUrl: `https://gudgig.com/dashboard/gigs/${data.gigId}`,
+        actionText: 'View Gig'
+      }),
+      text: `A user unlocked contact details for your gig: ${data.jobTitle}.`
     };
   }
 
   gigUpdatedTemplate(data) {
+    const subject = `Gig Updated: ${data.jobTitle}`;
+    const content = `
+      <p>The gig <strong>${data.jobTitle}</strong> has been updated by the poster.</p>
+      <p>Check the latest details to see if they affect your current bid or interest.</p>
+    `;
     return {
-      subject: `Gig Updated: ${data.jobTitle}`,
-      html: `
-        <h2>Gig Updated</h2>
-        <p>The gig <strong>${data.jobTitle}</strong> has been updated. Check changes in your saved gigs.</p>
-      `,
-      text: `Gig updated: ${data.jobTitle}`
+      subject,
+      html: wrapInBaseLayout({
+        title: 'Gig Update',
+        content,
+        actionUrl: `https://gudgig.com/gigs/${data.gigId}`,
+        actionText: 'View Latest Details'
+      }),
+      text: `Gig updated: ${data.jobTitle}. Check changes: https://gudgig.com/gigs/${data.gigId}`
     };
   }
 
@@ -595,67 +618,65 @@ You can manage your microjob in the employer dashboard.`
   }
 
   passwordResetTemplate(data) {
+    const subject = 'Password Reset Request';
+    const content = `
+      <p>You requested a password reset for your GudGig account. Click the button below to set a new password.</p>
+      <p style="color: #64748b; font-size: 14px;">This link will expire in 60 minutes for security reasons.</p>
+    `;
     return {
-      subject: 'Password Reset Request',
-      html: `
-        <h2>Password Reset</h2>
-        <p>You requested a password reset for your account.</p>
-        <p>Click the link below to reset your password:</p>
-        <p><a href="${data.resetLink}">Reset Password</a></p>
-        <p>This link will expire in 10 minutes.</p>
-        <p>If you didn't request this reset, please ignore this email.</p>
-      `,
-      text: `Password Reset
-
-You requested a password reset.
-Reset link: ${data.resetLink}
-This link expires in 10 minutes.
-
-If you didn't request this, ignore this email.`
+      subject,
+      html: wrapInBaseLayout({
+        title: 'Password Reset',
+        content,
+        actionUrl: data.resetLink,
+        actionText: 'Reset Password'
+      }),
+      text: `Password Reset Request\n\nClick here to reset your password: ${data.resetLink}\n\nIf you didn't request this, please ignore this email.`
     };
   }
 
   securityAlertTemplate(data) {
+    const subject = 'Security Alert - GudGig Account Activity';
+    const content = `
+      <p>We detected unusual activity on your account. Please review the details below:</p>
+      <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <p style="margin: 5px 0;"><strong>Activity:</strong> ${data.activity}</p>
+        <p style="margin: 5px 0;"><strong>Time:</strong> ${data.timestamp}</p>
+        <p style="margin: 5px 0;"><strong>Location:</strong> ${data.location}</p>
+      </div>
+      <p>If this was you, no action is needed. If this wasn't you, please change your password immediately.</p>
+    `;
     return {
-      subject: 'Security Alert - Account Activity',
-      html: `
-        <h2>Security Alert</h2>
-        <p>We detected unusual activity on your account.</p>
-        <p><strong>Activity:</strong> ${data.activity}</p>
-        <p><strong>Time:</strong> ${data.timestamp}</p>
-        <p><strong>Location:</strong> ${data.location}</p>
-        <br>
-        <p>If this was you, no action is needed.</p>
-        <p>If this wasn't you, please change your password immediately and contact support.</p>
-      `,
-      text: `Security Alert
-
-Unusual activity detected: ${data.activity}
-Time: ${data.timestamp}
-Location: ${data.location}
-
-If this wasn't you, change your password immediately.`
+      subject,
+      html: wrapInBaseLayout({
+        title: 'Security Alert',
+        content,
+        actionUrl: 'https://gudgig.com/settings/security',
+        actionText: 'Secure My Account'
+      }),
+      text: `Security Alert\n\nUnusual activity detected: ${data.activity}\nTime: ${data.timestamp}\nLocation: ${data.location}\n\nIf this wasn't you, secure your account at: https://gudgig.com/settings/security`
     };
   }
 
   otpTemplate(data) {
+    const subject = `${data.otp} is your GudGig verification code`;
+    const content = `
+      <p>Use the following one-time password to continue with <strong>${data.purpose}</strong>.</p>
+      <div class="otp-capsule">
+        <span class="otp-code">${data.otp}</span>
+      </div>
+      <p style="text-align: center; color: #64748b; font-size: 14px;">
+        Valid for 10 minutes. If you didn't request this, please ignore this email.
+      </p>
+    `;
     return {
-      subject: 'Your OTP Code - MicroJobs',
-      html: `
-        <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-          <h2 style="color: #111;">Your OTP Code</h2>
-          <p>Hello${data.recipientName ? ` ${data.recipientName}` : ''},</p>
-          <p>Use the following one-time password to continue:</p>
-          <div style="margin: 16px 0; padding: 16px; background: #f5f5f5; border-radius: 8px; text-align: center;">
-            <span style="font-size: 28px; font-weight: bold; letter-spacing: 6px;">${data.otp}</span>
-          </div>
-          <p>This code is for <strong>${data.purpose}</strong> and will expire in <strong>10 minutes</strong>.</p>
-          <p style="color: #555;">If you didn't request this code, you can safely ignore this email.</p>
-          <br>
-          <p>— MicroJobs Team</p>
-        </div>
-      `,
-      text: `Your OTP Code - MicroJobs\n\nCode: ${data.otp}\nPurpose: ${data.purpose}\nExpires: 10 minutes\n\nIf you didn't request this, ignore this message.`
+      subject,
+      html: wrapInBaseLayout({
+        title: 'Security Verification',
+        recipientName: data.recipientName,
+        content
+      }),
+      text: `Your GudGig OTP code is: ${data.otp}. Purpose: ${data.purpose}. Expires in 10 minutes.`
     };
   }
 

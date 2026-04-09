@@ -40,7 +40,7 @@ const seedDatabase = async () => {
     // Create admin user
     const adminUser = await User.create({
       name: 'Admin User',
-      email: 'admin@gudgig.com',
+      email: 'info@gudgig.com',
       password: 'Admin123!',
       role: 'admin',
       isEmailVerified: true,
@@ -75,7 +75,7 @@ const seedDatabase = async () => {
     console.log(`👔 Created ${employers.length} employer users`);
 
     // AdminSettings with bid fee options
-    const settings = await AdminSettings.create({ key: 'gg-config', bidFeeOptions: [1, 5, 10, 20], currentBidFee: 10 });
+    const settings = await AdminSettings.create({ key: 'gg-config', bidFeeOptions: [50, 100, 200, 500], currentBidFee: 100 });
     console.log('⚙️  Created AdminSettings');
 
     // Sample jobs across 7 categories
@@ -159,7 +159,7 @@ const seedDatabase = async () => {
       [...sampleJobs, ...extraJobs].map(j => ({
         ...j,
         createdBy: adminUser._id,
-        budget: Math.floor(200 + Math.random() * 1500),
+        budget: Math.floor(15000 + Math.random() * 100000),
         location: 'Remote',
         experienceLevel: ['any', 'junior', 'mid', 'senior'][Math.floor(Math.random() * 4)],
         skills: (j.requirements || []).map(r => r.toLowerCase())
@@ -181,9 +181,9 @@ const seedDatabase = async () => {
           { name: 'MongoDB', level: 'intermediate', yearsOfExperience: 3 }
         ],
         primarySkills: ['JavaScript', 'React', 'Node.js'],
-        hourlyRate: { min: 30, max: 50, currency: 'USD' },
-        location: { country: 'USA', city: 'San Francisco', timezone: 'PST' },
-        languages: [{ language: 'English', proficiency: 'native' }]
+        hourlyRate: { min: 800, max: 1500, currency: 'INR' },
+        location: { country: 'India', city: 'Bangalore', timezone: 'IST' },
+        languages: [{ language: 'English', proficiency: 'fluent' }, { language: 'Hindi', proficiency: 'native' }]
       },
       {
         userId: freelancers[1]._id,
@@ -197,8 +197,8 @@ const seedDatabase = async () => {
           { name: 'Logo Design', level: 'expert', yearsOfExperience: 5 }
         ],
         primarySkills: ['Logo Design', 'Brand Design', 'Adobe Creative Suite'],
-        hourlyRate: { min: 25, max: 40, currency: 'USD' },
-        location: { country: 'USA', city: 'Los Angeles', timezone: 'PST' }
+        hourlyRate: { min: 500, max: 1200, currency: 'INR' },
+        location: { country: 'India', city: 'Mumbai', timezone: 'IST' }
       },
       {
         userId: freelancers[2]._id,
@@ -212,8 +212,8 @@ const seedDatabase = async () => {
           { name: 'Research', level: 'expert', yearsOfExperience: 5 }
         ],
         primarySkills: ['Content Writing', 'SEO', 'Copywriting'],
-        hourlyRate: { min: 20, max: 35, currency: 'USD' },
-        location: { country: 'USA', city: 'New York', timezone: 'EST' }
+        hourlyRate: { min: 400, max: 1000, currency: 'INR' },
+        location: { country: 'India', city: 'Delhi', timezone: 'IST' }
       },
       {
         userId: freelancers[3]._id,
@@ -227,8 +227,8 @@ const seedDatabase = async () => {
           { name: 'Community Management', level: 'expert', yearsOfExperience: 3 }
         ],
         primarySkills: ['Social Media Marketing', 'Content Creation', 'Analytics'],
-        hourlyRate: { min: 20, max: 35, currency: 'USD' },
-        location: { country: 'USA', city: 'Austin', timezone: 'CST' }
+        hourlyRate: { min: 400, max: 1000, currency: 'INR' },
+        location: { country: 'India', city: 'Hyderabad', timezone: 'IST' }
       },
       {
         userId: freelancers[4]._id,
@@ -242,8 +242,8 @@ const seedDatabase = async () => {
           { name: 'Analytics', level: 'expert', yearsOfExperience: 3 }
         ],
         primarySkills: ['SEO', 'Technical SEO', 'Link Building'],
-        hourlyRate: { min: 25, max: 40, currency: 'USD' },
-        location: { country: 'USA', city: 'Seattle', timezone: 'PST' }
+        hourlyRate: { min: 600, max: 1400, currency: 'INR' },
+        location: { country: 'India', city: 'Pune', timezone: 'IST' }
       },
       {
         userId: freelancers[5]._id,
@@ -257,8 +257,8 @@ const seedDatabase = async () => {
           { name: 'Firebase', level: 'expert', yearsOfExperience: 3 }
         ],
         primarySkills: ['React Native', 'Mobile Development', 'Firebase'],
-        hourlyRate: { min: 35, max: 55, currency: 'USD' },
-        location: { country: 'USA', city: 'Chicago', timezone: 'CST' }
+        hourlyRate: { min: 1000, max: 2000, currency: 'INR' },
+        location: { country: 'India', city: 'Chennai', timezone: 'IST' }
       },
       {
         userId: freelancers[6]._id,
@@ -272,8 +272,8 @@ const seedDatabase = async () => {
           { name: 'C#', level: 'expert', yearsOfExperience: 6 }
         ],
         primarySkills: ['Unity', 'Game Design', 'Level Design'],
-        hourlyRate: { min: 30, max: 50, currency: 'USD' },
-        location: { country: 'USA', city: 'Boston', timezone: 'EST' }
+        hourlyRate: { min: 800, max: 1800, currency: 'INR' },
+        location: { country: 'India', city: 'Gurgaon', timezone: 'IST' }
       },
       {
         userId: freelancers[7]._id,
@@ -287,8 +287,8 @@ const seedDatabase = async () => {
           { name: 'Payment Integration', level: 'expert', yearsOfExperience: 4 }
         ],
         primarySkills: ['Shopify', 'WooCommerce', 'E-commerce'],
-        hourlyRate: { min: 30, max: 50, currency: 'USD' },
-        location: { country: 'USA', city: 'Miami', timezone: 'EST' }
+        hourlyRate: { min: 800, max: 1800, currency: 'INR' },
+        location: { country: 'India', city: 'Ahmedabad', timezone: 'IST' }
       },
       {
         userId: freelancers[8]._id,
@@ -302,8 +302,8 @@ const seedDatabase = async () => {
           { name: 'Conversion Optimization', level: 'expert', yearsOfExperience: 4 }
         ],
         primarySkills: ['Digital Marketing', 'Growth Marketing', 'Analytics'],
-        hourlyRate: { min: 35, max: 60, currency: 'USD' },
-        location: { country: 'USA', city: 'Denver', timezone: 'MST' }
+        hourlyRate: { min: 1200, max: 2500, currency: 'INR' },
+        location: { country: 'India', city: 'Kolkata', timezone: 'IST' }
       }
     ]);
     console.log(`👤 Created ${freelancerProfiles.length} freelancer profiles`);
@@ -320,7 +320,7 @@ const seedDatabase = async () => {
             name: 'basic',
             title: 'Basic Website',
             description: 'Simple 3-page website with responsive design',
-            price: 300,
+            price: 15000,
             deliveryTime: 7,
             revisions: 2,
             features: ['3 pages', 'Responsive design', 'Basic SEO', 'Contact form']
@@ -329,7 +329,7 @@ const seedDatabase = async () => {
             name: 'standard',
             title: 'Standard Website',
             description: 'Professional website with admin panel',
-            price: 600,
+            price: 35000,
             deliveryTime: 14,
             revisions: 3,
             features: ['Up to 7 pages', 'Admin panel', 'Database integration', 'Advanced SEO']
@@ -338,7 +338,7 @@ const seedDatabase = async () => {
             name: 'premium',
             title: 'Premium Website',
             description: 'Full-featured web application with custom features',
-            price: 1200,
+            price: 85000,
             deliveryTime: 21,
             revisions: 5,
             features: ['Unlimited pages', 'Custom features', 'API integration', 'Performance optimization']
@@ -346,7 +346,7 @@ const seedDatabase = async () => {
         },
         createdBy: freelancers[0]._id,
         status: 'active',
-        startingPrice: 300
+        startingPrice: 15000
       },
       {
         title: 'I will design a professional logo and brand identity',
@@ -358,7 +358,7 @@ const seedDatabase = async () => {
             name: 'basic',
             title: 'Logo Only',
             description: 'Professional logo design with basic concepts',
-            price: 150,
+            price: 8000,
             deliveryTime: 5,
             revisions: 3,
             features: ['3 logo concepts', 'High-res files', 'Commercial license']
@@ -367,7 +367,7 @@ const seedDatabase = async () => {
             name: 'standard',
             title: 'Logo + Brand Colors',
             description: 'Logo design with brand color palette',
-            price: 300,
+            price: 15000,
             deliveryTime: 7,
             revisions: 4,
             features: ['5 logo concepts', 'Color palette', 'Style guide', 'Multiple formats']
@@ -376,7 +376,7 @@ const seedDatabase = async () => {
             name: 'premium',
             title: 'Complete Brand Identity',
             description: 'Full brand identity package with guidelines',
-            price: 500,
+            price: 30000,
             deliveryTime: 10,
             revisions: 5,
             features: ['Complete brand identity', 'Business card design', 'Letterhead', 'Brand guidelines']
@@ -384,7 +384,7 @@ const seedDatabase = async () => {
         },
         createdBy: freelancers[1]._id,
         status: 'active',
-        startingPrice: 150
+        startingPrice: 8000
       },
       {
         title: 'I will write SEO-optimized content for your website or blog',
@@ -396,7 +396,7 @@ const seedDatabase = async () => {
             name: 'basic',
             title: '1 Article (500 words)',
             description: 'One SEO-optimized article with keyword research',
-            price: 50,
+            price: 4000,
             deliveryTime: 3,
             revisions: 2,
             features: ['500 words', 'Keyword research', 'SEO optimization', 'Engaging content']
@@ -405,7 +405,7 @@ const seedDatabase = async () => {
             name: 'standard',
             title: '3 Articles (500 words each)',
             description: 'Three SEO-optimized articles with images',
-            price: 120,
+            price: 10000,
             deliveryTime: 7,
             revisions: 2,
             features: ['1500 words total', 'Meta descriptions', 'Image suggestions', 'Content calendar']
@@ -414,7 +414,7 @@ const seedDatabase = async () => {
             name: 'premium',
             title: '5 Articles + Content Strategy',
             description: 'Five articles with complete content strategy',
-            price: 200,
+            price: 18000,
             deliveryTime: 10,
             revisions: 3,
             features: ['2500 words total', 'Content strategy', 'Competitor analysis', 'Performance tracking']
@@ -422,7 +422,7 @@ const seedDatabase = async () => {
         },
         createdBy: freelancers[2]._id,
         status: 'active',
-        startingPrice: 50
+        startingPrice: 4000
       },
       {
         title: 'I will manage your brand on Instagram and TikTok',
@@ -450,7 +450,7 @@ const seedDatabase = async () => {
         },
         createdBy: freelancers[4]._id,
         status: 'active',
-        startingPrice: 120
+        startingPrice: 5000
       }
     ]);
     console.log(`🛍️ Created ${services.length} services`);
@@ -462,200 +462,200 @@ const seedDatabase = async () => {
 
     const bids = await Bid.insertMany([
       {
-        jobId: jobs[0]._id,
+        gigId: jobs[0]._id,
         userId: freelancers[0]._id,
-        quotation: 'I can deliver this project in 2 weeks for $800',
+        quotation: 'I can deliver this project in 2 weeks for ₹60,000',
         proposal: 'I have extensive experience in e-commerce development and can create exactly what you need.',
         attachments: [],
-        bidFeePaid: 10,
+        bidFeePaid: 500,
         paymentStatus: 'succeeded',
         createdAt: lastMonth,
         contactDetails: {
-          bidderContact: { email: freelancers[0].email, phone: freelancers[0].phone },
-          posterContact: { email: adminUser.email, phone: adminUser.phone }
+          bidderContact: { name: freelancers[0].name, email: freelancers[0].email, phone: freelancers[0].phone },
+          posterContact: { name: adminUser.name, email: adminUser.email, phone: adminUser.phone }
         }
       },
       {
-        jobId: jobs[1]._id,
+        gigId: jobs[1]._id,
         userId: freelancers[1]._id,
-        quotation: 'Professional logo design for $300',
+        quotation: 'Professional logo design for ₹15,000',
         proposal: 'I specialize in brand identity and will create a memorable logo for your startup.',
-        bidFeePaid: 10,
+        bidFeePaid: 500,
         paymentStatus: 'pending',
         createdAt: startOfThisMonth,
         contactDetails: {
-          bidderContact: { email: freelancers[1].email, phone: freelancers[1].phone },
-          posterContact: { email: adminUser.email, phone: adminUser.phone }
+          bidderContact: { name: freelancers[1].name, email: freelancers[1].email, phone: freelancers[1].phone },
+          posterContact: { name: adminUser.name, email: adminUser.email, phone: adminUser.phone }
         }
       },
       {
-        jobId: jobs[2]._id,
+        gigId: jobs[2]._id,
         userId: freelancers[2]._id,
-        quotation: 'SEO content package for $400',
+        quotation: 'SEO content package for ₹25,000',
         proposal: 'I will write engaging, SEO-optimized content that ranks well and converts readers.',
-        bidFeePaid: 10,
+        bidFeePaid: 500,
         paymentStatus: 'failed',
         createdAt: twoMonthsAgo,
         contactDetails: {
-          bidderContact: { email: freelancers[2].email, phone: freelancers[2].phone },
-          posterContact: { email: adminUser.email, phone: adminUser.phone }
+          bidderContact: { name: freelancers[2].name, email: freelancers[2].email, phone: freelancers[2].phone },
+          posterContact: { name: adminUser.name, email: adminUser.email, phone: adminUser.phone }
         }
       },
       {
-        jobId: jobs[3]._id,
+        gigId: jobs[3]._id,
         userId: freelancers[3]._id,
-        quotation: 'Social media monthly management for $500',
+        quotation: 'Social media monthly management for ₹40,000',
         proposal: 'End-to-end content planning, posting, and engagement with analytics reports.',
-        bidFeePaid: 10,
+        bidFeePaid: 500,
         paymentStatus: 'succeeded',
         createdAt: new Date(),
         contactDetails: {
-          bidderContact: { email: freelancers[3].email, phone: freelancers[3].phone },
-          posterContact: { email: adminUser.email, phone: adminUser.phone }
+          bidderContact: { name: freelancers[3].name, email: freelancers[3].email, phone: freelancers[3].phone },
+          posterContact: { name: adminUser.name, email: adminUser.email, phone: adminUser.phone }
         }
       }
       ,
       {
-        jobId: jobs[4]._id,
+        gigId: jobs[4]._id,
         userId: freelancers[4]._id,
-        quotation: 'I can grow followers by 20% this month for $400',
+        quotation: 'I can grow followers by 20% this month for ₹30,000',
         proposal: 'Content calendar, reels, and community management to drive growth.',
-        bidFeePaid: 10,
+        bidFeePaid: 500,
         paymentStatus: 'pending',
         createdAt: startOfThisMonth,
         contactDetails: {
-          bidderContact: { email: freelancers[4].email, phone: freelancers[4].phone },
-          posterContact: { email: adminUser.email, phone: adminUser.phone }
+          bidderContact: { name: freelancers[4].name, email: freelancers[4].email, phone: freelancers[4].phone },
+          posterContact: { name: adminUser.name, email: adminUser.email, phone: adminUser.phone }
         }
       },
       {
-        jobId: jobs[7]._id,
+        gigId: jobs[7]._id,
         userId: freelancers[7]._id,
-        quotation: 'Balanced puzzle levels in 7 days for $350',
+        quotation: 'Balanced puzzle levels in 7 days for ₹25,000',
         proposal: 'Experienced in level design and difficulty curves.',
-        bidFeePaid: 10,
+        bidFeePaid: 500,
         paymentStatus: 'succeeded',
         createdAt: new Date(),
         contactDetails: {
-          bidderContact: { email: freelancers[7].email, phone: freelancers[7].phone },
-          posterContact: { email: adminUser.email, phone: adminUser.phone }
+          bidderContact: { name: freelancers[7].name, email: freelancers[7].email, phone: freelancers[7].phone },
+          posterContact: { name: adminUser.name, email: adminUser.email, phone: adminUser.phone }
         }
       },
       {
-        jobId: jobs[8]._id,
+        gigId: jobs[8]._id,
         userId: freelancers[0]._id,
-        quotation: 'WordPress WooCommerce setup for $600',
+        quotation: 'WordPress WooCommerce setup for ₹45,000',
         proposal: 'Expert in WordPress and e-commerce. Will set up complete store with payment gateways.',
-        bidFeePaid: 10,
+        bidFeePaid: 500,
         paymentStatus: 'succeeded',
         createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
         contactDetails: {
-          bidderContact: { email: freelancers[0].email, phone: freelancers[0].phone },
-          posterContact: { email: adminUser.email, phone: adminUser.phone }
+          bidderContact: { name: freelancers[0].name, email: freelancers[0].email, phone: freelancers[0].phone },
+          posterContact: { name: adminUser.name, email: adminUser.email, phone: adminUser.phone }
         }
       },
       {
-        jobId: jobs[9]._id,
+        gigId: jobs[9]._id,
         userId: freelancers[7]._id,
-        quotation: 'Custom Shopify theme for $450',
+        quotation: 'Custom Shopify theme for ₹35,000',
         proposal: 'Experienced in Shopify theme development with custom Liquid templates.',
-        bidFeePaid: 10,
+        bidFeePaid: 500,
         paymentStatus: 'pending',
         createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
         contactDetails: {
-          bidderContact: { email: freelancers[7].email, phone: freelancers[7].phone },
-          posterContact: { email: adminUser.email, phone: adminUser.phone }
+          bidderContact: { name: freelancers[7].name, email: freelancers[7].email, phone: freelancers[7].phone },
+          posterContact: { name: adminUser.name, email: adminUser.email, phone: adminUser.phone }
         }
       },
       {
-        jobId: jobs[10]._id,
+        gigId: jobs[10]._id,
         userId: freelancers[0]._id,
-        quotation: 'Mobile-first redesign for $800',
+        quotation: 'Mobile-first redesign for ₹55,000',
         proposal: 'Focus on mobile UX with progressive enhancement approach.',
-        bidFeePaid: 10,
+        bidFeePaid: 500,
         paymentStatus: 'succeeded',
         createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
         contactDetails: {
-          bidderContact: { email: freelancers[0].email, phone: freelancers[0].phone },
-          posterContact: { email: adminUser.email, phone: adminUser.phone }
+          bidderContact: { name: freelancers[0].name, email: freelancers[0].email, phone: freelancers[0].phone },
+          posterContact: { name: adminUser.name, email: adminUser.email, phone: adminUser.phone }
         }
       },
       {
-        jobId: jobs[11]._id,
+        gigId: jobs[11]._id,
         userId: freelancers[1]._id,
-        quotation: 'Complete brand identity for $500',
+        quotation: 'Complete brand identity for ₹40,000',
         proposal: 'Full brand package with logo, colors, typography, and comprehensive guidelines.',
-        bidFeePaid: 10,
+        bidFeePaid: 500,
         paymentStatus: 'succeeded',
         createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
         contactDetails: {
-          bidderContact: { email: freelancers[1].email, phone: freelancers[1].phone },
-          posterContact: { email: adminUser.email, phone: adminUser.phone }
+          bidderContact: { name: freelancers[1].name, email: freelancers[1].email, phone: freelancers[1].phone },
+          posterContact: { name: adminUser.name, email: adminUser.email, phone: adminUser.phone }
         }
       },
       {
-        jobId: jobs[12]._id,
+        gigId: jobs[12]._id,
         userId: freelancers[1]._id,
-        quotation: 'Social media graphics package for $250',
+        quotation: 'Social media graphics package for ₹18,000',
         proposal: 'Create template library for consistent brand presence across platforms.',
-        bidFeePaid: 10,
+        bidFeePaid: 500,
         paymentStatus: 'pending',
         createdAt: new Date(),
         contactDetails: {
-          bidderContact: { email: freelancers[1].email, phone: freelancers[1].phone },
-          posterContact: { email: adminUser.email, phone: adminUser.phone }
+          bidderContact: { name: freelancers[1].name, email: freelancers[1].email, phone: freelancers[1].phone },
+          posterContact: { name: adminUser.name, email: adminUser.email, phone: adminUser.phone }
         }
       },
       {
-        jobId: jobs[13]._id,
+        gigId: jobs[13]._id,
         userId: freelancers[2]._id,
-        quotation: 'Copywriting services for $400',
+        quotation: 'Copywriting services for ₹25,000',
         proposal: 'Compelling copy that converts with SEO optimization.',
-        bidFeePaid: 10,
+        bidFeePaid: 500,
         paymentStatus: 'succeeded',
         createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
         contactDetails: {
-          bidderContact: { email: freelancers[2].email, phone: freelancers[2].phone },
-          posterContact: { email: adminUser.email, phone: adminUser.phone }
+          bidderContact: { name: freelancers[2].name, email: freelancers[2].email, phone: freelancers[2].phone },
+          posterContact: { name: adminUser.name, email: adminUser.email, phone: adminUser.phone }
         }
       },
       {
-        jobId: jobs[14]._id,
+        gigId: jobs[14]._id,
         userId: freelancers[3]._id,
-        quotation: 'LinkedIn strategy for $600',
+        quotation: 'LinkedIn strategy for ₹35,000',
         proposal: 'B2B content strategy with engagement optimization.',
-        bidFeePaid: 10,
+        bidFeePaid: 500,
         paymentStatus: 'succeeded',
         createdAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
         contactDetails: {
-          bidderContact: { email: freelancers[3].email, phone: freelancers[3].phone },
-          posterContact: { email: adminUser.email, phone: adminUser.phone }
+          bidderContact: { name: freelancers[3].name, email: freelancers[3].email, phone: freelancers[3].phone },
+          posterContact: { name: adminUser.name, email: adminUser.email, phone: adminUser.phone }
         }
       },
       {
-        jobId: jobs[15]._id,
+        gigId: jobs[15]._id,
         userId: freelancers[4]._id,
-        quotation: 'SEO audit and fixes for $350',
+        quotation: 'SEO audit and fixes for ₹28,000',
         proposal: 'Comprehensive technical SEO audit with optimization.',
-        bidFeePaid: 10,
+        bidFeePaid: 500,
         paymentStatus: 'succeeded',
         createdAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000),
         contactDetails: {
-          bidderContact: { email: freelancers[4].email, phone: freelancers[4].phone },
-          posterContact: { email: adminUser.email, phone: adminUser.phone }
+          bidderContact: { name: freelancers[4].name, email: freelancers[4].email, phone: freelancers[4].phone },
+          posterContact: { name: adminUser.name, email: adminUser.email, phone: adminUser.phone }
         }
       },
       {
-        jobId: jobs[16]._id,
+        gigId: jobs[16]._id,
         userId: freelancers[5]._id,
-        quotation: 'Cross-platform app for $1200',
+        quotation: 'Cross-platform app for ₹95,000',
         proposal: 'React Native app with shared codebase for iOS and Android.',
-        bidFeePaid: 10,
+        bidFeePaid: 500,
         paymentStatus: 'succeeded',
         createdAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000),
         contactDetails: {
-          bidderContact: { email: freelancers[5].email, phone: freelancers[5].phone },
-          posterContact: { email: adminUser.email, phone: adminUser.phone }
+          bidderContact: { name: freelancers[5].name, email: freelancers[5].email, phone: freelancers[5].phone },
+          posterContact: { name: adminUser.name, email: adminUser.email, phone: adminUser.phone }
         }
       }
     ]);
@@ -676,14 +676,14 @@ const seedDatabase = async () => {
         packageDetails: {
           title: 'Basic Website',
           description: 'Simple 3-page website with responsive design',
-          price: 300,
+          price: 15000,
           deliveryTime: 7,
           revisions: 2,
           features: ['3 pages', 'Responsive design', 'Basic SEO', 'Contact form']
         },
-        totalAmount: 300,
-        sellerEarnings: 270,
-        platformFee: 30,
+        totalAmount: 15000,
+        sellerEarnings: 13500,
+        platformFee: 1500,
         expectedDeliveryDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         status: 'in_progress',
         payment: {
@@ -705,14 +705,14 @@ const seedDatabase = async () => {
         packageDetails: {
           title: 'Logo + Brand Colors',
           description: 'Logo design with brand color palette',
-          price: 300,
+          price: 15000,
           deliveryTime: 7,
           revisions: 4,
           features: ['5 logo concepts', 'Color palette', 'Style guide', 'Multiple formats']
         },
-        totalAmount: 300,
-        sellerEarnings: 270,
-        platformFee: 30,
+        totalAmount: 15000,
+        sellerEarnings: 13500,
+        platformFee: 1500,
         expectedDeliveryDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         status: 'delivered',
         payment: {
@@ -732,7 +732,7 @@ const seedDatabase = async () => {
         applicant: freelancers[3]._id,
         status: 'pending',
         coverLetter: 'I am very interested in this e-commerce project. I have 4 years of experience building online stores.',
-        expectedSalary: { min: 700, max: 900, currency: 'USD' },
+        expectedSalary: { min: 50000, max: 80000, currency: 'INR' },
         availability: 'immediate',
         skills: ['JavaScript', 'React', 'E-commerce'],
         experience: { years: 4, level: 'mid' }
@@ -742,7 +742,7 @@ const seedDatabase = async () => {
         applicant: freelancers[4]._id,
         status: 'reviewing',
         coverLetter: 'I would love to help design your brand identity. My portfolio shows similar work.',
-        expectedSalary: { min: 250, max: 400, currency: 'USD' },
+        expectedSalary: { min: 20000, max: 35000, currency: 'INR' },
         availability: '1-month',
         skills: ['Graphic Design', 'Branding', 'Adobe Creative Suite'],
         experience: { years: 3, level: 'mid' }
@@ -752,7 +752,7 @@ const seedDatabase = async () => {
         applicant: freelancers[5]._id,
         status: 'rejected',
         coverLetter: 'Performed a similar local SEO project for a dental clinic with great results.',
-        expectedSalary: { min: 300, max: 450, currency: 'USD' },
+        expectedSalary: { min: 15000, max: 25000, currency: 'INR' },
         availability: '2-weeks',
         skills: ['Local SEO', 'On-page', 'Schema'],
         experience: { years: 2, level: 'junior' }
@@ -762,7 +762,7 @@ const seedDatabase = async () => {
         applicant: freelancers[6]._id,
         status: 'accepted',
         coverLetter: 'I can ship an RN MVP quickly with clean architecture.',
-        expectedSalary: { min: 1500, max: 2200, currency: 'USD' },
+        expectedSalary: { min: 100000, max: 180000, currency: 'INR' },
         availability: 'immediate',
         skills: ['React Native', 'Push', 'Auth'],
         experience: { years: 4, level: 'mid' }
