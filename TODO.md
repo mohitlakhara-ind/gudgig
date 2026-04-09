@@ -1,6 +1,0 @@
-- [x] Update imports in backend/src/routes/payments.js: Change Job to Gig
-- [x] Update populate in GET / route: Change jobId to gigId and Job to Gig
-- [x] Update transformation in GET / route: Change bid.jobId to bid.gigId
-- [x] Update populate in GET /:paymentId route: Change jobId to gigId and Job to Gig
-- [x] Update transformation in GET /:paymentId route: Change bid.jobId to bid.gigId
-- [x] Update transformation in GET /:paymentId route: Change bid.jobId to bid.gigId

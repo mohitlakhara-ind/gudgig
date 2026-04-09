@@ -9,11 +9,6 @@ import { Card } from "@/components/ui/card";
 const CategorySub = () => {
     const categories = [
         { title: "Website Development", icon: "💻", count: "2.5k+" },
-        { title: "Graphic Design", icon: "🎨", count: "1.8k+" },
-        { title: "Content Writing", icon: "✍️", count: "3.2k+" },
-        { title: "Social Media", icon: "📱", count: "1.5k+" },
-        { title: "SEO", icon: "🔍", count: "980+" },
-        { title: "App Development", icon: "📲", count: "1.2k+" },
     ];
     return (
         < div className="space-y-12" >

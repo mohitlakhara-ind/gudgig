@@ -52,13 +52,7 @@ import GigsSkeletonLoader from './GigsSkeletonLoader';
 // Enhanced categories with better organization
 const categories = [
   { value: 'all', label: 'All Categories', icon: '🎯' },
-  { value: 'website development', label: 'Website Development', icon: '🌐' },
-  { value: 'graphic design', label: 'Graphic Design', icon: '🎨' },
-  { value: 'content writing', label: 'Content Writing', icon: '✍️' },
-  { value: 'social media management', label: 'Social Media', icon: '📱' },
-  { value: 'seo', label: 'SEO & Marketing', icon: '📈' },
-  { value: 'app development', label: 'App Development', icon: '📱' },
-  { value: 'game development', label: 'Game Development', icon: '🎮' }
+  { value: 'website development', label: 'Website Development', icon: '🌐' }
 ];
 
 const sortOptions = [

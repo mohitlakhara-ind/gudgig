@@ -68,10 +68,10 @@ class NotificationService {
         const webpush = await import('web-push');
         const vapidSubject = process.env.VAPID_SUBJECT || (process.env.VAPID_EMAIL ? `mailto:${process.env.VAPID_EMAIL}` : undefined);
         if (!vapidSubject) {
-          console.warn('[notificationService] VAPID_SUBJECT is missing; set VAPID_SUBJECT (e.g., mailto:admin@example.com)');
+          console.warn('[notificationService] VAPID_SUBJECT is missing; set VAPID_SUBJECT (e.g., mailto:info@gudgig.com)');
         }
         webpush.default.setVapidDetails(
-          vapidSubject || 'mailto:admin@example.com',
+          vapidSubject || 'mailto:info@gudgig.com',
           process.env.VAPID_PUBLIC_KEY,
           process.env.VAPID_PRIVATE_KEY
         );
@@ -206,7 +206,7 @@ class NotificationService {
       return { messageId: 'fallback-console' };
     }
     const mailOptions = {
-      from: process.env.FROM_EMAIL || 'noreply@microjobs.com',
+      from: process.env.FROM_EMAIL || 'info@gudgig.com',
       to,
       subject,
       html,
@@ -549,9 +549,9 @@ You can manage your microjob in the employer dashboard.`
       html: `
         <h2>Gig Unlocked</h2>
         <p>You have successfully unlocked contact details for <strong>${data.jobTitle}</strong>.</p>
-        <p>You can now contact the poster directly.</p>
+        <p>You can view the gig details and contact the poster directly here: <a href="https://gudgig.com/gigs/${data.gigId}">https://gudgig.com/gigs/${data.gigId}</a></p>
       `,
-      text: `You unlocked contact details for ${data.jobTitle}.`
+      text: `You have successfully unlocked contact details for ${data.jobTitle} and can view it here: https://gudgig.com/gigs/${data.gigId}`
     };
   }
 

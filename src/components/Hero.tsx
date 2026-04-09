@@ -13,33 +13,26 @@ export default function Hero() {
   //   return () => clearTimeout(t);
   // }, []);
 
-  const categories = [
-    { title: "Website Development", icon: "💻", count: "2.5k+" },
-    { title: "Graphic Design", icon: "🎨", count: "1.8k+" },
-    { title: "Content Writing", icon: "✍️", count: "3.2k+" },
-    { title: "Social Media", icon: "📱", count: "1.5k+" },
-    { title: "SEO", icon: "🔍", count: "980+" },
-    { title: "App Development", icon: "📲", count: "1.2k+" },
-  ];
+
 
   const marqueeJobs = [
     [
-      { title: "E-commerce Website", budget: "$500-800", tag: "Web Dev" },
-      { title: "Brand Logo Design", budget: "$150-300", tag: "Design" },
-      { title: "SEO Optimization", budget: "$200-400", tag: "Marketing" },
-      { title: "Mobile App UI", budget: "$600-1000", tag: "Design" },
+      { title: "E-commerce Website", budget: "₹15,000 - ₹25,000", tag: "Web Dev" },
+      { title: "Portfolio Development", budget: "₹8,000 - ₹12,000", tag: "Web Dev" },
+      { title: "LMS Platform", budget: "₹45,000 - ₹60,000", tag: "Web Dev" },
+      { title: "Real Estate Portal", budget: "₹35,000 - ₹50,000", tag: "Web Dev" },
     ],
     [
-      { title: "Blog Content Writing", budget: "$50-100", tag: "Writing" },
-      { title: "Social Media Strategy", budget: "$300-500", tag: "Marketing" },
-      { title: "Landing Page Design", budget: "$250-450", tag: "Web Dev" },
-      { title: "Video Editing", budget: "$200-350", tag: "Creative" },
+      { title: "Next.js Dashboard", budget: "₹25,000 - ₹40,000", tag: "Web Dev" },
+      { title: "Shopify Custom Theme", budget: "₹18,000 - ₹30,000", tag: "Web Dev" },
+      { title: "Landing Page Design", budget: "₹10,000 - ₹15,000", tag: "Web Dev" },
+      { title: "React Web App", budget: "₹30,000 - ₹45,000", tag: "Web Dev" },
     ],
     [
-      { title: "WordPress Setup", budget: "$180-300", tag: "Web Dev" },
-      { title: "Product Photography", budget: "$150-250", tag: "Creative" },
-      { title: "Email Campaign", budget: "$120-200", tag: "Marketing" },
-      { title: "React Component", budget: "$300-500", tag: "Development" },
+      { title: "WordPress Setup", budget: "₹8,000 - ₹15,000", tag: "Web Dev" },
+      { title: "API Integration", budget: "₹12,000 - ₹20,000", tag: "Web Dev" },
+      { title: "Saas Platform UI", budget: "₹20,000 - ₹35,000", tag: "Web Dev" },
+      { title: "Tailwind CSS Fixes", budget: "₹5,000 - ₹8,000", tag: "Web Dev" },
     ],
   ];
 

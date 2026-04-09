@@ -65,14 +65,16 @@ export function useGigsManager(options: UseGigsManagerOptions = {}): GigsManager
   const abortControllerRef = useRef<AbortController | null>(null);
   const initialParamsRef = useRef(initialParams);
 
-  // Generate cache key
   const getCacheKey = useCallback((params: SearchJobsRequest = {}) => {
     const sortedParams = Object.keys(params)
       .sort()
       .reduce((result, key) => {
-        result[key] = params[key as keyof SearchJobsRequest];
+        const k = key as keyof SearchJobsRequest;
+        if (params[k] !== undefined) {
+          result[k] = params[k] as any;
+        }
         return result;
-      }, {} as any);
+      }, {} as SearchJobsRequest);
     return JSON.stringify(sortedParams);
   }, []);
 
@@ -103,9 +105,9 @@ export function useGigsManager(options: UseGigsManagerOptions = {}): GigsManager
     if (enableCache && cacheRef.current.has(cacheKey)) {
       const cached = cacheRef.current.get(cacheKey)!;
       if (isCacheValid(cached.timestamp)) {
-        setState(prev => ({
+        setState((prev: GigsManagerState) => ({
           ...prev,
-          gigs: Array.isArray(cached.data.data) ? cached.data.data : cached.data.data || [],
+          gigs: Array.isArray(cached.data.data) ? cached.data.data : (cached.data.data ? [cached.data.data] : []) as Job[],
           pagination: {
             page: cached.data.pagination?.page || 1,
             limit: cached.data.pagination?.limit || 10,
@@ -123,14 +125,14 @@ export function useGigsManager(options: UseGigsManagerOptions = {}): GigsManager
     }
 
     try {
-      setState(prev => ({
+      setState((prev: GigsManagerState) => ({
         ...prev,
         loading: true,
         error: null,
         isRefreshing: prev.gigs.length > 0
       }));
 
-      const response: JobsResponse = await apiClient.getJobs(searchParams as any);
+      const response: JobsResponse = await apiClient.getJobs(searchParams);
 
       // Handle response data
       const gigsData = Array.isArray(response.data) ? response.data : response.data || [];
@@ -143,7 +145,7 @@ export function useGigsManager(options: UseGigsManagerOptions = {}): GigsManager
         });
       }
 
-      setState(prev => ({
+      setState((prev: GigsManagerState) => ({
         ...prev,
         gigs: gigsData,
         pagination: {
@@ -167,7 +169,7 @@ export function useGigsManager(options: UseGigsManagerOptions = {}): GigsManager
 
       const errorMessage = err instanceof ApiClientError ? err.message : 'Failed to fetch gigs';
       
-      setState(prev => ({
+      setState((prev: GigsManagerState) => ({
         ...prev,
         loading: false,
         isRefreshing: false,
@@ -191,24 +193,24 @@ export function useGigsManager(options: UseGigsManagerOptions = {}): GigsManager
 
       const nextPage = state.pagination.page + 1;
       const response: JobsResponse = await apiClient.getJobs({
-        ...(initialParamsRef.current as any),
+        ...initialParamsRef.current,
         page: nextPage,
         limit: state.pagination.limit || 10
-      } as any);
+      });
 
       const newGigsData = Array.isArray(response.data) ? response.data : response.data || [];
       const newGigIds = new Set<string>();
-      newGigsData.forEach((gig: any) => {
+      newGigsData.forEach((gig: Job) => {
         if (gig && gig._id) {
           newGigIds.add(String(gig._id));
         }
       });
       
-      setState(prev => ({
+      setState((prev: GigsManagerState) => ({
         ...prev,
         gigs: [
           ...prev.gigs,
-          ...newGigsData.filter((gig: any) => {
+          ...newGigsData.filter((gig: Job) => {
             if (!gig || !gig._id) return true;
             return !prev.gigs.some(existing => existing._id === gig._id);
           })
@@ -224,7 +226,7 @@ export function useGigsManager(options: UseGigsManagerOptions = {}): GigsManager
     } catch (err) {
       const errorMessage = err instanceof ApiClientError ? err.message : 'Failed to load more gigs';
       
-      setState(prev => ({
+      setState((prev: GigsManagerState) => ({
         ...prev,
         isLoadingMore: false,
         error: errorMessage
@@ -242,7 +244,7 @@ export function useGigsManager(options: UseGigsManagerOptions = {}): GigsManager
 
   // Clear error
   const clearError = useCallback(() => {
-    setState(prev => ({ ...prev, error: null }));
+    setState((prev: GigsManagerState) => ({ ...prev, error: null }));
   }, []);
 
   // Retry last request
@@ -301,7 +303,7 @@ export default function useGigsManagerWrapper(options?: UseGigsManagerOptions) {
   // so identity is stable unless its members actually change.
   // Note: this wrapper is optional; consumers can import/useGigsManager directly,
   // but some callers (like GigsProvider) prefer a stable reference.
-  return manager as any;
+  return manager;
 }
 
 // Utility functions for gigs
@@ -322,12 +324,11 @@ export const formatGigBudget = (job: Job) => {
   }
   const budget = job.salary?.min || job.salaryDisclosure?.min;
   const budgetMax = job.salary?.max || job.salaryDisclosure?.max;
-  const currency = job.salary?.currency || job.salaryDisclosure?.currency || 'USD';
   const period = job.salaryDisclosure?.period || job.salary?.period || 'project';
   const prefix = period === 'hourly' ? '/hr' : '';
-  if (budget && budgetMax) return `${currency}${budget.toLocaleString()} - ${currency}${budgetMax.toLocaleString()}${prefix}`;
-  if (budget) return `From ${currency}${budget.toLocaleString()}${prefix}`;
-  if (budgetMax) return `Up to ${currency}${budgetMax.toLocaleString()}${prefix}`;
+  if (budget && budgetMax) return `₹${budget.toLocaleString()} - ₹${budgetMax.toLocaleString()}${prefix}`;
+  if (budget) return `From ₹${budget.toLocaleString()}${prefix}`;
+  if (budgetMax) return `Up to ₹${budgetMax.toLocaleString()}${prefix}`;
   return 'Budget not specified';
 };
 

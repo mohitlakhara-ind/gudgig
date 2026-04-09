@@ -86,8 +86,8 @@ class AutomationService {
   // Notify freelancers who match category/skills or have saved searches
   async onNewGigPosted(gig) {
     try {
-      // Find freelancers who have opted in for job alerts in this category
-      const candidates = await User.find({ role: 'freelancer', 'preferences.jobAlerts': { $in: [gig.category] } }).select('_id notificationPreferences');
+      // Find paid freelancers who have opted in for job alerts in this category
+      const candidates = await User.find({ role: 'freelancer', verifiedByPayment: true, 'preferences.jobAlerts': { $in: [gig.category] } }).select('_id notificationPreferences');
 
       const notificationPayload = {
         jobTitle: gig.title,
