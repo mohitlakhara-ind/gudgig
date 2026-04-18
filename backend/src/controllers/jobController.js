@@ -28,6 +28,7 @@ export const adminCreateJob = async (req, res, next) => {
       category,
       description,
       requirements: Array.isArray(requirements) ? requirements : [],
+      bidFee: req.body.bidFee,
       createdBy: req.user._id
     });
 
@@ -180,8 +181,9 @@ export const submitBid = async (req, res, next) => {
     const config = await getOrCreateConfig();
 
     // Validate bidAmountPaid equals active fee
-    if (Number(bidFeePaid) !== Number(config.currentBidFee)) {
-      return res.status(400).json({ success: false, message: `Bid amount must equal active fee ₹${config.currentBidFee}` });
+    const requiredFee = (job.bidFee && job.bidFee > 0) ? job.bidFee : config.currentBidFee;
+    if (Number(bidFeePaid) !== Number(requiredFee)) {
+      return res.status(400).json({ success: false, message: `Bid amount must equal active fee ₹${requiredFee}` });
     }
 
     const job = await Job.findById(jobId);
@@ -287,7 +289,7 @@ export const updateJob = async (req, res, next) => {
   try {
     const { jobId } = req.params;
     const updates = {};
-    const allowed = ['title', 'category', 'description', 'requirements'];
+    const allowed = ['title', 'category', 'description', 'requirements', 'bidFee'];
     for (const key of allowed) {
       if (req.body[key] !== undefined) updates[key] = req.body[key];
     }

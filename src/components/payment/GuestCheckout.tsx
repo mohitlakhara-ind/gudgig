@@ -121,7 +121,7 @@ export default function GuestCheckout({ gigId, amountInPaise, description }: Pro
             ) : (
               <>
                 <Lock className="h-4 w-4 mr-2" />
-                Unlock more details
+                Unlock contact details
                 <ArrowRight className="h-4 w-4 ml-2" />
               </>
             )}

@@ -23,6 +23,7 @@ import {
   ChevronDown,
   ChevronUp,
 } from 'lucide-react';
+import { formatGigBudget, formatMaxBids } from '@/hooks/useGigsManager';
 import CustomLoader from '@/components/CustomLoader';
 import { ContactDetailsCard } from '@/components/gigs';
 import { apiClient } from '@/lib/api';
@@ -213,10 +214,11 @@ export default function GigDetailPage() {
       }
 
       // Submit bid after successful payment
+      const fee = gig?.price || 5;
       const payload = {
         quotation: 0,
-        proposal: 'Bid submitted',
-        bidFeePaid: 5,
+        proposal: 'Contact access unlocked',
+        unlockFeePaid: fee,
         contactDetails: { bidderContact }
       } as any;
 
@@ -244,8 +246,8 @@ export default function GigDetailPage() {
             userName: user?.name,
             jobTitle: gig?.title,
             quotation: 0,
-            proposal: 'Bid submitted',
-            bidFee: 10,
+            proposal: 'Contact access unlocked',
+            unlockFee: gig?.price || 5,
           })
         });
       } catch (emailError) {
@@ -343,12 +345,12 @@ export default function GigDetailPage() {
       setPaymentEmail(email);
       setPaymentPhone(contact);
 
-      setCreatingOrder(true);
-      const base = (process.env.NEXT_PUBLIC_BACKEND_URL || '').replace(/\/$/, '');
+      const fee = gig?.price || 5;
+      const amountPaise = fee * 100;
       const resp = await fetch(`${base}/api/payment/order`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: 500, gigId, description: `Bid fee for gig: ${gig?.title}`, email, contact })
+        body: JSON.stringify({ amount: amountPaise, gigId, description: `Unlock fee for gig: ${gig?.title}`, email, contact })
       });
       const data = await resp.json();
       if (!data?.success) throw new Error(data?.message || 'Failed to create order');
@@ -375,14 +377,8 @@ export default function GigDetailPage() {
   }, [showPayment, paymentMode, rzpOrderId, creatingOrder, paymentEmail, paymentPhone]);
 
 
-  const formatBudget = (budget: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(budget);
-  };
+  // Removed local formatBudget in favor of hook utility
+
 
   const getDaysAgo = (date: string) => {
     const now = new Date();
@@ -427,11 +423,11 @@ export default function GigDetailPage() {
                     <div className="bg-muted p-4 rounded-lg border border-dashed border-border/60">
                       <div className="flex items-center gap-2 mb-2">
                         <CreditCard className="h-5 w-5 text-primary" />
-                        <span className="font-medium">Bid Fee — ₹5</span>
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        This lightweight fee keeps the marketplace spam-free and instantly unlocks employer contact details.
-                      </p>
+                      <span className="font-medium">Unlock Fee</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      This minimal fee keeps the marketplace focused and instantly reveals the employer contact details.
+                    </p>
                     </div>
 
                     <div className="space-y-4">
@@ -472,8 +468,8 @@ export default function GigDetailPage() {
                     </div>
 
                     <RazorpayPayment
-                      amount={500}
-                      description={`Bid fee for gig: ${gig?.title}`}
+                      amount={(gig?.price || 5) * 100}
+                      description={`Unlock fee for gig: ${gig?.title}`}
                       orderId={rzpOrderId || ''}
                       keyId={rzpKeyId}
                       prefillEmail={paymentEmail}
@@ -493,8 +489,8 @@ export default function GigDetailPage() {
                     </div>
                     <GuestCheckout
                       gigId={gigId}
-                      amountInPaise={500}
-                      description={`Bid fee for gig: ${gig?.title}`}
+                      amountInPaise={(gig?.price || 5) * 100}
+                      description={`Unlock fee for gig: ${gig?.title}`}
                     />
                     <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 flex items-center gap-3">
                       <Image
@@ -632,8 +628,8 @@ export default function GigDetailPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="flex items-center gap-2">
                       <DollarSign className="h-4 w-4 text-primary" />
-                      <span className="font-medium">Budget:</span>
-                      <span className="text-foreground font-bold text-lg">{formatBudget((gig as any).budget)}</span>
+                      <span className="font-medium">Pricing:</span>
+                      <span className="text-foreground font-bold text-lg">{formatGigBudget(gig)}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Clock className="h-4 w-4 text-primary" />
@@ -644,6 +640,11 @@ export default function GigDetailPage() {
                       <MapPin className="h-4 w-4 text-primary" />
                       <span className="font-medium">Location:</span>
                       <span className="text-foreground">{gig.location || 'Remote'}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Users className="h-4 w-4 text-primary" />
+                      <span className="font-medium">Bid Limit:</span>
+                      <span className="text-foreground">{formatMaxBids((gig as any).maxBids)}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Users className="h-4 w-4 text-primary" />
@@ -702,7 +703,7 @@ export default function GigDetailPage() {
                           onClick={openPaymentModal}
                         >
                           <Lock className="h-4 w-4 mr-2" />
-                          Unlock full description
+                          Unlock contact details
                         </Button>
                       </div>
                     </div>
@@ -748,7 +749,7 @@ export default function GigDetailPage() {
                         size="lg"
                       >
                         <Lock className="h-4 w-4 mr-2" />
-                        Unlock full details
+                        Unlock contact details
                         <ArrowRight className="h-4 w-4 ml-2" />
                       </Button>
                     )
@@ -861,10 +862,10 @@ export default function GigDetailPage() {
           <Button
             className="w-full h-13 rounded-2xl shadow-xl bg-primary text-primary-foreground hover:shadow-2xl hover:scale-[1.01] transition-all"
             onClick={openPaymentModal}
-            aria-label="Unlock Full details"
+            aria-label="Unlock contact details"
           >
             <Lock className="h-4 w-4 mr-2" />
-            Unlock Full details
+            Unlock contact details
           </Button>
         </div>
       )}

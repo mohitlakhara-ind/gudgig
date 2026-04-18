@@ -10,10 +10,10 @@ import CategorySub from '@/components/category-sub';
 
 export const metadata: Metadata = {
   title: 'Gudgig.com — Where Opportunities Meet Talent, One Lead at a Time',
-  description: 'Browse verified client leads for free. Pay just ₹5 to unlock contact details and connect directly. Simple, transparent, and affordable.',
+  description: 'Browse verified client leads for free. Pay a minimal unlock fee to connect directly with clients. Simple, transparent, and affordable.',
   openGraph: {
     title: 'Gudgig.com — Connect with Verified Client Leads',
-    description: 'Browse leads for free, unlock contact details for ₹5. No bidding, no subscriptions - just real opportunities.',
+    description: 'Browse leads for free, unlock contact details with a minimal fee. No bidding, no subscriptions - just real opportunities.',
     type: 'website',
   },
   twitter: {
@@ -28,7 +28,7 @@ export default function Home() {
     "@context": "https://schema.org",
     "@type": "WebPage",
     "name": "Gudgig.com — Verified Client Leads",
-    "description": "Browse verified client leads for free. Unlock contact details for ₹5 and connect directly with clients.",
+    "description": "Browse verified client leads for free. Unlock contact details for a minimal fee and connect directly with clients.",
     "url": "https://gudgig.com",
     "mainEntity": {
       "@type": "ItemList",

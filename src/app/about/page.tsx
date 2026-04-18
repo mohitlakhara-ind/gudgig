@@ -44,7 +44,7 @@ export default function AboutPage() {
                 We're building a simple, transparent, and affordable platform that connects clients looking for remote services with freelancers and professionals ready to work. Whether it's web development, graphic design, digital marketing, content writing, app development, or virtual assistance, Gudgig brings everyone under one roof.
               </p>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                Our goal is to make the process of finding work and clients as easy as possible. No complicated bidding, no long waiting periods — just real, verified leads available instantly. Freelancers can browse leads for free and pay a nominal ₹5 to unlock the client's contact details.
+                Our goal is to make the process of finding work and clients as easy as possible. No complicated bidding, no long waiting periods — just real, verified leads available instantly. Freelancers can browse leads for free and pay a minimal unlock fee to access the client's contact details.
               </p>
               <div className="bg-primary/5 rounded-lg p-6 border border-primary/20 mt-6">
                 <p className="text-base font-semibold text-foreground mb-3">How It Works:</p>
@@ -55,7 +55,7 @@ export default function AboutPage() {
                   </div>
                   <div className="flex items-start gap-2">
                     <span className="text-primary font-bold">2.</span>
-                    <span className="text-muted-foreground">Pay ₹5 to unlock contact details instantly</span>
+                    <span className="text-muted-foreground">Pay a minimal fee to unlock contact details instantly</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <span className="text-primary font-bold">3.</span>
@@ -184,7 +184,7 @@ export default function AboutPage() {
                   <CardTitle className="text-xl font-bold">Affordable Access</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground leading-relaxed">Pay just ₹5 to unlock contact details. No subscriptions, no hidden fees.</p>
+                  <p className="text-muted-foreground leading-relaxed">Pay a minimal unlock fee to access contact details. No subscriptions, no hidden fees.</p>
                 </CardContent>
               </Card>
               <Card className="text-center hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/50">

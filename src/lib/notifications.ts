@@ -3,7 +3,7 @@
 
 export interface Notification {
   id: string;
-  type: 'welcome' | 'gig_sent' | 'bid_submitted' | 'bid_accepted' | 'bid_rejected' | 'payment_success' | 'payment_failed' | 'admin_message';
+  type: 'welcome' | 'gig_sent' | 'unlock_contact' | 'bid_accepted' | 'bid_rejected' | 'payment_success' | 'payment_failed' | 'admin_message';
   title: string;
   message: string;
   userId: string;
@@ -85,23 +85,21 @@ class NotificationService {
           html: `<p>Your gig has been sent successfully${data.jobTitle ? ` for <strong>${data.jobTitle}</strong>` : ''}.</p>`,
           text: `Your gig has been sent successfully${data.jobTitle ? ` for ${data.jobTitle}` : ''}.`
         };
-      case 'bid_submitted':
+      case 'unlock_contact':
         return {
-          subject: `Bid Submitted Successfully - ${data.jobTitle}`,
+          subject: `Contact Details Unlocked - ${data.jobTitle}`,
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-              <h2 style="color: #0966C2;">Bid Submitted Successfully!</h2>
+              <h2 style="color: #0966C2;">Contact Details Unlocked!</h2>
               <p>Hello ${data.userName},</p>
-              <p>Your bid has been successfully submitted for the project: <strong>${data.jobTitle}</strong></p>
-              <p><strong>Your Quotation:</strong> ₹${data.quotation}</p>
-              <p><strong>Bid Fee Paid:</strong> ₹${data.bidFee}</p>
-              <p>You will be notified when the client reviews your bid.</p>
+              <p>You have successfully unlocked the contact details for: <strong>${data.jobTitle}</strong></p>
+              <p>You can now reach out to the client directly.</p>
               <div style="margin-top: 30px; padding: 20px; background-color: #f8f9fa; border-radius: 8px;">
                 <p style="margin: 0; color: #666;">Thank you for using Gudgig!</p>
               </div>
             </div>
           `,
-          text: `Bid Submitted Successfully!\n\nHello ${data.userName},\n\nYour bid has been successfully submitted for the project: ${data.jobTitle}\n\nYour Quotation: ₹${data.quotation}\nBid Fee Paid: ₹${data.bidFee}\n\nYou will be notified when the client reviews your bid.\n\nThank you for using Gudgig!`
+          text: `Contact Details Unlocked!\n\nHello ${data.userName},\n\nYou have successfully unlocked the contact details for: ${data.jobTitle}\n\nYou can now reach out to the client directly.\n\nThank you for using Gudgig!`
         };
 
       case 'bid_accepted':

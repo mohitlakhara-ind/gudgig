@@ -28,7 +28,8 @@ const categoryLabels: Record<string, string> = {
   'social media management': 'Social Media',
   'seo': 'SEO & Marketing',
   'app development': 'App Development',
-  'game development': 'Game Development'
+  'game development': 'Game Development',
+  'video editing': 'Video Editing'
 };
 
 const categoryIcons: Record<string, string> = {
@@ -38,7 +39,8 @@ const categoryIcons: Record<string, string> = {
   'social media management': '📱',
   'seo': '📈',
   'app development': '📱',
-  'game development': '🎮'
+  'game development': '🎮',
+  'video editing': '🎞️'
 };
 
 export default function LatestGigs() {
@@ -159,8 +161,8 @@ export default function LatestGigs() {
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-foreground mb-4">Latest Gigs</h2>
-          <p className="text-muted-foreground text-lg">Discover the newest opportunities</p>
+          <h2 className="text-3xl font-bold text-foreground mb-4">Latest Client Leads</h2>
+          <p className="text-muted-foreground text-lg italic">Browse verified opportunities for free</p>
         </div>
 
         {/* Gigs Grid */}

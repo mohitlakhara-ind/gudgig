@@ -46,13 +46,25 @@ import { useContactDetails } from '@/contexts/ContactDetailsContext';
 import { useResponsive } from '@/hooks/useResponsive';
 import { apiClient } from '@/lib/api';
 import toast from 'react-hot-toast';
-import { formatGigBudget, getDaysAgo, getGigStatusColor } from '@/hooks/useGigsManager';
+import { formatGigBudget, getDaysAgo, getGigStatusColor, formatMaxBids } from '@/hooks/useGigsManager';
 import GigsSkeletonLoader from './GigsSkeletonLoader';
 
 // Enhanced categories with better organization
 const categories = [
   { value: 'all', label: 'All Categories', icon: '🎯' },
-  { value: 'website development', label: 'Website Development', icon: '🌐' }
+  { value: 'website development', label: 'Website Development', icon: '🌐' },
+  { value: 'graphic design', label: 'Graphic Design', icon: '🎨' },
+  { value: 'content writing', label: 'Content Writing', icon: '✍️' },
+  { value: 'social media management', label: 'Social Media', icon: '📱' },
+  { value: 'SEO', label: 'SEO', icon: '📈' },
+  { value: 'app development', label: 'App Development', icon: '📱' },
+  { value: 'game development', label: 'Game Development', icon: '🎮' },
+  { value: 'video editing', label: 'Video Editing', icon: '🎞️' },
+  { value: 'photography', label: 'Photography', icon: '📷' },
+  { value: 'data entry', label: 'Data Entry', icon: '📁' },
+  { value: 'virtual assistant', label: 'Virtual Assistant', icon: '🎧' },
+  { value: 'digital marketing', label: 'Digital Marketing', icon: '📊' },
+  { value: 'business consulting', label: 'Business Consulting', icon: '💼' }
 ];
 
 const sortOptions = [
@@ -439,7 +451,7 @@ export default function EnhancedGigsListing() {
         const res = await apiClient.createGigBid(paymentGig.id, {
           quotation: 0,
           proposal: 'Order placed',
-          bidFeePaid: 10,
+          unlockFeePaid: 10,
           contactDetails: { bidderContact }
         });
         if (!res?.success) {
@@ -464,7 +476,7 @@ export default function EnhancedGigsListing() {
             jobTitle: paymentGig.title,
             quotation: 0,
             proposal: 'Order placed',
-            bidFee: 10, // Updated to match active fee
+            unlockFee: 10, // Updated to match active fee
           })
         });
       } catch (emailError) {
@@ -618,9 +630,9 @@ export default function EnhancedGigsListing() {
             {/* Payment Modal */}
             <Card className="max-w-md mx-auto">
               <CardHeader>
-                <CardTitle className="text-2xl font-bold">Place Your Bid</CardTitle>
+                <CardTitle className="text-2xl font-bold">Unlock Contact Details</CardTitle>
                 <p className="text-muted-foreground">
-                  Submit your bid for: <strong>{paymentGig.title}</strong>
+                  Unlock contact details for: <strong>{paymentGig.title}</strong>
                 </p>
               </CardHeader>
               <CardContent>
@@ -629,11 +641,9 @@ export default function EnhancedGigsListing() {
                   <div className="bg-muted p-4 rounded-lg">
                     <div className="flex items-center gap-2 mb-2">
                       <CreditCard className="h-5 w-5 text-primary" />
-                      <span className="font-medium">Order Fee</span>
+                      <span className="font-medium">Unlock Fee</span>
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      A fee of ₹10 is required to place your order. This helps maintain quality and reduces spam.
-                    </p>
+                      A minimal fee is required to unlock contact details. This helps maintain quality and reduces spam.
                   </div>
 
                   {/* Razorpay Payment */}
@@ -844,7 +854,7 @@ export default function EnhancedGigsListing() {
                       </div>
 
                       <div>
-                        <label className="text-sm font-medium mb-2 block">Budget Range (₹)</label>
+                        <label className="text-sm font-medium mb-2 block">Budget Range</label>
                         <div className="flex gap-2">
                           <Input
                             type="number"
@@ -1168,7 +1178,7 @@ export default function EnhancedGigsListing() {
                           <div className="flex items-center gap-4 text-sm text-muted-foreground">
                             <div className="flex items-center gap-1">
                               <Users className="h-4 w-4" />
-                              <span>{(gig as any).bidsCount || 0} bids</span>
+                              <span>{(gig as any).bidsCount || 0} / {formatMaxBids((gig as any).maxBids)} bids</span>
                             </div>
                           </div>
                         </div>
@@ -1186,7 +1196,7 @@ export default function EnhancedGigsListing() {
                                 aria-label="View contact details"
                               >
                                 <Lock className="h-4 w-4 mr-2" />
-                                Unlock more details
+                                Unlock contact details
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent side="top">
@@ -1255,9 +1265,9 @@ export default function EnhancedGigsListing() {
                             </div>
                             <div className="min-w-0">
                               <div className="font-medium text-foreground truncate">
-                                {(gig as any).bidsCount || 0}
+                                {(gig as any).bidsCount || 0} / {formatMaxBids((gig as any).maxBids)}
                               </div>
-                              <div className="text-xs text-muted-foreground">Bids</div>
+                              <div className="text-xs text-muted-foreground">Bids (Current/Limit)</div>
                             </div>
                           </div>
 
@@ -1277,7 +1287,7 @@ export default function EnhancedGigsListing() {
                                 aria-label="View contact details"
                               >
                                 <Lock className="h-4 w-4 mr-2" />
-                                Unlock more details
+                                Unlock contact details
                                 <ArrowRight className="h-4 w-4 ml-2" />
                               </Button>
                             </TooltipTrigger>

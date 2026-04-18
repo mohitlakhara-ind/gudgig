@@ -41,6 +41,23 @@ const GigSchema = new mongoose.Schema({
     min: 0,
     index: true
   },
+  price: {
+    type: Number,
+    default: 0,
+    min: 0,
+    index: true
+  },
+  bidFee: {
+    type: Number,
+    default: 0, // 0 means use global default
+    min: 0
+  },
+  contactDetails: {
+    email: { type: String, trim: true },
+    phone: { type: String, trim: true },
+    name: { type: String, trim: true },
+    alternateContact: { type: String, trim: true }
+  },
   location: {
     type: String,
     trim: true,
@@ -98,7 +115,7 @@ const GigSchema = new mongoose.Schema({
   maxBids: {
     type: Number,
     default: null,
-    min: 1
+    min: 0
   },
   isHidden: {
     type: Boolean,

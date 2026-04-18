@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-interface BidFeeOption {
+interface UnlockFeeOption {
   id: string;
   amount: number;
   label: string;
@@ -30,10 +30,10 @@ interface BidFeeOption {
 interface PaymentSettings {
   razorpayKeyId: string;
   razorpayKeySecret: string;
-  bidFeesEnabled: boolean;
-  minimumBidFee: number;
-  maximumBidFee: number;
-  bidFeeOptions: BidFeeOption[];
+  unlockFeesEnabled: boolean;
+  minimumUnlockFee: number;
+  maximumUnlockFee: number;
+  unlockFeeOptions: UnlockFeeOption[];
   refundPolicy: string;
   currency: string;
 }
@@ -44,10 +44,10 @@ export default function PaymentSettingsPage() {
   const [settings, setSettings] = useState<PaymentSettings>({
     razorpayKeyId: '',
     razorpayKeySecret: '',
-    bidFeesEnabled: true,
-    minimumBidFee: 100, // ₹1 in paise
-    maximumBidFee: 10000, // ₹100 in paise
-    bidFeeOptions: [
+    unlockFeesEnabled: true,
+    minimumUnlockFee: 100, // ₹1 in paise
+    maximumUnlockFee: 10000, // ₹100 in paise
+    unlockFeeOptions: [
       { id: '1', amount: 100, label: '₹1', isActive: true, isDefault: true },
       { id: '2', amount: 500, label: '₹5', isActive: true, isDefault: false },
       { id: '3', amount: 1000, label: '₹10', isActive: true, isDefault: false },
@@ -104,8 +104,8 @@ export default function PaymentSettingsPage() {
     }
   };
 
-  const addBidFeeOption = () => {
-    const newOption: BidFeeOption = {
+  const addUnlockFeeOption = () => {
+    const newOption: UnlockFeeOption = {
       id: Date.now().toString(),
       amount: 0,
       label: '',
@@ -114,30 +114,30 @@ export default function PaymentSettingsPage() {
     };
     setSettings(prev => ({
       ...prev,
-      bidFeeOptions: [...prev.bidFeeOptions, newOption]
+      unlockFeeOptions: [...prev.unlockFeeOptions, newOption]
     }));
   };
 
-  const updateBidFeeOption = (id: string, updates: Partial<BidFeeOption>) => {
+  const updateUnlockFeeOption = (id: string, updates: Partial<UnlockFeeOption>) => {
     setSettings(prev => ({
       ...prev,
-      bidFeeOptions: prev.bidFeeOptions.map(option =>
+      unlockFeeOptions: prev.unlockFeeOptions.map(option =>
         option.id === id ? { ...option, ...updates } : option
       )
     }));
   };
 
-  const removeBidFeeOption = (id: string) => {
+  const removeUnlockFeeOption = (id: string) => {
     setSettings(prev => ({
       ...prev,
-      bidFeeOptions: prev.bidFeeOptions.filter(option => option.id !== id)
+      unlockFeeOptions: prev.unlockFeeOptions.filter(option => option.id !== id)
     }));
   };
 
-  const setDefaultBidFee = (id: string) => {
+  const setDefaultUnlockFee = (id: string) => {
     setSettings(prev => ({
       ...prev,
-      bidFeeOptions: prev.bidFeeOptions.map(option => ({
+      unlockFeeOptions: prev.unlockFeeOptions.map(option => ({
         ...option,
         isDefault: option.id === id
       }))
@@ -163,7 +163,7 @@ export default function PaymentSettingsPage() {
           <div className="mb-8">
             <h1 className="text-3xl font-bold mb-2">Payment Settings</h1>
             <p className="text-muted-foreground">
-              Configure payment gateway and bid fee settings
+              Configure payment gateway and unlock fee settings
             </p>
           </div>
 
@@ -219,50 +219,50 @@ export default function PaymentSettingsPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <DollarSign className="h-5 w-5" />
-                  Bid Fee Configuration
+                  Unlock Fee Configuration
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <Label htmlFor="bidFeesEnabled">Enable Bid Fees</Label>
+                    <Label htmlFor="unlockFeesEnabled">Enable Unlock Fees</Label>
                     <p className="text-sm text-muted-foreground">
-                      Require freelancers to pay a fee when submitting bids
+                      Require freelancers to pay a fee to unlock client contact details
                     </p>
                   </div>
                   <Switch
-                    id="bidFeesEnabled"
-                    checked={settings.bidFeesEnabled}
-                    onCheckedChange={(checked) => setSettings(prev => ({ ...prev, bidFeesEnabled: checked }))}
+                    id="unlockFeesEnabled"
+                    checked={settings.unlockFeesEnabled}
+                    onCheckedChange={(checked) => setSettings(prev => ({ ...prev, unlockFeesEnabled: checked }))}
                   />
                 </div>
 
-                {settings.bidFeesEnabled && (
+                {settings.unlockFeesEnabled && (
                   <>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="minimumBidFee">Minimum Bid Fee (₹)</Label>
+                        <Label htmlFor="minimumUnlockFee">Minimum Unlock Fee (₹)</Label>
                         <Input
-                          id="minimumBidFee"
+                          id="minimumUnlockFee"
                           type="number"
-                          value={settings.minimumBidFee / 100}
+                          value={settings.minimumUnlockFee / 100}
                           onChange={(e) => setSettings(prev => ({ 
                             ...prev, 
-                            minimumBidFee: Number(e.target.value) * 100 
+                            minimumUnlockFee: Number(e.target.value) * 100 
                           }))}
                           min="1"
                           step="1"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="maximumBidFee">Maximum Bid Fee (₹)</Label>
+                        <Label htmlFor="maximumUnlockFee">Maximum Unlock Fee (₹)</Label>
                         <Input
-                          id="maximumBidFee"
+                          id="maximumUnlockFee"
                           type="number"
-                          value={settings.maximumBidFee / 100}
+                          value={settings.maximumUnlockFee / 100}
                           onChange={(e) => setSettings(prev => ({ 
                             ...prev, 
-                            maximumBidFee: Number(e.target.value) * 100 
+                            maximumUnlockFee: Number(e.target.value) * 100 
                           }))}
                           min="1"
                           step="1"
@@ -273,15 +273,15 @@ export default function PaymentSettingsPage() {
                     {/* Bid Fee Options */}
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
-                        <Label>Bid Fee Options</Label>
-                        <Button onClick={addBidFeeOption} size="sm">
+                        <Label>Unlock Fee Options</Label>
+                        <Button onClick={addUnlockFeeOption} size="sm">
                           <Plus className="h-4 w-4 mr-2" />
                           Add Option
                         </Button>
                       </div>
                       
                       <div className="space-y-3">
-                        {settings.bidFeeOptions.map((option) => (
+                        {settings.unlockFeeOptions.map((option) => (
                           <div key={option.id} className="flex items-center gap-4 p-4 border rounded-lg">
                             <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
                               <div>
@@ -289,7 +289,7 @@ export default function PaymentSettingsPage() {
                                 <Input
                                   type="number"
                                   value={option.amount / 100}
-                                  onChange={(e) => updateBidFeeOption(option.id, { 
+                                  onChange={(e) => updateUnlockFeeOption(option.id, { 
                                     amount: Number(e.target.value) * 100,
                                     label: `₹${e.target.value}`
                                   })}
@@ -302,22 +302,22 @@ export default function PaymentSettingsPage() {
                                 <Input
                                   type="text"
                                   value={option.label}
-                                  onChange={(e) => updateBidFeeOption(option.id, { label: e.target.value })}
-                                  placeholder="₹5"
+                                  onChange={(e) => updateUnlockFeeOption(option.id, { label: e.target.value })}
+                                  placeholder="Fee Label"
                                 />
                               </div>
                               <div className="flex items-center gap-4">
                                 <div className="flex items-center space-x-2">
                                   <Switch
                                     checked={option.isActive}
-                                    onCheckedChange={(checked) => updateBidFeeOption(option.id, { isActive: checked })}
+                                    onCheckedChange={(checked) => updateUnlockFeeOption(option.id, { isActive: checked })}
                                   />
                                   <Label className="text-sm">Active</Label>
                                 </div>
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  onClick={() => setDefaultBidFee(option.id)}
+                                  onClick={() => setDefaultUnlockFee(option.id)}
                                   disabled={option.isDefault}
                                 >
                                   {option.isDefault ? 'Default' : 'Set Default'}
@@ -327,7 +327,7 @@ export default function PaymentSettingsPage() {
                             <Button
                               variant="destructive"
                               size="sm"
-                              onClick={() => removeBidFeeOption(option.id)}
+                              onClick={() => removeUnlockFeeOption(option.id)}
                               disabled={option.isDefault}
                             >
                               <Trash2 className="h-4 w-4" />

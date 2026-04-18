@@ -18,9 +18,16 @@ const GigSchema = new mongoose.Schema({
         'graphic design',
         'content writing',
         'social media management',
+        'social media marketing',
         'SEO',
         'app development',
-        'game development'
+        'game development',
+        'video editing',
+        'photography',
+        'data entry',
+        'virtual assistant',
+        'digital marketing',
+        'business consulting'
       ],
       message: 'Category must be one of the Gudgig categories'
     }
@@ -38,14 +45,17 @@ const GigSchema = new mongoose.Schema({
   budget: {
     type: Number,
     default: 0,
-    min: 0,
-    index: true
+    min: 0
+  },
+  bidFee: {
+    type: Number,
+    default: 0, // 0 means use global default
+    min: 0
   },
   location: {
     type: String,
     trim: true,
-    default: 'Remote',
-    index: true
+    default: 'Remote'
   },
   experienceLevel: {
     type: String,
@@ -59,8 +69,7 @@ const GigSchema = new mongoose.Schema({
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true,
-    index: true
+    required: true
   },
   // Track selected freelancer (if any) as part of post-selection flow
   selectedFreelancerId: {
@@ -68,7 +77,7 @@ const GigSchema = new mongoose.Schema({
     ref: 'User'
   },
   selection: {
-    status: { type: String, enum: ['none', 'in_progress', 'selected', 'completed'], default: 'none', index: true },
+    status: { type: String, enum: ['none', 'in_progress', 'selected', 'completed'], default: 'none' },
     selectedBidId: { type: mongoose.Schema.Types.ObjectId, ref: 'Bid' },
     selectedAt: { type: Date }
   },
@@ -76,8 +85,7 @@ const GigSchema = new mongoose.Schema({
   status: {
     type: String,
     enum: ['active', 'paused', 'completed', 'cancelled'],
-    default: 'active',
-    index: true
+    default: 'active'
   },
   deadline: {
     type: Date,

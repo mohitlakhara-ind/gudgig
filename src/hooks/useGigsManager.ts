@@ -319,17 +319,28 @@ export const getGigTypeColor = (type: string) => {
 };
 
 export const formatGigBudget = (job: Job) => {
-  if (typeof job.budget === 'number' && job.budget > 0) {
-    return `₹${job.budget.toLocaleString()}`;
+  const price = (job as any).price;
+  const budget = typeof job.budget === 'number' && job.budget > 0 ? job.budget : null;
+  
+  if (price && budget) {
+    return `₹${price.toLocaleString()} (Budget: ₹${budget.toLocaleString()})`;
   }
-  const budget = job.salary?.min || job.salaryDisclosure?.min;
-  const budgetMax = job.salary?.max || job.salaryDisclosure?.max;
+  if (price) return `₹${price.toLocaleString()}`;
+  if (budget) return `₹${budget.toLocaleString()}`;
+
+  const sMin = job.salary?.min || job.salaryDisclosure?.min;
+  const sMax = job.salary?.max || job.salaryDisclosure?.max;
   const period = job.salaryDisclosure?.period || job.salary?.period || 'project';
   const prefix = period === 'hourly' ? '/hr' : '';
-  if (budget && budgetMax) return `₹${budget.toLocaleString()} - ₹${budgetMax.toLocaleString()}${prefix}`;
-  if (budget) return `From ₹${budget.toLocaleString()}${prefix}`;
-  if (budgetMax) return `Up to ₹${budgetMax.toLocaleString()}${prefix}`;
+  if (sMin && sMax) return `₹${sMin.toLocaleString()} - ₹${sMax.toLocaleString()}${prefix}`;
+  if (sMin) return `From ₹${sMin.toLocaleString()}${prefix}`;
+  if (sMax) return `Up to ₹${sMax.toLocaleString()}${prefix}`;
   return 'Budget not specified';
+};
+
+export const formatMaxBids = (maxBids: number | null | undefined) => {
+  if (maxBids === 0 || maxBids === null || maxBids === undefined) return 'Unlimited';
+  return maxBids.toString();
 };
 
 export const getGigStatusColor = (status: string) => {

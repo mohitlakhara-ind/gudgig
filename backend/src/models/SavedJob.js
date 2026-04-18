@@ -4,19 +4,16 @@ const savedJobSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true,
-    index: true
+    required: true
   },
   jobId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Gig',
-    required: true,
-    index: true
+    required: true
   },
   savedAt: {
     type: Date,
-    default: Date.now,
-    index: true
+    default: Date.now
   },
   // Additional metadata for better tracking
   metadata: {

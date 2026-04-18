@@ -47,6 +47,7 @@ export const adminCreateJob = async (req, res, next) => {
       requirements, 
       maxBids,
       contactDetails,
+      price,
       location
     } = req.body;
 
@@ -63,6 +64,9 @@ export const adminCreateJob = async (req, res, next) => {
       description,
       requirements: Array.isArray(requirements) ? requirements : [],
       maxBids,
+      price,
+      bidFee: req.body.bidFee,
+      contactDetails,
       createdBy: req.user._id,
       location: normalizedLocation
     });
@@ -256,16 +260,17 @@ export const submitBid = async (req, res, next) => {
     }
 
     const { gigId, quotation, proposal, bidFeePaid, contactDetails } = req.body;
-    const config = await getOrCreateConfig();
-
-    // Validate bidAmountPaid equals active fee
-    if (Number(bidFeePaid) !== Number(config.currentBidFee)) {
-      return res.status(400).json({ success: false, message: `Bid amount must equal active fee ₹${config.currentBidFee}` });
-    }
-
     const gig = await Gig.findById(gigId);
     if (!gig) {
       return res.status(404).json({ success: false, message: 'Gig not found' });
+    }
+
+    const config = await getOrCreateConfig();
+    const requiredFee = (gig.bidFee && gig.bidFee > 0) ? gig.bidFee : config.currentBidFee;
+
+    // Validate bidAmountPaid equals active fee
+    if (Number(bidFeePaid) !== Number(requiredFee)) {
+      return res.status(400).json({ success: false, message: `Unlock fee must equal ₹${requiredFee}` });
     }
 
     // Validate contact details are provided
@@ -305,13 +310,13 @@ export const submitBid = async (req, res, next) => {
         position: bidderContact.position || ''
       },
       posterContact: {
-        name: gigCreator.name,
-        email: gigCreator.email.toLowerCase(),
-        phone: gigCreator.phone || '',
+        name: gig.contactDetails?.name || gigCreator.name,
+        email: (gig.contactDetails?.email || gigCreator.email).toLowerCase(),
+        phone: gig.contactDetails?.phone || gigCreator.phone || '',
         countryCode: 'US', // Default for poster
         company: '',
         position: '',
-        alternateContact: '',
+        alternateContact: gig.contactDetails?.alternateContact || '',
         location: gig.location || 'Remote'
       }
     };
@@ -566,9 +571,9 @@ export const updateJob = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Validation errors', errors: errors.array() });
     }
 
-    const { gigId } = req.params;
+    const gigId = req.params.gigId || req.params.jobId || req.params.id;
     const updates = {};
-    const allowed = ['title', 'category', 'description', 'requirements', 'maxBids', 'location'];
+    const allowed = ['title', 'category', 'description', 'requirements', 'maxBids', 'location', 'price', 'bidFee', 'contactDetails'];
     for (const key of allowed) {
       if (req.body[key] !== undefined) {
         updates[key] = req.body[key];
@@ -596,7 +601,7 @@ export const updateJob = async (req, res, next) => {
 // Admin: Delete job
 export const deleteJob = async (req, res, next) => {
   try {
-    const { gigId } = req.params;
+    const gigId = req.params.gigId || req.params.jobId || req.params.id;
     const gig = await Gig.findById(gigId);
     if (!gig) {
       return res.status(404).json({ success: false, message: 'Gig not found' });
@@ -612,7 +617,7 @@ export const deleteJob = async (req, res, next) => {
 // Admin: Toggle job visibility (isHidden status)
 export const toggleJobVisibility = async (req, res, next) => {
   try {
-    const { gigId } = req.params;
+    const gigId = req.params.gigId || req.params.jobId || req.params.id;
     const { isHidden } = req.body;
     
     if (typeof isHidden !== 'boolean') {

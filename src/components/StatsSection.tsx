@@ -60,7 +60,7 @@ export default function StatsSection() {
             value: apiStats && apiStats.verifiedLeads > 0 ? apiStats.verifiedLeads : FALLBACK_STATS.verifiedLeads,
             suffix: '+',
             label: 'Verified Leads',
-            color: 'secondary',
+            color: 'primary',
             description: 'Quality opportunities'
           },
           {

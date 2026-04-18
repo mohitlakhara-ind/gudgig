@@ -4,14 +4,12 @@ const applicationSchema = new mongoose.Schema({
   job: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Gig',
-    required: true,
-    index: true
+    required: true
   },
   applicant: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true,
-    index: true
+    required: true
   },
   status: {
     type: String,
@@ -24,8 +22,7 @@ const applicationSchema = new mongoose.Schema({
       'accepted',       // Application accepted/hired
       'withdrawn'       // Applicant withdrew application
     ],
-    default: 'pending',
-    index: true
+    default: 'pending'
   },
   coverLetter: {
     type: String,
@@ -183,8 +180,7 @@ const applicationSchema = new mongoose.Schema({
   // Metadata
   appliedAt: {
     type: Date,
-    default: Date.now,
-    index: true
+    default: Date.now
   },
   lastUpdatedAt: {
     type: Date,
@@ -193,8 +189,7 @@ const applicationSchema = new mongoose.Schema({
   // Soft delete
   isActive: {
     type: Boolean,
-    default: true,
-    index: true
+    default: true
   },
   deletedAt: Date
 }, {

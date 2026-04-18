@@ -101,13 +101,13 @@ export default function PlaceBidModal({ open, onClose, jobId, jobTitle }: Props)
       <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40">
         <div className="bg-white w-full sm:w-[600px] rounded-t-2xl sm:rounded-2xl shadow-xl max-h-[90vh] overflow-y-auto">
           <div className="p-4 border-b flex items-center justify-between">
-            <div className="font-semibold">Place Bid</div>
+            <div className="font-semibold">Unlock Contact</div>
             <button className="text-sm" onClick={onClose}>Close</button>
           </div>
           <div className="p-5 space-y-5">
             <div className="flex items-center justify-between">
               <div className="text-sm text-gray-700 font-medium">{jobTitle}</div>
-              <div className="text-xs text-gray-500">{bidCount === null ? 'Bids: —' : `Bids: ${bidCount}`}</div>
+              <div className="text-xs text-gray-500">{bidCount === null ? 'Unlocks: —' : `Unlocks: ${bidCount}`}</div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -141,7 +141,7 @@ export default function PlaceBidModal({ open, onClose, jobId, jobTitle }: Props)
               <div className="text-sm font-semibold mb-3">Contact Information</div>
               {!contactDetails ? (
                 <div className="space-y-3">
-                  <p className="text-sm text-gray-600">Please provide your contact details for this bid submission.</p>
+                  <p className="text-sm text-gray-600">Please provide your contact details for this lead unlock.</p>
                   <Button 
                     variant="outline" 
                     onClick={() => setShowContactSelection(true)}
@@ -174,8 +174,8 @@ export default function PlaceBidModal({ open, onClose, jobId, jobTitle }: Props)
             </div>
 
             <div>
-              <div className="text-sm font-semibold mb-1">Select bid fee</div>
-              <div className="text-xs text-gray-600 mb-3">Bid fee covers platform costs and gives you direct access to chat with the project admin once submitted. Your bid will be visible to the admin immediately after payment confirmation.</div>
+              <div className="text-sm font-semibold mb-1">Select unlock fee</div>
+              <div className="text-xs text-gray-600 mb-3">The unlock fee covers platform costs and gives you direct access to the client contact information. This is a one-time fee for this specific lead.</div>
               <div className="flex gap-2 flex-wrap">
                 {fetchingFees ? (
                   <div className="text-sm text-gray-500">Loading fee options…</div>
@@ -214,8 +214,8 @@ export default function PlaceBidModal({ open, onClose, jobId, jobTitle }: Props)
                   setContactDetails(contact);
                   setShowContactSelection(false);
                 }}
-                title="Contact Information for Bid"
-                description="Choose your contact details for this bid submission"
+                title="Contact Information for Lead Unlock"
+                description="Choose your contact details for this lead"
                 showSaveOption={true}
               />
             </div>

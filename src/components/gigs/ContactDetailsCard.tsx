@@ -13,10 +13,12 @@ import {
 
 interface ContactDetails {
   bidderContact: {
+    name?: string;
     email: string;
     phone: string;
   };
   posterContact: {
+    name?: string;
     email: string;
     phone: string;
     location?: string;
@@ -86,6 +88,15 @@ export default function ContactDetailsCard({ contactDetails, loading = false }: 
                 <span className="text-muted-foreground">Location:</span>
                 <span className="font-medium text-foreground">
                   {contactDetails.posterContact.location}
+                </span>
+              </div>
+            )}
+            {contactDetails.posterContact.name && (
+              <div className="flex items-center gap-2 text-sm">
+                <Users className="h-4 w-4 text-muted-foreground" />
+                <span className="text-muted-foreground">Post Contact:</span>
+                <span className="font-medium text-foreground">
+                  {contactDetails.posterContact.name}
                 </span>
               </div>
             )}

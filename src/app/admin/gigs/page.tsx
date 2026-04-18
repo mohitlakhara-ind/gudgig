@@ -20,6 +20,8 @@ type EditableGig = Pick<Gig, '_id' | 'title' | 'category' | 'createdAt'> & {
   maxBids?: number; 
   isHidden?: boolean; 
   location?: string;
+  price?: number;
+  bidFee?: number;
 };
 
 const PAGE_SIZE = 10;
@@ -38,6 +40,8 @@ export default function AdminGigsPage() {
   });
   const [creating, setCreating] = React.useState(false);
   const [editing, setEditing] = React.useState<EditableGig | null>(null);
+  const [previewingGig, setPreviewingGig] = React.useState<Gig | null>(null);
+  const [bidFeeSettings, setBidFeeSettings] = React.useState<AdminSettings | null>(null);
   const [form, setForm] = React.useState<{ 
     title: string; 
     description: string; 
@@ -45,6 +49,8 @@ export default function AdminGigsPage() {
     requirements: string[]; 
     maxBids: number;
     location: string;
+    price: number;
+    bidFee: number;
     contactDetails: {
       email: string;
       phone: string;
@@ -56,8 +62,10 @@ export default function AdminGigsPage() {
     description: '', 
     category: 'website development', 
     requirements: [''], 
-    maxBids: 10,
+    maxBids: 0,
     location: 'Remote',
+    price: 0,
+    bidFee: 0,
     contactDetails: {
       email: '',
       phone: '',
@@ -89,7 +97,8 @@ export default function AdminGigsPage() {
         bidsCount: (j as any).bidsCount,
         maxBids: (j as any).maxBids,
         isHidden: (j as any).isHidden,
-        location: j.location
+        location: j.location,
+        price: j.price
       })));
 
       const totalResults = res.total ?? res.count ?? list.length;
@@ -115,6 +124,19 @@ export default function AdminGigsPage() {
   }, [category]);
 
   React.useEffect(() => { load(1); }, [load]);
+
+  // Fetch bid fee settings for the dropdown
+  React.useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const res = await apiClient.getBidFees();
+        setBidFeeSettings(res.data || null);
+      } catch (e) {
+        console.error('Failed to load bid fee settings', e);
+      }
+    };
+    fetchSettings();
+  }, []);
 
   const handlePageChange = React.useCallback((targetPage: number) => {
     if (targetPage < 1 || targetPage > pagination.totalPages || targetPage === page) return;
@@ -161,14 +183,16 @@ export default function AdminGigsPage() {
       description: '', 
       category: 'website development', 
       requirements: [''], 
-      maxBids: 10,
+      maxBids: 0,
       location: 'Remote',
+      price: 0,
       contactDetails: {
         email: '',
         phone: '',
         name: '',
         alternateContact: ''
-      }
+      },
+      bidFee: 0
     });
     setCreating(true);
   };
@@ -182,18 +206,31 @@ export default function AdminGigsPage() {
         description: j.description || '',
         category: j.category,
         requirements: Array.isArray(j.requirements) && j.requirements.length > 0 ? j.requirements : [''],
-        maxBids: Number((j as any).maxBids ?? 10),
+        maxBids: Number((j as any).maxBids ?? 0),
         location: j.location || 'Remote',
+        price: j.price || 0,
         contactDetails: {
-          email: (j as any)?.contactDetails?.bidderContact?.email || (j as any)?.contactDetails?.email || '',
-          phone: (j as any)?.contactDetails?.bidderContact?.phone || (j as any)?.contactDetails?.phone || '',
-          name: (j as any)?.contactDetails?.bidderContact?.name || (j as any)?.contactDetails?.name || '',
-          alternateContact: (j as any)?.contactDetails?.posterContact?.alternateContact || ''
-        }
+          email: j.contactDetails?.email || '',
+          phone: j.contactDetails?.phone || '',
+          name: j.contactDetails?.name || '',
+          alternateContact: j.contactDetails?.alternateContact || ''
+        },
+        bidFee: Number((j as any).bidFee ?? 0)
       });
-    } catch (e) {
-      // Fall back to minimal fields if fetch fails
-      setForm((prev) => ({ ...prev, title: job.title || prev.title, category: job.category }));
+    } catch (error) {
+      console.error('Failed to fetch gig details:', error);
+      toast.error('Failed to fetch full gig details for editing');
+    }
+  };
+  const openPreview = async (job: EditableGig) => {
+    setIsLoading(true);
+    try {
+      const res = await apiClient.getGig(job._id);
+      setPreviewingGig(res.data as Gig);
+    } catch (e: any) {
+      toast.error('Failed to load gig for preview');
+    } finally {
+      setIsLoading(false);
     }
   };
   const removeGig = async (id: string) => {
@@ -202,9 +239,16 @@ export default function AdminGigsPage() {
     setError(null);
     try {
       await apiClient.deleteGig(id);
-      await load(page);
+      toast.success('Gig deleted successfully');
+      setGigs(prev => prev.filter(g => g._id !== id));
+      if (gigs.length <= 1 && page > 1) {
+        load(page - 1);
+      } else {
+        load(page);
+      }
     } catch (e: any) {
       setError(e?.message || 'Failed to delete job');
+      toast.error(e?.message || 'Failed to delete job');
     } finally {
       setIsLoading(false);
     }
@@ -240,7 +284,15 @@ export default function AdminGigsPage() {
         category: form.category, 
         requirements: form.requirements.filter(Boolean), 
         maxBids: form.maxBids,
-        location: form.location.trim() || 'Remote'
+        location: form.location.trim() || 'Remote',
+        price: form.price,
+        bidFee: form.bidFee,
+        contactDetails: {
+          ...form.contactDetails,
+          email: form.contactDetails.email.trim(),
+          name: form.contactDetails.name.trim(),
+          phone: form.contactDetails.phone.trim()
+        }
       });
       setCreating(false);
       toast.success('Gig created');
@@ -273,7 +325,15 @@ export default function AdminGigsPage() {
         category: form.category, 
         requirements: form.requirements.filter(Boolean), 
         maxBids: form.maxBids,
-        location: form.location.trim() || 'Remote'
+        location: form.location.trim() || 'Remote',
+        price: form.price,
+        bidFee: form.bidFee,
+        contactDetails: {
+          ...form.contactDetails,
+          email: form.contactDetails.email.trim(),
+          name: form.contactDetails.name.trim(),
+          phone: form.contactDetails.phone.trim()
+        }
       });
       setEditing(null);
       toast.success('Gig updated');
@@ -320,6 +380,7 @@ export default function AdminGigsPage() {
             <tr>
               <th className="p-2 text-left">Title</th>
               <th className="p-2 text-left">Category</th>
+              <th className="p-2 text-left">Price (₹)</th>
               <th className="p-2 text-left">Posted</th>
               <th className="p-2 text-left">Bid Limit</th>
               <th className="p-2 text-left">Status</th>
@@ -347,6 +408,7 @@ export default function AdminGigsPage() {
                   </div>
                 </td>
                 <td className="p-2">{job.category}</td>
+                <td className="p-2 text-success font-medium">₹{job.price?.toLocaleString() || '0'}</td>
                 <td className="p-2">{new Date(job.createdAt).toLocaleDateString()}</td>
                 <td className="p-2">
                   <div className="flex items-center gap-1">
@@ -375,6 +437,7 @@ export default function AdminGigsPage() {
                   </div>
                 </td>
                 <td className="p-2 flex gap-2">
+                  <button onClick={() => { openPreview(job); }} className="px-2 py-1 text-xs rounded border bg-muted/50 hover:bg-muted" disabled={isLoading}>Preview</button>
                   <button onClick={() => { openEdit(job); }} className="px-2 py-1 text-xs rounded border">Edit</button>
                   <button 
                     onClick={() => toggleGigVisibility(job._id, job.isHidden || false)}
@@ -543,15 +606,45 @@ export default function AdminGigsPage() {
                   <label className="block text-sm mb-1">Maximum Bids</label>
                   <input
                     type="number"
-                    min="1"
-                    max="100"
+                    min="0"
+                    max="1000"
                     className="w-full border border-input bg-background rounded px-3 py-2 text-sm"
                     value={form.maxBids}
-                    placeholder="e.g., 10"
-                    onChange={e => setForm({ ...form, maxBids: parseInt(e.target.value) || 10 })}
+                    placeholder="e.g., 10 (0 for unlimited)"
+                    onChange={e => setForm({ ...form, maxBids: parseInt(e.target.value) || 0 })}
                   />
                   <div className="text-xs text-muted-foreground mt-1">
-                    Set the maximum number of bids allowed for this gig. Leave empty for unlimited.
+                    Set the maximum number of bids allowed. Set to 0 or leave empty for unlimited.
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm mb-1">Gig Price (₹)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    className="w-full border border-input bg-background rounded px-3 py-2 text-sm"
+                    value={form.price}
+                    placeholder="e.g., 5000"
+                    onChange={e => setForm({ ...form, price: parseFloat(e.target.value) || 0 })}
+                  />
+                  <div className="text-xs text-muted-foreground mt-1">
+                    The total price or budget for this gig.
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm mb-1">Bid Fee / Unlock Fee (₹)</label>
+                  <select
+                    className="w-full border border-input bg-background rounded px-3 py-2 text-sm"
+                    value={form.bidFee}
+                    onChange={e => setForm({ ...form, bidFee: parseInt(e.target.value) || 0 })}
+                  >
+                    <option value={0}>Global Default {bidFeeSettings ? `(₹${bidFeeSettings.currentBidFee})` : ''}</option>
+                    {bidFeeSettings?.bidFeeOptions.map(fee => (
+                      <option key={fee} value={fee}>₹{fee}</option>
+                    ))}
+                  </select>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    The amount a freelancer must pay to bid/unlock this gig.
                   </div>
                 </div>
                 <div>
@@ -649,6 +742,84 @@ export default function AdminGigsPage() {
                   <Button variant="outline" onClick={() => { if (!isLoading) { setCreating(false); setEditing(null); } }} disabled={isLoading}>Cancel</Button>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {previewingGig && (
+        <div
+          className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-[100]"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="bg-card w-full max-w-2xl max-h-[90vh] rounded-lg shadow-xl flex flex-col ring-1 ring-border">
+            <div className="flex items-center justify-between p-4 border-b">
+              <h2 className="text-xl font-bold text-primary">Gig Preview</h2>
+              <Button variant="ghost" size="sm" onClick={() => setPreviewingGig(null)}>Close</Button>
+            </div>
+            <div className="p-6 overflow-auto space-y-6">
+              <div>
+                <Badge className="mb-2">{previewingGig.category}</Badge>
+                <h1 className="text-2xl font-bold">{previewingGig.title}</h1>
+                <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
+                  <span>Posted: {new Date(previewingGig.createdAt).toLocaleDateString()}</span>
+                  <span>Location: {previewingGig.location}</span>
+                </div>
+              </div>
+
+              <div className="p-4 bg-muted/30 rounded-lg border flex justify-between items-center">
+                <div>
+                  <div className="text-xs uppercase text-muted-foreground font-semibold">Budget/Price</div>
+                  <div className="text-2xl font-bold text-success">₹{previewingGig.price?.toLocaleString()}</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-xs uppercase text-muted-foreground font-semibold">Bid Limit</div>
+                  <div className="text-lg font-medium">{previewingGig.maxBids ? `${previewingGig.maxBids} Bids` : 'Unlimited'}</div>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-sm font-semibold uppercase text-muted-foreground mb-2">Description</h3>
+                <div className="text-sm whitespace-pre-wrap leading-relaxed">{previewingGig.description}</div>
+              </div>
+
+              {previewingGig.requirements && previewingGig.requirements.length > 0 && (
+                <div>
+                  <h3 className="text-sm font-semibold uppercase text-muted-foreground mb-2">Requirements</h3>
+                  <ul className="list-disc list-inside text-sm space-y-1">
+                    {previewingGig.requirements.map((req, i) => (
+                      <li key={i}>{req}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              <div className="border-t pt-4">
+                <h3 className="text-sm font-semibold uppercase text-muted-foreground mb-3">Poster Contact Info</h3>
+                <div className="grid grid-cols-2 gap-4 text-sm bg-card p-4 rounded border">
+                  <div>
+                    <span className="text-muted-foreground">Name:</span>
+                    <p className="font-medium">{previewingGig.contactDetails?.name || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Email:</span>
+                    <p className="font-medium">{previewingGig.contactDetails?.email || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Phone:</span>
+                    <p className="font-medium">{previewingGig.contactDetails?.phone || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Alt Contact:</span>
+                    <p className="font-medium">{previewingGig.contactDetails?.alternateContact || 'N/A'}</p>
+                  </div>
+                </div>
+                <p className="text-[10px] text-muted-foreground mt-2 italic">* This info is hidden from public view until a bid is unlocked.</p>
+              </div>
+            </div>
+            <div className="p-4 border-t bg-muted/20 flex justify-end">
+              <Button onClick={() => setPreviewingGig(null)}>Close Preview</Button>
             </div>
           </div>
         </div>

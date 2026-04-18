@@ -84,7 +84,7 @@ export default function ProfessionalTestimonials() {
         <div className="text-center mb-8 sm:mb-12 md:mb-16">
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6 tracking-tight text-foreground">What Our Users Say</h2>
           <p className="text-base sm:text-lg md:text-xl max-w-3xl mx-auto leading-relaxed text-card-foreground px-4">
-            Join thousands of satisfied candidates and employers who have found success through our platform
+            Join a thriving community of professional freelancers who are scaling their businesses through verified premium leads
           </p>
           <div className="mt-6 sm:mt-8 w-16 h-1 mx-auto rounded-full bg-primary"></div>
         </div>

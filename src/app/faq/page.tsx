@@ -3,16 +3,16 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: "FAQ - Frequently Asked Questions | Gudgig",
-  description: "Find answers to common questions about Gudgig. Get help with gig browsing, bidding, account management, and more.",
+  description: "Find answers to common questions about Gudgig. Get help with gig browsing, unlocking details, account management, and more.",
   openGraph: {
     title: "FAQ - Frequently Asked Questions | Gudgig",
-    description: "Find answers to common questions about Gudgig. Get help with gig browsing, bidding, account management, and more.",
+    description: "Find answers to common questions about Gudgig. Get help with gig browsing, unlocking details, account management, and more.",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
     title: "FAQ - Frequently Asked Questions | Gudgig",
-    description: "Find answers to common questions about Gudgig. Get help with gig browsing, bidding, account management, and more.",
+    description: "Find answers to common questions about Gudgig. Get help with gig browsing, unlocking details, account management, and more.",
   },
 };
 
@@ -31,18 +31,18 @@ export default function FAQ() {
       },
       {
         "@type": "Question",
-        "name": "How do I place a bid on a gig?",
+        "name": "How do I unlock gig contact details?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Browse available gigs, click on one that interests you, review the details, and click 'Place Bid'. You'll need to pay a small bid fee and provide your quotation and proposal."
+          "text": "Browse available gigs, click on one that interests you, review the details, and click 'Unlock Details'. You'll need to pay a small unlock fee to instantly reveal verified contact details."
         }
       },
       {
         "@type": "Question",
-        "name": "What is the bid fee for?",
+        "name": "What is the unlock fee for?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "The bid fee (₹1-₹10) helps maintain quality by ensuring serious proposals and reducing spam. It's a one-time payment per bid."
+          "text": "The unlock fee helps maintain quality by ensuring serious interest and reducing spam. It's a one-time payment to reveal contact details."
         }
       }
     ]
@@ -58,11 +58,11 @@ export default function FAQ() {
         },
         {
           question: "Do I need to pay to join Gudgig?",
-          answer: "No, creating an account is completely free. You only pay a small bid fee (₹1-₹10) when you place a bid on a gig."
+          answer: "No, creating an account is completely free. You only pay a small minimal fee when you want to unlock contact details for a gig."
         },
         {
           question: "Can I browse gigs without an account?",
-          answer: "Yes, you can browse all available gigs as a guest. However, you'll need to create an account and login to place bids."
+          answer: "Yes, you can browse all available gigs as a guest. However, you'll need to create an account or use guest checkout to unlock contact details."
         }
       ]
     },
@@ -70,20 +70,20 @@ export default function FAQ() {
       category: "Bidding & Payments",
       questions: [
         {
-          question: "How do I place a bid on a gig?",
-          answer: "Browse available gigs, click on one that interests you, review the details, and click 'Place Bid'. You'll need to pay a small bid fee and provide your quotation and proposal."
+          question: "How do I unlock contact details for a gig?",
+          answer: "Browse available gigs, click on one that interests you, review the details, and click 'Unlock Details'. You'll need to pay a small unlock fee to instantly reveal the client's phone and email."
         },
         {
-          question: "What is the bid fee for?",
-          answer: "The bid fee (₹1-₹10) helps maintain quality by ensuring serious proposals and reducing spam. It's a one-time payment per bid, not a subscription."
+          question: "What is the unlock fee for?",
+          answer: "The unlock fee helps maintain quality by ensuring serious interest and reducing spam. It's a one-time payment per gig, not a subscription."
         },
         {
-          question: "How do I pay the bid fee?",
+          question: "How do I pay the unlock fee?",
           answer: "We use Razorpay for secure payments. You can pay using UPI, cards, net banking, or other supported payment methods."
         },
         {
-          question: "Can I get a refund for my bid fee?",
-          answer: "Bid fees are generally non-refundable as they help maintain platform quality. However, if there's a technical issue, please contact support."
+          question: "Can I get a refund for my unlock fee?",
+          answer: "Unlock fees are generally non-refundable as they provide instant access to contact details. However, if there's a technical issue, please contact support."
         }
       ]
     },

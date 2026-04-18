@@ -122,7 +122,7 @@ export default function TermsPage() {
                     <div className="bg-muted/50 rounded-lg p-4 border border-border/50">
                       <p className="text-sm font-semibold text-foreground mb-2">Payment Details:</p>
                       <ul className="list-disc list-inside text-muted-foreground space-y-1 text-sm ml-2">
-                        <li>Lead unlock fee: ₹5 per lead (nominal fee to access client contact details)</li>
+                        <li>Lead unlock fee: Nominal fee as specified for each lead (to access client contact details)</li>
                         <li>Payment methods: UPI, Credit/Debit Cards, Net Banking, and other supported methods via Razorpay</li>
                         <li>All transactions are processed securely through PCI-compliant payment gateways</li>
                         <li>Payment information is not stored on our servers</li>

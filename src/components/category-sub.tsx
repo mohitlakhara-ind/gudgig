@@ -8,7 +8,14 @@ import { Card } from "@/components/ui/card";
 
 const CategorySub = () => {
     const categories = [
-        { title: "Website Development", icon: "💻", count: "2.5k+" },
+        { title: "Website Development", icon: "🌐", count: "2.5k+" },
+        { title: "Graphic Design", icon: "🎨", count: "1.8k+" },
+        { title: "Content Writing", icon: "✍️", count: "1.2k+" },
+        { title: "Social Media", icon: "📱", count: "950+" },
+        { title: "SEO", icon: "📈", count: "800+" },
+        { title: "App Development", icon: "📱", count: "600+" },
+        { title: "Game Development", icon: "🎮", count: "400+" },
+        { title: "Video Editing", icon: "🎞️", count: "350+" },
     ];
     return (
         < div className="space-y-12" >
@@ -22,7 +29,7 @@ const CategorySub = () => {
                 <h2 className="text-2xl font-bold text-foreground mb-6 text-center lg:text-left">
                     Browse Leads by Category
                 </h2>
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 items-stretch">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 items-stretch">
                     {categories.map((cat, i) => (
                         <Link href={`/gigs?category=${cat.title.toLowerCase().replace(' ', '-')}`} key={i} className="h-full">
                             <Card className="h-full p-5 text-center bg-card border border-border hover:border-primary hover:shadow-lg hover:scale-105 transition-all cursor-pointer group flex flex-col justify-between">

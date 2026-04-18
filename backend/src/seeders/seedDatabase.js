@@ -18,8 +18,17 @@ dotenv.config();
 const seedDatabase = async () => {
   try {
     // Connect to MongoDB
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/jobportal');
-    console.log('✅ Connected to MongoDB');
+    const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/jobportal';
+    try {
+      await mongoose.connect(uri, {
+        serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
+      });
+      console.log('✅ Connected to MongoDB');
+    } catch (connError) {
+      console.error('❌ MongoDB Connection Error:', connError.message);
+      console.error('   URI:', uri.replace(/\/\/.*@/, '//****:****@')); // Mask password
+      throw connError;
+    }
 
     // Clear existing data
     await Promise.all([
@@ -74,7 +83,7 @@ const seedDatabase = async () => {
     ]);
     console.log(`👔 Created ${employers.length} employer users`);
 
-    // AdminSettings with bid fee options
+    // AdminSettings with platform fee configurations
     const settings = await AdminSettings.create({ key: 'gg-config', bidFeeOptions: [50, 100, 200, 500], currentBidFee: 100 });
     console.log('⚙️  Created AdminSettings');
 
@@ -455,7 +464,7 @@ const seedDatabase = async () => {
     ]);
     console.log(`🛍️ Created ${services.length} services`);
 
-    // Create bids on jobs with varied payment statuses and dates
+    // Create lead unlocks on jobs with varied payment statuses and dates
     const startOfThisMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
     const lastMonth = new Date(new Date().getFullYear(), new Date().getMonth() - 1, 15);
     const twoMonthsAgo = new Date(new Date().getFullYear(), new Date().getMonth() - 2, 10);
@@ -659,7 +668,7 @@ const seedDatabase = async () => {
         }
       }
     ]);
-    console.log(`💰 Created ${bids.length} bids`);
+    console.log(`💰 Created ${bids.length} lead unlocks`);
 
     // Create sample orders
     const orders = await Order.insertMany([

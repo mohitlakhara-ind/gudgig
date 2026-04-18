@@ -16,6 +16,13 @@ export interface ContactDetails {
   updatedAt: string;
 }
 
+export interface GigContactDetails {
+  email?: string;
+  phone?: string;
+  name?: string;
+  alternateContact?: string;
+}
+
 export interface User {
   _id: string;
   name: string;
@@ -63,6 +70,9 @@ export interface Job {
   bidsCount?: number;
   maxBids?: number;
   isHidden?: boolean;
+  price?: number;
+  bidFee?: number;
+  contactDetails?: GigContactDetails;
 }
 
 // Gig is an alias for Job in this codebase
@@ -330,6 +340,9 @@ export interface CreateJobRequest {
   requirements?: string[];
   maxBids?: number;
   location?: string;
+  price?: number;
+  bidFee?: number;
+  contactDetails?: GigContactDetails;
 }
 
 // Search/filter request parameters used by gigs hooks and API client

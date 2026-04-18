@@ -18,21 +18,21 @@ export default function Hero() {
   const marqueeJobs = [
     [
       { title: "E-commerce Website", budget: "₹15,000 - ₹25,000", tag: "Web Dev" },
-      { title: "Portfolio Development", budget: "₹8,000 - ₹12,000", tag: "Web Dev" },
-      { title: "LMS Platform", budget: "₹45,000 - ₹60,000", tag: "Web Dev" },
-      { title: "Real Estate Portal", budget: "₹35,000 - ₹50,000", tag: "Web Dev" },
+      { title: "Mobile App UI", budget: "₹12,000 - ₹20,000", tag: "App Dev" },
+      { title: "Brand Identity", budget: "₹10,000 - ₹18,000", tag: "Design" },
+      { title: "SEO Strategy", budget: "₹8,000 - ₹15,000", tag: "Marketing" },
     ],
     [
-      { title: "Next.js Dashboard", budget: "₹25,000 - ₹40,000", tag: "Web Dev" },
-      { title: "Shopify Custom Theme", budget: "₹18,000 - ₹30,000", tag: "Web Dev" },
-      { title: "Landing Page Design", budget: "₹10,000 - ₹15,000", tag: "Web Dev" },
-      { title: "React Web App", budget: "₹30,000 - ₹45,000", tag: "Web Dev" },
+      { title: "Product Video", budget: "₹25,000 - ₹40,000", tag: "Video" },
+      { title: "Blog Series", budget: "₹5,000 - ₹8,000", tag: "Writing" },
+      { title: "Instagram Growth", budget: "₹10,000 - ₹15,000", tag: "Social" },
+      { title: "2D Game Assets", budget: "₹20,000 - ₹35,000", tag: "Games" },
     ],
     [
-      { title: "WordPress Setup", budget: "₹8,000 - ₹15,000", tag: "Web Dev" },
-      { title: "API Integration", budget: "₹12,000 - ₹20,000", tag: "Web Dev" },
-      { title: "Saas Platform UI", budget: "₹20,000 - ₹35,000", tag: "Web Dev" },
-      { title: "Tailwind CSS Fixes", budget: "₹5,000 - ₹8,000", tag: "Web Dev" },
+      { title: "React Dashboard", budget: "₹30,000 - ₹50,000", tag: "Web Dev" },
+      { title: "Logo Animation", budget: "₹8,000 - ₹15,000", tag: "Video" },
+      { title: "Content Calendar", budget: "₹12,000 - ₹20,000", tag: "Social" },
+      { title: "UI Components", budget: "₹15,000 - ₹25,000", tag: "Web Dev" },
     ],
   ];
 
@@ -40,7 +40,7 @@ export default function Hero() {
     { label: "Verified Leads", value: "15,000+" },
     { label: "Active Freelancers", value: "50,000+" },
     { label: "Leads Unlocked", value: "100K+" },
-    { label: "Unlock Fee", value: "₹5" },
+    { label: "Unlock Fee", value: "Minimal" },
   ];
 
   return (
@@ -73,7 +73,7 @@ export default function Hero() {
 
             <p className="text-base sm:text-lg md:text-xl text-muted-foreground mb-6 sm:mb-8 leading-relaxed px-4 lg:px-0">
               Where opportunities meet talent, one lead at a time.
-              Browse verified client leads for free, unlock contact details for just ₹5, and connect directly.
+              Browse verified client leads for free, unlock contact details instantly, and connect directly with clients.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start px-4 lg:px-0">

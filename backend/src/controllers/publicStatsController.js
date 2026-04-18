@@ -1,6 +1,7 @@
 import User from '../models/User.js';
 import Job from '../models/Job.js';
 import Testimonial from '../models/Testimonial.js';
+import AdminSettings from '../models/AdminSettings.js';
 
 // @desc    Public platform stats for marketing sections (no auth)
 // @route   GET /api/stats
@@ -13,7 +14,8 @@ export async function getPublicStats(req, res) {
       activeJobs,
       testimonialAgg,
       distinctCategories,
-      distinctCountries
+      distinctCountries,
+      config
     ] = await Promise.all([
       User.countDocuments({}),
       Job.countDocuments({}),
@@ -30,6 +32,7 @@ export async function getPublicStats(req, res) {
       ]),
       Job.distinct('category'),
       User.distinct('country'),
+      AdminSettings.findOne({ key: 'gm-config' })
     ]);
 
     const testimonialStats = testimonialAgg[0] || { avgRating: 0, total: 0 };
@@ -43,6 +46,7 @@ export async function getPublicStats(req, res) {
       totalReviews: testimonialStats.total || 0,
       categories: distinctCategories.filter(Boolean).length,
       countries: distinctCountries.filter(Boolean).length,
+      defaultBidFee: config?.currentBidFee || 1,
     };
 
     res.status(200).json({ success: true, data: stats });

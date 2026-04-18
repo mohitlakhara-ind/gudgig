@@ -16,10 +16,15 @@ router.post('/', protect, authorize('admin'), [
   body('category').isIn(['website development','graphic design','content writing','social media management','SEO','app development','game development']),
   body('description').isString().isLength({ min: 10, max: 5000 }),
   body('requirements').optional().isArray(),
+  body('price').optional().isFloat({ min: 0 }),
+  body('contactDetails').optional().isObject(),
+  body('contactDetails.email').optional().isEmail(),
+  body('contactDetails.phone').optional().isString(),
+  body('contactDetails.name').optional().isString(),
   body('maxBids').optional({ nullable: true }).custom((value) => {
     if (value === null) return true;
-    if (typeof value === 'number' && Number.isInteger(value) && value >= 1) return true;
-    throw new Error('maxBids must be null (unlimited) or a positive integer >= 1');
+    if (typeof value === 'number' && Number.isInteger(value) && value >= 0) return true;
+    throw new Error('maxBids must be null (unlimited) or an integer >= 0');
   })
 ], adminCreateJob);
 
@@ -28,10 +33,12 @@ router.put('/:jobId', protect, authorize('admin'), [
   body('category').optional().isIn(['website development','graphic design','content writing','social media management','SEO','app development','game development']),
   body('description').optional().isString().isLength({ min: 10, max: 5000 }),
   body('requirements').optional().isArray(),
+  body('price').optional().isFloat({ min: 0 }),
+  body('contactDetails').optional().isObject(),
   body('maxBids').optional({ nullable: true }).custom((value) => {
     if (value === null) return true;
-    if (typeof value === 'number' && Number.isInteger(value) && value >= 1) return true;
-    throw new Error('maxBids must be null (unlimited) or a positive integer >= 1');
+    if (typeof value === 'number' && Number.isInteger(value) && value >= 0) return true;
+    throw new Error('maxBids must be null (unlimited) or an integer >= 0');
   })
 ], updateJob);
 

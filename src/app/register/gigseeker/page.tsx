@@ -55,7 +55,7 @@ function FreelancerRegisterContent() {
 
   const benefits = [
     "Browse curated gigs across 7+ categories",
-    "Simple pay-per-bid system (starting ₹1)",
+    "Simple pay-per-unlock system",
     "Direct communication with clients via admin",
     "Clean, LinkedIn-inspired user experience",
     "No subscription fees or hidden costs",
@@ -168,9 +168,7 @@ function FreelancerRegisterContent() {
                 <h1 className="text-4xl font-bold text-foreground mb-4">
                   Start Your Freelancing Journey
                 </h1>
-                <p className="text-xl text-muted-foreground mb-6">
-                  Join Gudgig and start bidding on amazing freelancing opportunities today.
-                </p>
+                  Join Gudgig and start unlocking amazing freelancing opportunities today.
               </div>
 
               <div className="space-y-4">
