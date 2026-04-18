@@ -8,7 +8,8 @@ import {
   Building2,
   Shield,
   Eye,
-  MapPin
+  MapPin,
+  Users
 } from 'lucide-react';
 
 interface ContactDetails {

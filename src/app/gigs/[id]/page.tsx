@@ -29,7 +29,8 @@ import { ContactDetailsCard } from '@/components/gigs';
 import { apiClient } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import type { Job } from '@/types/api';
+import { Gig } from '@/types/api';
+import { getBackendUrl } from '@/lib/backend-url';
 import RazorpayPayment from '@/components/payment/RazorpayPayment';
 import GuestCheckout from '@/components/payment/GuestCheckout';
 import ContactDetailsContext from '@/contexts/ContactDetailsContext';
@@ -41,7 +42,7 @@ export default function GigDetailPage() {
   const contactCtx = useContext(ContactDetailsContext);
   const gigId = params.id as string;
 
-  const [gig, setGig] = useState<Job | null>(null);
+  const [gig, setGig] = useState<Gig | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [savedGigs, setSavedGigs] = useState<string[]>([]);
@@ -218,9 +219,9 @@ export default function GigDetailPage() {
       const payload = {
         quotation: 0,
         proposal: 'Contact access unlocked',
-        unlockFeePaid: fee,
+        bidFeePaid: fee,
         contactDetails: { bidderContact }
-      } as any;
+      };
 
       try {
         const res = await apiClient.createGigBid(gigId, payload);
@@ -316,7 +317,7 @@ export default function GigDetailPage() {
   const verifyAndSubmitAfterRzp = async (paymentId: string, signature: string) => {
     try {
       if (!rzpOrderId) return;
-      const base = (process.env.NEXT_PUBLIC_BACKEND_URL || '').replace(/\/$/, '');
+      const base = getBackendUrl(false);
       const resp = await fetch(`${base}/api/payment/verify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -347,6 +348,7 @@ export default function GigDetailPage() {
 
       const fee = gig?.price || 5;
       const amountPaise = fee * 100;
+      const base = getBackendUrl(false);
       const resp = await fetch(`${base}/api/payment/order`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

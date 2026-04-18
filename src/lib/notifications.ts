@@ -3,7 +3,7 @@
 
 export interface Notification {
   id: string;
-  type: 'welcome' | 'gig_sent' | 'unlock_contact' | 'bid_accepted' | 'bid_rejected' | 'payment_success' | 'payment_failed' | 'admin_message';
+  type: 'welcome' | 'gig_sent' | 'unlock_contact' | 'bid_accepted' | 'bid_rejected' | 'payment_success' | 'payment_failed' | 'admin_message' | 'bid_submitted';
   title: string;
   message: string;
   userId: string;
@@ -100,6 +100,24 @@ class NotificationService {
             </div>
           `,
           text: `Contact Details Unlocked!\n\nHello ${data.userName},\n\nYou have successfully unlocked the contact details for: ${data.jobTitle}\n\nYou can now reach out to the client directly.\n\nThank you for using Gudgig!`
+        };
+
+      case 'bid_submitted':
+        return {
+          subject: `Bid Submitted Successfully - ${data.jobTitle}`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h2 style="color: #0966C2;">Bid Submitted!</h2>
+              <p>Hello ${data.userName},</p>
+              <p>Your bid for <strong>${data.jobTitle}</strong> has been submitted successfully.</p>
+              <p><strong>Your Quotation:</strong> ₹${data.quotation}</p>
+              <p>We'll notify you if the client accepts your bid.</p>
+              <div style="margin-top: 30px; padding: 20px; background-color: #f8f9fa; border-radius: 8px;">
+                <p style="margin: 0; color: #666;">Thank you for using Gudgig!</p>
+              </div>
+            </div>
+          `,
+          text: `Bid Submitted Successfully!\n\nHello ${data.userName},\n\nYour bid for ${data.jobTitle} has been submitted successfully.\n\nYour Quotation: ₹${data.quotation}\n\nWe'll notify you if the client accepts your bid.\n\nThank you for using Gudgig!`
         };
 
       case 'bid_accepted':

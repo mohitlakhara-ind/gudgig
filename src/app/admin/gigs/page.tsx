@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { apiClient } from '@/lib/api';
-import { Gig } from '@/types/api';
+import { Gig, AdminSettings } from '@/types/api';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 

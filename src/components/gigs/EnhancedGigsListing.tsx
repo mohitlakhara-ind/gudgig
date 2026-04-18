@@ -448,12 +448,15 @@ export default function EnhancedGigsListing() {
 
       // Submit bid after successful payment (uses gigs bidding flow)
       try {
-        const res = await apiClient.createGigBid(paymentGig.id, {
+        const gig = filteredGigs.find(g => g._id === paymentGig.id);
+        const fee = gig?.price || 5;
+        const payload = {
           quotation: 0,
-          proposal: 'Order placed',
-          unlockFeePaid: 10,
+          proposal: 'Contact access unlocked',
+          bidFeePaid: fee,
           contactDetails: { bidderContact }
-        });
+        };
+        const res = await apiClient.createGigBid(paymentGig.id, payload);
         if (!res?.success) {
           throw new Error(res?.message || 'Order creation failed');
         }
