@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import User from '../models/User.js';
-import Job from '../models/Job.js';
+import Gig from '../models/Gig.js';
 import AdminSettings from '../models/AdminSettings.js';
 import Application from '../models/Application.js';
 import FreelancerProfile from '../models/FreelancerProfile.js';
@@ -10,7 +10,7 @@ import Bid from '../models/Bid.js';
 import Order from '../models/Order.js';
 import Review from '../models/Review.js';
 import Notification from '../models/Notification.js';
-import SavedJob from '../models/SavedJob.js';
+import SavedGig from '../models/SavedGig.js';
 
 // Load environment variables
 dotenv.config();
@@ -33,7 +33,6 @@ const seedDatabase = async () => {
     // Clear existing data
     await Promise.all([
       User.deleteMany({}),
-      Job.deleteMany({}),
       AdminSettings.deleteMany({}),
       Application.deleteMany({}),
       FreelancerProfile.deleteMany({}),
@@ -42,7 +41,8 @@ const seedDatabase = async () => {
       Order.deleteMany({}),
       Review.deleteMany({}),
       Notification.deleteMany({}),
-      SavedJob.deleteMany({})
+      SavedGig.deleteMany({}),
+      Gig.deleteMany({})
     ]);
     console.log('🗑️ Cleared existing data');
 
@@ -164,17 +164,23 @@ const seedDatabase = async () => {
       { title: 'Unity 2D Game Development', description: 'Create a 2D platform game using Unity engine.', category: 'game development', requirements: ['Unity', 'C#', 'Game design'] },
       { title: 'Game UI/UX Design', description: 'Design intuitive and engaging UI for mobile games.', category: 'game development', requirements: ['Game UI', 'UX design', 'Mobile games'] }
     ];
-    const jobs = await Job.insertMany(
+    const jobs = await Gig.insertMany(
       [...sampleJobs, ...extraJobs].map(j => ({
         ...j,
         createdBy: adminUser._id,
         budget: Math.floor(15000 + Math.random() * 100000),
+        price: 10, // Bid fee for this gig
+        contactDetails: {
+          email: 'info@gudgig.com',
+          phone: '+1-555-0199',
+          name: 'Gudgig Admin'
+        },
         location: 'Remote',
         experienceLevel: ['any', 'junior', 'mid', 'senior'][Math.floor(Math.random() * 4)],
         skills: (j.requirements || []).map(r => r.toLowerCase())
       }))
     );
-    console.log(`💼 Created ${jobs.length} sample jobs`);
+    console.log(`💼 Created ${jobs.length} sample gigs`);
 
     // Create freelancer profiles
     const freelancerProfiles = await FreelancerProfile.insertMany([
@@ -779,35 +785,35 @@ const seedDatabase = async () => {
     ]);
     console.log(`📝 Created ${applications.length} applications`);
 
-    // Create sample saved jobs (gigs saved by users)
-    const savedJobs = await SavedJob.insertMany([
+    // Create sample saved gigs (saved by users)
+    const savedJobs = await SavedGig.insertMany([
       {
         userId: freelancers[0]._id,
-        jobId: jobs[0]._id,
+        gigId: jobs[0]._id,
         metadata: { source: 'gigs_listing', category: 'website development', budget: jobs[0].budget }
       },
       {
         userId: freelancers[0]._id,
-        jobId: jobs[1]._id,
+        gigId: jobs[1]._id,
         metadata: { source: 'gig_detail', category: 'graphic design', budget: jobs[1].budget }
       },
       {
         userId: freelancers[1]._id,
-        jobId: jobs[2]._id,
+        gigId: jobs[2]._id,
         metadata: { source: 'search_results', category: 'content writing', budget: jobs[2].budget }
       },
       {
         userId: freelancers[2]._id,
-        jobId: jobs[3]._id,
+        gigId: jobs[3]._id,
         metadata: { source: 'gigs_listing', category: 'social media management', budget: jobs[3].budget }
       },
       {
         userId: employers[0]._id,
-        jobId: jobs[4]._id,
+        gigId: jobs[4]._id,
         metadata: { source: 'gigs_listing', category: 'SEO', budget: jobs[4].budget }
       }
     ]);
-    console.log(`⭐ Created ${savedJobs.length} saved jobs`);
+    console.log(`⭐ Created ${savedJobs.length} saved gigs`);
 
     // Create sample reviews
     const reviews = await Review.insertMany([
@@ -868,7 +874,7 @@ const seedDatabase = async () => {
     console.log('\n🎉 Database seeded successfully!');
     console.log('\n📊 Summary:');
     console.log(`   - Users: ${await User.countDocuments()}`);
-    console.log(`   - Jobs: ${await Job.countDocuments()}`);
+    console.log(`   - Gigs: ${await Gig.countDocuments()}`);
     console.log(`   - AdminSettings: ${await AdminSettings.countDocuments()}`);
     console.log(`   - Applications: ${await Application.countDocuments()}`);
     console.log(`   - FreelancerProfiles: ${await FreelancerProfile.countDocuments()}`);
@@ -876,7 +882,7 @@ const seedDatabase = async () => {
     console.log(`   - Bids: ${await Bid.countDocuments()}`);
     console.log(`   - Orders: ${await Order.countDocuments()}`);
     console.log(`   - Reviews: ${await Review.countDocuments()}`);
-    console.log(`   - SavedJobs: ${await SavedJob.countDocuments()}`);
+    console.log(`   - SavedGigs: ${await SavedGig.countDocuments()}`);
     console.log(`   - Notifications: ${await Notification.countDocuments()}`);
 
     console.log('\n🔐 Sample Login Credentials:');
