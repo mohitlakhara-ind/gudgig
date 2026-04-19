@@ -23,6 +23,7 @@ type EditableGig = Pick<Gig, '_id' | 'title' | 'category' | 'createdAt'> & {
   price?: number;
   budget?: number;
   bidFee?: number;
+  bidFeeStrategy?: 'global' | 'custom';
 };
 
 const PAGE_SIZE = 10;
@@ -52,6 +53,7 @@ export default function AdminGigsPage() {
     location: string;
     price: number | string;
     bidFee: number;
+    bidFeeStrategy: 'global' | 'custom';
     contactDetails: {
       email: string;
       phone: string;
@@ -67,6 +69,7 @@ export default function AdminGigsPage() {
     location: 'Remote',
     price: 0,
     bidFee: 0,
+    bidFeeStrategy: 'global',
     contactDetails: {
       email: '',
       phone: '',
@@ -101,7 +104,8 @@ export default function AdminGigsPage() {
         location: j.location,
         price: j.price,
         budget: j.budget,
-        bidFee: (j as any).bidFee
+        bidFee: (j as any).bidFee,
+        bidFeeStrategy: (j as any).bidFeeStrategy || 'global'
       })));
 
       const totalResults = res.total ?? res.count ?? list.length;
@@ -195,7 +199,8 @@ export default function AdminGigsPage() {
         name: '',
         alternateContact: ''
       },
-      bidFee: 0
+      bidFee: 0,
+      bidFeeStrategy: 'global'
     });
     setCreating(true);
   };
@@ -218,9 +223,10 @@ export default function AdminGigsPage() {
           name: j.contactDetails?.name || '',
           alternateContact: j.contactDetails?.alternateContact || ''
         },
-        bidFee: Number((j as any).bidFee ?? 0)
+        bidFee: Number((j as any).bidFee ?? 0),
+        bidFeeStrategy: (j as any).bidFeeStrategy || 'global'
       });
-      console.log('Editing gig:', { id: j._id, title: j.title, bidFee: (j as any).bidFee });
+      console.log('Editing gig:', { id: j._id, title: j.title, bidFee: (j as any).bidFee, strategy: (j as any).bidFeeStrategy });
       setEditing(j);
     } catch (error) {
       console.error('Failed to fetch gig details:', error);
@@ -292,6 +298,7 @@ export default function AdminGigsPage() {
         location: form.location.trim() || 'Remote',
         price: form.price,
         bidFee: form.bidFee,
+        bidFeeStrategy: form.bidFeeStrategy,
         contactDetails: {
           ...form.contactDetails,
           email: form.contactDetails.email.trim(),
@@ -333,6 +340,7 @@ export default function AdminGigsPage() {
         location: form.location.trim() || 'Remote',
         price: form.price === '' ? undefined : Number(form.price),
         bidFee: form.bidFee,
+        bidFeeStrategy: form.bidFeeStrategy,
         contactDetails: {
           ...form.contactDetails,
           email: form.contactDetails.email.trim(),
@@ -416,8 +424,8 @@ export default function AdminGigsPage() {
                 <td className="p-2">{job.category}</td>
                 <td className="p-2 text-success font-medium">₹{(job.price ?? job.budget ?? 0).toLocaleString()}</td>
                 <td className="p-2 font-medium text-primary">
-                  {job.bidFee && job.bidFee > 0 ? (
-                    `₹${job.bidFee}`
+                  {job.bidFeeStrategy === 'custom' ? (
+                    `₹${job.bidFee ?? 0}`
                   ) : (
                     <span className="text-muted-foreground text-xs italic">
                       ₹{bidFeeSettings?.currentBidFee || '1'} (Default)
@@ -647,19 +655,35 @@ export default function AdminGigsPage() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm mb-1">Bid Fee / Unlock Fee (₹)</label>
-                  <select
-                    className="w-full border border-input bg-background rounded px-3 py-2 text-sm"
-                    value={form.bidFee}
-                    onChange={e => setForm({ ...form, bidFee: parseInt(e.target.value) || 0 })}
-                  >
-                    <option value={0}>Global Default {bidFeeSettings ? `(₹${bidFeeSettings.currentBidFee})` : ''}</option>
-                    {bidFeeSettings?.bidFeeOptions.map(fee => (
-                      <option key={fee} value={fee}>₹{fee}</option>
-                    ))}
-                  </select>
+                  <label className="block text-sm mb-1">Bid Fee / Unlock Fee</label>
+                  <div className="space-y-2">
+                    <select
+                      className="w-full border border-input bg-background rounded px-3 py-2 text-sm"
+                      value={form.bidFeeStrategy}
+                      onChange={e => setForm({ ...form, bidFeeStrategy: e.target.value as 'global' | 'custom' })}
+                    >
+                      <option value="global">Use Global Default {bidFeeSettings ? `(₹${bidFeeSettings.currentBidFee})` : ''}</option>
+                      <option value="custom">Set Specific Custom Fee</option>
+                    </select>
+
+                    {form.bidFeeStrategy === 'custom' && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm">₹</span>
+                        <input
+                          type="number"
+                          min="0"
+                          className="flex-1 border border-input bg-background rounded px-3 py-2 text-sm"
+                          value={form.bidFee}
+                          placeholder="e.g., 5"
+                          onChange={e => setForm({ ...form, bidFee: parseInt(e.target.value) || 0 })}
+                        />
+                      </div>
+                    )}
+                  </div>
                   <div className="text-xs text-muted-foreground mt-1">
-                    The amount a freelancer must pay to bid/unlock this gig.
+                    {form.bidFeeStrategy === 'custom' 
+                      ? 'Admins can set any fee including ₹0.' 
+                      : 'Uses the site-wide default fee settings.'}
                   </div>
                 </div>
                 <div>

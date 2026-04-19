@@ -58,6 +58,11 @@ export const adminCreateJob = async (req, res, next) => {
       ? location.trim()
       : 'Remote';
 
+    console.log('Backend creating job with fees received:', { 
+      bidFee: req.body.bidFee, 
+      bidFeeStrategy: req.body.bidFeeStrategy 
+    });
+
     const gig = await Gig.create({
       title,
       category,
@@ -66,7 +71,8 @@ export const adminCreateJob = async (req, res, next) => {
       maxBids,
       price: price || 0,
       budget: price || 0, // Sync budget with price for legacy support
-      bidFee: req.body.bidFee || 0,
+      bidFee: Number(req.body.bidFee ?? 0),
+      bidFeeStrategy: req.body.bidFeeStrategy || 'global',
       contactDetails,
       createdBy: req.user._id,
       location: normalizedLocation
@@ -226,6 +232,7 @@ export const listJobs = async (req, res, next) => {
       budget: j.budget || j.price || 0,
       price: j.price || j.budget || 0,
       bidFee: j.bidFee || 0,
+      bidFeeStrategy: j.bidFeeStrategy || 'global',
       maxBids: j.maxBids,
       isHidden: j.isHidden,
       location: j.location,
@@ -237,6 +244,14 @@ export const listJobs = async (req, res, next) => {
       applicationsCount: j.applicationsCount,
       bidsCount: gigIdToCount.get(String(j._id)) || 0
     }));
+
+    if (data.length > 0) {
+      console.log('Backend returning jobs. Sample fees:', { 
+        id: data[0]._id, 
+        fee: data[0].bidFee, 
+        strategy: data[0].bidFeeStrategy 
+      });
+    }
 
     return res.status(200).json({
       success: true,
@@ -271,7 +286,7 @@ export const submitBid = async (req, res, next) => {
     }
 
     const config = await getOrCreateConfig();
-    const requiredFee = (gig.bidFee && gig.bidFee > 0) ? gig.bidFee : config.currentBidFee;
+    const requiredFee = (gig.bidFeeStrategy === 'custom') ? (gig.bidFee || 0) : config.currentBidFee;
 
     // Validate bidAmountPaid equals active fee
     if (Number(bidFeePaid) !== Number(requiredFee)) {
@@ -554,6 +569,7 @@ export const getJobById = async (req, res, next) => {
     // Ensure consistent field availability for price and budget
     response.price = response.price || response.budget || 0;
     response.budget = response.budget || response.price || 0;
+    response.bidFeeStrategy = response.bidFeeStrategy || 'global';
 
     if (!hasUnlockedAccess) {
       // Provide a short preview of description, hide full content
@@ -583,11 +599,8 @@ export const updateJob = async (req, res, next) => {
     }
 
     const gigId = req.params.gigId || req.params.jobId || req.params.id;
+    const allowed = ['title', 'category', 'description', 'requirements', 'maxBids', 'location', 'price', 'bidFee', 'bidFeeStrategy', 'contactDetails', 'status', 'isHidden'];
     const updates = {};
-    console.log('[updateJob] Body:', JSON.stringify(req.body, null, 2));
-    console.log('[updateJob] Constructing updates for:', gigId);
-
-    const allowed = ['title', 'category', 'description', 'requirements', 'maxBids', 'location', 'price', 'bidFee', 'contactDetails'];
     for (const key of allowed) {
       if (req.body[key] !== undefined) {
         updates[key] = req.body[key];
@@ -607,6 +620,11 @@ export const updateJob = async (req, res, next) => {
     if (updates.category) {
       validateCategoryOrThrow(updates.category);
     }
+
+    console.log('Backend updating gig:', gigId, 'Updates:', {
+      bidFee: updates.bidFee,
+      bidFeeStrategy: updates.bidFeeStrategy
+    });
 
     const gig = await Gig.findByIdAndUpdate(gigId, updates, { new: true });
     

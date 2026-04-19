@@ -165,20 +165,25 @@ const seedDatabase = async () => {
       { title: 'Game UI/UX Design', description: 'Design intuitive and engaging UI for mobile games.', category: 'game development', requirements: ['Game UI', 'UX design', 'Mobile games'] }
     ];
     const jobs = await Gig.insertMany(
-      [...sampleJobs, ...extraJobs].map(j => ({
-        ...j,
-        createdBy: adminUser._id,
-        budget: Math.floor(15000 + Math.random() * 100000),
-        price: 10, // Bid fee for this gig
-        contactDetails: {
-          email: 'info@gudgig.com',
-          phone: '+1-555-0199',
-          name: 'Gudgig Admin'
-        },
-        location: 'Remote',
-        experienceLevel: ['any', 'junior', 'mid', 'senior'][Math.floor(Math.random() * 4)],
-        skills: (j.requirements || []).map(r => r.toLowerCase())
-      }))
+      [...sampleJobs, ...extraJobs].map(j => {
+        const budgetValue = Math.floor(15000 + Math.random() * 100000);
+        return {
+          ...j,
+          createdBy: adminUser._id,
+          budget: budgetValue,
+          price: budgetValue,
+          bidFee: 10,
+          bidFeeStrategy: 'global',
+          contactDetails: {
+            email: 'info@gudgig.com',
+            phone: '+1-555-0199',
+            name: 'Gudgig Admin'
+          },
+          location: 'Remote',
+          experienceLevel: ['any', 'junior', 'mid', 'senior'][Math.floor(Math.random() * 4)],
+          skills: (j.requirements || []).map(r => r.toLowerCase())
+        };
+      })
     );
     console.log(`💼 Created ${jobs.length} sample gigs`);
 

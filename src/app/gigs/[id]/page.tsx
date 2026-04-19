@@ -60,6 +60,7 @@ export default function GigDetailPage() {
   const [paymentEmail, setPaymentEmail] = useState<string>('');
   const [paymentPhone, setPaymentPhone] = useState<string>('');
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const [globalBidFee, setGlobalBidFee] = useState<number>(10);
 
   const closePaymentModal = () => {
     setShowPayment(false);
@@ -91,6 +92,21 @@ export default function GigDetailPage() {
       fetchGig();
     }
   }, [gigId]);
+
+  // Fetch global bid fees
+  useEffect(() => {
+    const fetchGlobalFees = async () => {
+      try {
+        const response = await apiClient.getBidFees();
+        if (response.success && response.data?.currentBidFee) {
+          setGlobalBidFee(response.data.currentBidFee);
+        }
+      } catch (error) {
+        console.error('Error fetching global bid fees:', error);
+      }
+    };
+    fetchGlobalFees();
+  }, []);
 
   useEffect(() => {
     if (!showPayment || paymentMode !== 'authenticated' || !user) return;
@@ -215,7 +231,7 @@ export default function GigDetailPage() {
       }
 
       // Submit bid after successful payment
-      const fee = gig?.price || 5;
+      const fee = (gig?.bidFeeStrategy === 'custom' ? gig.bidFee : globalBidFee) || 10;
       const payload = {
         quotation: 0,
         proposal: 'Contact access unlocked',
@@ -248,7 +264,7 @@ export default function GigDetailPage() {
             jobTitle: gig?.title,
             quotation: 0,
             proposal: 'Contact access unlocked',
-            unlockFee: gig?.price || 5,
+            unlockFee: (gig?.bidFeeStrategy === 'custom' ? gig.bidFee : globalBidFee) || 10,
           })
         });
       } catch (emailError) {
@@ -346,7 +362,7 @@ export default function GigDetailPage() {
       setPaymentEmail(email);
       setPaymentPhone(contact);
 
-      const fee = gig?.price || 5;
+      const fee = (gig?.bidFeeStrategy === 'custom' ? gig.bidFee : globalBidFee) || 10;
       const amountPaise = fee * 100;
       const base = getBackendUrl(false);
       const resp = await fetch(`${base}/api/payment/order`, {
@@ -470,7 +486,7 @@ export default function GigDetailPage() {
                     </div>
 
                     <RazorpayPayment
-                      amount={(gig?.price || 5) * 100}
+                      amount={((gig?.bidFeeStrategy === 'custom' ? gig.bidFee : globalBidFee) || 10) * 100}
                       description={`Unlock fee for gig: ${gig?.title}`}
                       orderId={rzpOrderId || ''}
                       keyId={rzpKeyId}
@@ -491,7 +507,7 @@ export default function GigDetailPage() {
                     </div>
                     <GuestCheckout
                       gigId={gigId}
-                      amountInPaise={(gig?.price || 5) * 100}
+                      amountInPaise={((gig?.bidFeeStrategy === 'custom' ? gig.bidFee : globalBidFee) || 10) * 100}
                       description={`Unlock fee for gig: ${gig?.title}`}
                     />
                     <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 flex items-center gap-3">

@@ -72,6 +72,7 @@ export interface Job {
   isHidden?: boolean;
   price?: number;
   bidFee?: number;
+  bidFeeStrategy?: 'global' | 'custom';
   contactDetails?: GigContactDetails;
 }
 

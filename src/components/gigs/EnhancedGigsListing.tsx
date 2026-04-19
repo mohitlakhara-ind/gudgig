@@ -105,6 +105,7 @@ export default function EnhancedGigsListing() {
   const [budgetMin, setBudgetMin] = useState('');
   const [budgetMax, setBudgetMax] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [globalBidFee, setGlobalBidFee] = useState<number>(10);
   const filtersInitializedRef = useRef(false);
   const lastFilterSignatureRef = useRef<string>('');
 
@@ -312,6 +313,21 @@ export default function EnhancedGigsListing() {
     fetchAppliedGigs();
   }, [user]);
 
+  // Fetch global bid fees
+  useEffect(() => {
+    const fetchGlobalFees = async () => {
+      try {
+        const response = await apiClient.getBidFees();
+        if (response.success && response.data?.currentBidFee) {
+          setGlobalBidFee(response.data.currentBidFee);
+        }
+      } catch (error) {
+        console.error('Error fetching global bid fees:', error);
+      }
+    };
+    fetchGlobalFees();
+  }, []);
+
   // Filter out applied gigs from the display
   const filteredGigs = gigsManager.gigs.filter(gig => !appliedGigIds.has(gig._id));
   const totalPages = Math.max(gigsManager.pagination.totalPages || 1, 1);
@@ -449,7 +465,7 @@ export default function EnhancedGigsListing() {
       // Submit bid after successful payment (uses gigs bidding flow)
       try {
         const gig = filteredGigs.find(g => g._id === paymentGig.id);
-        const fee = gig?.price || 5;
+        const fee = (gig?.bidFeeStrategy === 'custom' ? gig.bidFee : globalBidFee) || 10;
         const payload = {
           quotation: 0,
           proposal: 'Contact access unlocked',
@@ -479,7 +495,9 @@ export default function EnhancedGigsListing() {
             jobTitle: paymentGig.title,
             quotation: 0,
             proposal: 'Order placed',
-            unlockFee: 10, // Updated to match active fee
+            unlockFee: (filteredGigs.find(g => g._id === paymentGig.id)?.bidFeeStrategy === 'custom' 
+              ? filteredGigs.find(g => g._id === paymentGig.id)?.bidFee 
+              : globalBidFee) || 10,
           })
         });
       } catch (emailError) {
@@ -545,11 +563,14 @@ export default function EnhancedGigsListing() {
       setPayerContact(contact);
 
       setCreatingOrder(true);
+      const gig = filteredGigs.find(g => g._id === paymentGig?.id);
+      const fee = (gig?.bidFeeStrategy === 'custom' ? gig.bidFee : globalBidFee) || 10;
+      const amountPaise = fee * 100;
       const base = (process.env.NEXT_PUBLIC_BACKEND_URL || '').replace(/\/$/, '');
       const resp = await fetch(`${base}/api/payment/order`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: 1000, gigId: paymentGig?.id, description: `Order fee for gig: ${paymentGig?.title}`, email, contact })
+        body: JSON.stringify({ amount: amountPaise, gigId: paymentGig?.id, description: `Order fee for gig: ${paymentGig?.title}`, email, contact })
       });
       const data = await resp.json();
       if (!data?.success) throw new Error(data?.message || 'Failed to create order');

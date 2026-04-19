@@ -22,6 +22,7 @@ router.post('/', protect, authorize('admin'), [
   body('contactDetails.phone').optional().isString(),
   body('contactDetails.name').optional().isString(),
   body('bidFee').optional().isFloat({ min: 0 }),
+  body('bidFeeStrategy').optional().isIn(['global', 'custom']),
   body('maxBids').optional({ nullable: true }).custom((value) => {
     if (value === null) return true;
     if (typeof value === 'number' && Number.isInteger(value) && value >= 0) return true;
@@ -36,6 +37,7 @@ router.put('/:jobId', protect, authorize('admin'), [
   body('requirements').optional().isArray(),
   body('price').optional().isFloat({ min: 0 }),
   body('bidFee').optional().isFloat({ min: 0 }),
+  body('bidFeeStrategy').optional().isIn(['global', 'custom']),
   body('contactDetails').optional().isObject(),
   body('maxBids').optional({ nullable: true }).custom((value) => {
     if (value === null) return true;

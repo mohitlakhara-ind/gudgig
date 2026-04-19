@@ -49,8 +49,13 @@ const GigSchema = new mongoose.Schema({
   },
   bidFee: {
     type: Number,
-    default: 0, // 0 means use global default
+    default: 0,
     min: 0
+  },
+  bidFeeStrategy: {
+    type: String,
+    enum: ['global', 'custom'],
+    default: 'global'
   },
   contactDetails: {
     email: { type: String, trim: true },
