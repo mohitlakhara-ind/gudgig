@@ -64,8 +64,9 @@ export const adminCreateJob = async (req, res, next) => {
       description,
       requirements: Array.isArray(requirements) ? requirements : [],
       maxBids,
-      price,
-      bidFee: req.body.bidFee,
+      price: price || 0,
+      budget: price || 0, // Sync budget with price for legacy support
+      bidFee: req.body.bidFee || 0,
       contactDetails,
       createdBy: req.user._id,
       location: normalizedLocation
@@ -222,7 +223,11 @@ export const listJobs = async (req, res, next) => {
       requirements: j.requirements,
       createdAt: j.createdAt,
       category: j.category,
-      budget: j.budget,
+      budget: j.budget || j.price || 0,
+      price: j.price || j.budget || 0,
+      bidFee: j.bidFee || 0,
+      maxBids: j.maxBids,
+      isHidden: j.isHidden,
       location: j.location,
       experienceLevel: j.experienceLevel,
       skills: j.skills,
@@ -545,14 +550,20 @@ export const getJobById = async (req, res, next) => {
 
     // Shape response to hide sensitive details when locked
     const response = gig.toObject();
+    
+    // Ensure consistent field availability for price and budget
+    response.price = response.price || response.budget || 0;
+    response.budget = response.budget || response.price || 0;
+
     if (!hasUnlockedAccess) {
       // Provide a short preview of description, hide full content
       const fullDesc = String(response.description || '');
       const preview = fullDesc.length > 160 ? `${fullDesc.slice(0, 160)}…` : fullDesc;
       response.descriptionPreview = preview;
       response.descriptionHidden = true;
-      // Do not include full description when locked
+      // Do not include full description or sensitive details when locked
       delete response.description;
+      delete response.contactDetails;
     } else {
       response.descriptionHidden = false;
     }
@@ -573,11 +584,20 @@ export const updateJob = async (req, res, next) => {
 
     const gigId = req.params.gigId || req.params.jobId || req.params.id;
     const updates = {};
+    console.log('[updateJob] Body:', JSON.stringify(req.body, null, 2));
+    console.log('[updateJob] Constructing updates for:', gigId);
+
     const allowed = ['title', 'category', 'description', 'requirements', 'maxBids', 'location', 'price', 'bidFee', 'contactDetails'];
     for (const key of allowed) {
       if (req.body[key] !== undefined) {
         updates[key] = req.body[key];
       }
+    }
+
+
+    // Explicitly sync budget if price is updated
+    if (updates.price !== undefined) {
+      updates.budget = updates.price;
     }
 
     if (typeof updates.location === 'string') {
@@ -589,6 +609,7 @@ export const updateJob = async (req, res, next) => {
     }
 
     const gig = await Gig.findByIdAndUpdate(gigId, updates, { new: true });
+    
     if (!gig) {
       return res.status(404).json({ success: false, message: 'Gig not found' });
     }

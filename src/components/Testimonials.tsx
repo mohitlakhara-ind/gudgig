@@ -162,7 +162,7 @@ export default function Testimonials() {
                   onChange={(e) => setForm({ ...form, content: e.target.value })}
                   className="w-full border rounded px-2 py-2"
                   rows={4}
-                  placeholder="Tell other freelancers how unlocking gigs helped you..."
+                  placeholder="Tell other freelancers how unlocking contact details helped you..."
                   disabled={submitting}
                 />
               </label>

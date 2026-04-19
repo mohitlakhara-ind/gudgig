@@ -21,6 +21,7 @@ type EditableGig = Pick<Gig, '_id' | 'title' | 'category' | 'createdAt'> & {
   isHidden?: boolean; 
   location?: string;
   price?: number;
+  budget?: number;
   bidFee?: number;
 };
 
@@ -49,7 +50,7 @@ export default function AdminGigsPage() {
     requirements: string[]; 
     maxBids: number;
     location: string;
-    price: number;
+    price: number | string;
     bidFee: number;
     contactDetails: {
       email: string;
@@ -98,7 +99,9 @@ export default function AdminGigsPage() {
         maxBids: (j as any).maxBids,
         isHidden: (j as any).isHidden,
         location: j.location,
-        price: j.price
+        price: j.price,
+        budget: j.budget,
+        bidFee: (j as any).bidFee
       })));
 
       const totalResults = res.total ?? res.count ?? list.length;
@@ -185,7 +188,7 @@ export default function AdminGigsPage() {
       requirements: [''], 
       maxBids: 0,
       location: 'Remote',
-      price: 0,
+      price: '',
       contactDetails: {
         email: '',
         phone: '',
@@ -208,7 +211,7 @@ export default function AdminGigsPage() {
         requirements: Array.isArray(j.requirements) && j.requirements.length > 0 ? j.requirements : [''],
         maxBids: Number((j as any).maxBids ?? 0),
         location: j.location || 'Remote',
-        price: j.price || 0,
+        price: j.price !== undefined && j.price !== null ? j.price : '',
         contactDetails: {
           email: j.contactDetails?.email || '',
           phone: j.contactDetails?.phone || '',
@@ -217,6 +220,8 @@ export default function AdminGigsPage() {
         },
         bidFee: Number((j as any).bidFee ?? 0)
       });
+      console.log('Editing gig:', { id: j._id, title: j.title, bidFee: (j as any).bidFee });
+      setEditing(j);
     } catch (error) {
       console.error('Failed to fetch gig details:', error);
       toast.error('Failed to fetch full gig details for editing');
@@ -326,7 +331,7 @@ export default function AdminGigsPage() {
         requirements: form.requirements.filter(Boolean), 
         maxBids: form.maxBids,
         location: form.location.trim() || 'Remote',
-        price: form.price,
+        price: form.price === '' ? undefined : Number(form.price),
         bidFee: form.bidFee,
         contactDetails: {
           ...form.contactDetails,
@@ -381,6 +386,7 @@ export default function AdminGigsPage() {
               <th className="p-2 text-left">Title</th>
               <th className="p-2 text-left">Category</th>
               <th className="p-2 text-left">Price (₹)</th>
+              <th className="p-2 text-left">Bid Fee (₹)</th>
               <th className="p-2 text-left">Posted</th>
               <th className="p-2 text-left">Bid Limit</th>
               <th className="p-2 text-left">Status</th>
@@ -389,10 +395,10 @@ export default function AdminGigsPage() {
           </thead>
           <tbody>
             {isLoading && (
-              <tr><td colSpan={6} className="p-4 text-center">Loading...</td></tr>
+              <tr><td colSpan={8} className="p-4 text-center">Loading...</td></tr>
             )}
             {!isLoading && gigs.length === 0 && (
-              <tr><td colSpan={6} className="p-4 text-center text-gray-500">No gigs</td></tr>
+              <tr><td colSpan={8} className="p-4 text-center text-gray-500">No gigs</td></tr>
             )}
             {!isLoading && gigs.map(job => (
               <tr key={job._id} className="border-t">
@@ -408,13 +414,22 @@ export default function AdminGigsPage() {
                   </div>
                 </td>
                 <td className="p-2">{job.category}</td>
-                <td className="p-2 text-success font-medium">₹{job.price?.toLocaleString() || '0'}</td>
+                <td className="p-2 text-success font-medium">₹{(job.price ?? job.budget ?? 0).toLocaleString()}</td>
+                <td className="p-2 font-medium text-primary">
+                  {job.bidFee && job.bidFee > 0 ? (
+                    `₹${job.bidFee}`
+                  ) : (
+                    <span className="text-muted-foreground text-xs italic">
+                      ₹{bidFeeSettings?.currentBidFee || '1'} (Default)
+                    </span>
+                  )}
+                </td>
                 <td className="p-2">{new Date(job.createdAt).toLocaleDateString()}</td>
                 <td className="p-2">
                   <div className="flex items-center gap-1">
                     <Users className="h-3 w-3 text-muted-foreground" />
                     <span className="font-medium">
-                      {job.bidsCount ?? 0}/{job.maxBids ?? '∞'}
+                      {job.bidsCount ?? 0}/{job.maxBids === null || job.maxBids === undefined ? '∞' : job.maxBids}
                     </span>
                     {job.maxBids && job.bidsCount && job.bidsCount >= job.maxBids && (
                       <AlertTriangle className="h-3 w-3 text-warning" />
@@ -625,7 +640,7 @@ export default function AdminGigsPage() {
                     className="w-full border border-input bg-background rounded px-3 py-2 text-sm"
                     value={form.price}
                     placeholder="e.g., 5000"
-                    onChange={e => setForm({ ...form, price: parseFloat(e.target.value) || 0 })}
+                    onChange={e => setForm({ ...form, price: e.target.value })}
                   />
                   <div className="text-xs text-muted-foreground mt-1">
                     The total price or budget for this gig.

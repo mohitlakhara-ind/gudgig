@@ -1,13 +1,13 @@
 import express from 'express';
 import { body } from 'express-validator';
-import { protect, authorize } from '../middleware/auth.js';
+import { protect, authorize, optionalAuth } from '../middleware/auth.js';
 import { adminCreateJob, listJobs, getJobById, getBidsForJob, updateJob, deleteJob, getAdminStats, getBidCountForJob, toggleJobVisibility } from '../controllers/gmController.js';
 
 const router = express.Router();
 
 // Public
 router.get('/', listJobs);
-router.get('/:jobId', getJobById);
+router.get('/:jobId', optionalAuth, getJobById);
 router.get('/:jobId/bids/count', getBidCountForJob);
 
 // Admin only
@@ -21,6 +21,7 @@ router.post('/', protect, authorize('admin'), [
   body('contactDetails.email').optional().isEmail(),
   body('contactDetails.phone').optional().isString(),
   body('contactDetails.name').optional().isString(),
+  body('bidFee').optional().isFloat({ min: 0 }),
   body('maxBids').optional({ nullable: true }).custom((value) => {
     if (value === null) return true;
     if (typeof value === 'number' && Number.isInteger(value) && value >= 0) return true;
@@ -34,6 +35,7 @@ router.put('/:jobId', protect, authorize('admin'), [
   body('description').optional().isString().isLength({ min: 10, max: 5000 }),
   body('requirements').optional().isArray(),
   body('price').optional().isFloat({ min: 0 }),
+  body('bidFee').optional().isFloat({ min: 0 }),
   body('contactDetails').optional().isObject(),
   body('maxBids').optional({ nullable: true }).custom((value) => {
     if (value === null) return true;

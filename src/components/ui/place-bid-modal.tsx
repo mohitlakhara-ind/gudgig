@@ -101,7 +101,7 @@ export default function PlaceBidModal({ open, onClose, jobId, jobTitle }: Props)
       <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40">
         <div className="bg-white w-full sm:w-[600px] rounded-t-2xl sm:rounded-2xl shadow-xl max-h-[90vh] overflow-y-auto">
           <div className="p-4 border-b flex items-center justify-between">
-            <div className="font-semibold">Unlock Contact</div>
+            <div className="font-semibold">Unlock Contact Details</div>
             <button className="text-sm" onClick={onClose}>Close</button>
           </div>
           <div className="p-5 space-y-5">
@@ -214,7 +214,7 @@ export default function PlaceBidModal({ open, onClose, jobId, jobTitle }: Props)
                   setContactDetails(contact);
                   setShowContactSelection(false);
                 }}
-                title="Contact Information for Lead Unlock"
+                title="Contact Information for Contact Sharing"
                 description="Choose your contact details for this lead"
                 showSaveOption={true}
               />

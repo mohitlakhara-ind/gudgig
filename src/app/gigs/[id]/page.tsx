@@ -762,7 +762,7 @@ export default function GigDetailPage() {
                         className="w-full h-11 font-medium bg-gradient-to-r from-primary to-primary/90 text-white shadow-md hover:shadow-lg"
                       >
                         <Lock className="h-4 w-4 mr-2" />
-                        Unlock instantly
+                        Unlock contact details
                         <ArrowRight className="h-4 w-4 ml-2" />
                       </Button>
                       <p className="text-xs text-muted-foreground text-center">
