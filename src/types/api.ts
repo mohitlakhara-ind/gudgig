@@ -343,6 +343,7 @@ export interface CreateJobRequest {
   location?: string;
   price?: number;
   bidFee?: number;
+  bidFeeStrategy?: Gig['bidFeeStrategy'];
   contactDetails?: GigContactDetails;
 }
 

@@ -52,7 +52,7 @@ export default function AdminGigsPage() {
     maxBids: number;
     location: string;
     price: number | string;
-    bidFee: number;
+    bidFee: number | string;
     bidFeeStrategy: 'global' | 'custom';
     contactDetails: {
       email: string;
@@ -296,8 +296,8 @@ export default function AdminGigsPage() {
         requirements: form.requirements.filter(Boolean), 
         maxBids: form.maxBids,
         location: form.location.trim() || 'Remote',
-        price: form.price,
-        bidFee: form.bidFee,
+        price: form.price === '' ? undefined : Number(form.price),
+        bidFee: form.bidFee === '' ? undefined : Number(form.bidFee),
         bidFeeStrategy: form.bidFeeStrategy,
         contactDetails: {
           ...form.contactDetails,
@@ -339,7 +339,7 @@ export default function AdminGigsPage() {
         maxBids: form.maxBids,
         location: form.location.trim() || 'Remote',
         price: form.price === '' ? undefined : Number(form.price),
-        bidFee: form.bidFee,
+        bidFee: form.bidFee === '' ? undefined : Number(form.bidFee),
         bidFeeStrategy: form.bidFeeStrategy,
         contactDetails: {
           ...form.contactDetails,
